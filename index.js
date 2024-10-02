@@ -1,5 +1,5 @@
 
-export * from './components';
-export * from './libs';
-export * from './gui';
-export * from './auth';
+export * from './components.js';
+export * from './libs.js';
+export * from './gui.js';
+export * from './auth.js';
