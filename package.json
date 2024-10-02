@@ -1,0 +1,36 @@
+{
+  "name": "reactify",
+  "version": "1.0.0",
+  "description": "React QuickSuite is a comprehensive library designed to streamline the development of interactive user interfaces. Built with React and Bootstrap, it offers native support for authentication and seamless integration with third-party services such as Firebase, Dropbox, and messaging systems. React QuickSuite allows developers to easily create dynamic layouts, integrating modular components into customizable templates, making it an ideal toolkit for building responsive, interactive applications efficiently.",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sherpadvisorylab/reactify.git"
+  },
+  "keywords": [
+    "react",
+    "reactjs",
+    "ui",
+    "user-interface",
+    "component-library",
+    "react-components",
+    "modular",
+    "integration",
+    "responsive",
+    "bootstrap",
+    "framework",
+    "interactive",
+    "npm",
+    "development",
+    "template"
+  ],
+  "author": "wolfgan",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/sherpadvisorylab/reactify/issues"
+  },
+  "homepage": "https://github.com/sherpadvisorylab/reactify#readme"
+}
