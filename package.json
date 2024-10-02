@@ -1,14 +1,14 @@
 {
-  "name": "reactify",
+  "name": "react-quicksuite",
   "version": "1.0.0",
-  "description": "React QuickSuite is a comprehensive library designed to streamline the development of interactive user interfaces. Built with React and Bootstrap, it offers native support for authentication and seamless integration with third-party services such as Firebase, Dropbox, and messaging systems. React QuickSuite allows developers to easily create dynamic layouts, integrating modular components into customizable templates, making it an ideal toolkit for building responsive, interactive applications efficiently.",
+  "description": "React QuickSuite is a powerful framework that accelerates the creation of interactive user interfaces. Built with React and Bootstrap, it features native authentication support and smooth integration with services like Firebase, Dropbox, and messaging systems. Developers are free to implement any Bootstrap theme, allowing for endless customization possibilities. With React QuickSuite, you can effortlessly design dynamic layouts and customize templates with modular components, making it the ultimate toolkit for efficiently building responsive and engaging applications.",
   "main": "index.js",
   "scripts": {
     "test": "test"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sherpadvisorylab/reactify.git"
+    "url": "git+https://github.com/sherpadvisorylab/react-quicksuite.git"
   },
   "keywords": [
     "react",
@@ -23,14 +23,20 @@
     "bootstrap",
     "framework",
     "interactive",
+    "firebase",
+    "dropbox",
     "npm",
     "development",
-    "template"
+    "template",
+    "admin",
+    "react-admin",
+    "uiadmin",
+    "ui-admin"
   ],
   "author": "wolfgan",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/sherpadvisorylab/reactify/issues"
+    "url": "https://github.com/sherpadvisorylab/react-quicksuite/issues"
   },
-  "homepage": "https://github.com/sherpadvisorylab/reactify#readme"
+  "homepage": "https://github.com/sherpadvisorylab/react-quicksuite#readme"
 }
