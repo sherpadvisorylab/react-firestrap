@@ -1,1 +1,1 @@
-# reactify
+# react QuickSuite
