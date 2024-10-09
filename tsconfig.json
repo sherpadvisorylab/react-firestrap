@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES6",                          // Target ECMAScript version
+    "module": "ESNext",                       // Module system
+    "jsx": "react",                           // JSX support
+    "strict": true,                           // Enable strict type-checking options
+    "moduleResolution": "node",               // Module resolution strategy
+    "esModuleInterop": true,                  // Allows better interoperability between ES6 and CommonJS modules
+    "forceConsistentCasingInFileNames": true, // Ensure file names are case-sensitive
+    "skipLibCheck": true,                     // Skip type checking of declaration files
+    "outDir": "./dist",                       // Output directory for transpiled files
+    "baseUrl": "./src",                       // Base URL for module resolution
+    "allowSyntheticDefaultImports": true      // Allows default imports from modules with no default export
+  },
+  "include": ["src/**/*"],                    // Include all files in src folder
+  "exclude": ["node_modules", "dist"]         // Exclude these folders
+}
