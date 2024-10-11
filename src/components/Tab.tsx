@@ -1,21 +1,58 @@
 import React, {useState} from 'react';
 import {ActionButton} from "./Buttons";
 import ComponentEnhancer from "./ComponentEnhancer";
+import {converter} from "../libs";
+
+const TabTop = ({menu, content}) => {
+    return <>
+        <ul className="nav nav-tabs">
+            {menu}
+        </ul>
+        <div className="tab-content pt-3">
+            {content}
+        </div>
+    </>
+}
+
+
+const TabLeft = ({menu, content}) => {
+    return <div className="d-flex">
+        <ul className="nav nav-tabs flex-column text-nowrap border-end border-bottom-0">
+            {menu}
+        </ul>
+        <div className="tab-content ps-3 pt-3 border-top">
+            {content}
+        </div>
+    </div>
+}
+
+const TabRight = ({menu, content}) => {
+    return <div className="d-flex">
+        <div className="tab-content pe-3 pt-3 border-top">
+            {content}
+        </div>
+        <ul className="nav nav-tabs flex-column text-nowrap border-start border-bottom-0">
+            {menu}
+        </ul>
+    </div>
+}
 
 const Tab = ({
                  children,
                  name = null,
-                 onChange = () => {},
+                 onChange = () => {
+                 },
                  value = null,
                  label = "Tab",
                  min = 1,
                  max = null,
-                 key = "tab",
                  activeIndex = 0,
                  title,
                  onAdd,
-                 onRemove
-} : {
+                 onRemove,
+                 readOnly = false,
+                 tabPosition = "top"
+             }: {
     children: any,
     name?: string,
     onChange?: any,
@@ -23,23 +60,24 @@ const Tab = ({
     label?: string,
     min?: number,
     max?: number,
-    key?: string,
     activeIndex?: number,
     title?: string,
     onAdd?: any,
-    onRemove?: any
+    onRemove?: any,
+    readOnly: boolean,
+    tabPosition: "top" | "left" | "right"
 }) => {
-   // const recordEmpty = propsComponentEnhancer(children);
+    // const recordEmpty = propsComponentEnhancer(children);
     const [active, setActive] = useState(activeIndex);
     const [uniqueKey, setUniqueKey] = useState(0);
 
     const [records, setRecords] = useState(() => {
-        if(!value) {
+        if (!value) {
             value = [];
         }
 
-        if(min && value.length < min) {
-            for(let i = value.length; i < min; i++) {
+        if (min && value.length < min) {
+            for (let i = value.length; i < min; i++) {
                 value.push({});
             }
         }
@@ -120,35 +158,48 @@ const Tab = ({
             return updatedRecords;
         });
     }
+    const setLabel = (index) => {
+        return (label.includes("{")
+            ? converter.parse(records[index], label) || "New " + (index + 1)
+            : label + " " + (index + 1)
+        );
+    }
 
-    const domKey = name || key;
+    const domKey = name || "Tab";
+    const TabDisplayed = {
+        top:    TabTop,
+        left:   TabLeft,
+        right:  TabRight
+    }[tabPosition] || TabTop;
 
     return (
         <div>
             {title && <h3>{title}</h3>}
-            <ul className="nav nav-tabs">
-                {components.map((_, index) => (
-                    <li key={key + index + uniqueKey} className="nav-item me-1 position-relative">
-                        <a href={`#${domKey}-${index}`}
-                           onClick={() => setActive(index)}
-                           className={`nav-link ${index === active ? 'active' : ''}`}
-                           data-bs-toggle="tab">
-                            {label + " " + (index + 1)}
-                        </a>
-                        {index === active && <ActionButton className={"position-absolute top-0 end-0 p-0 me-1"} post={"x"} onClick={() => handleRemove(index)} />}
-                    </li>
-                ))}
-                {<li key={records.length + 1} className="nav-item me-1">
-                    <ActionButton className={`nav-link`} icon="plus" onClick={handleAdd} />
-                </li>}
-            </ul>
-            <div className="tab-content pt-3">
-                {components.map((component, index) => (
-                    <div key={key + index + uniqueKey} className={`tab-pane fade ${index === active ? 'show active' : ''}`} id={domKey + "-" + index}>
+            <TabDisplayed
+                menu={<>
+                    {components.map((_, index) => (
+                        <li key={domKey + index + uniqueKey} className="nav-item me-1 position-relative">
+                            <a href={`#${domKey}-${index}`}
+                               onClick={() => setActive(index)}
+                               className={`nav-link ${index === active ? 'active' : ''}`}
+                               data-bs-toggle="tab">
+                                {setLabel(index)}
+                            </a>
+                            {(!readOnly && index === active) &&
+                                <ActionButton className="position-absolute top-0 end-0 p-0 me-1" post="x"
+                                              onClick={() => handleRemove(index)}/>}
+                        </li>
+                    ))}
+                    {!readOnly && <li key={records.length + 1} className="nav-item me-1">
+                        <ActionButton className="nav-link" icon="plus" onClick={handleAdd} />
+                    </li>}
+                </>}
+                content={components.map((component, index) => (
+                    <div key={domKey + index + uniqueKey} className={`tab-pane fade ${index === active ? 'show active' : ''}`} id={domKey + "-" + index}>
                         {component}
                     </div>
                 ))}
-            </div>
+            />
         </div>
     );
 }

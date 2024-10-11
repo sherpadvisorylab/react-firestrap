@@ -19,7 +19,14 @@ module.exports = {
     module: {
         rules: [
             {
-                test: /\.(js|jsx|ts|tsx)$/,
+                test: /\.(ts|tsx)$/, // Modifica qui per includere i file .ts e .tsx
+                exclude: /node_modules/,
+                use: {
+                    loader: 'ts-loader', // Usa ts-loader per gestire i file TypeScript
+                },
+            },
+            {
+                test: /\.(js|jsx)$/, // Regola per i file JavaScript
                 exclude: /node_modules/,
                 use: {
                     loader: 'babel-loader',
@@ -31,8 +38,5 @@ module.exports = {
         extensions: ['.js', '.jsx', '.ts', '.tsx'],
     },
     plugins: [
-        new webpack.DefinePlugin({
-            'process.env': JSON.stringify(process.env), // Espone tutte le variabili d'ambiente
-        }),
     ],
 };

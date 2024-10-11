@@ -10,8 +10,15 @@
     "skipLibCheck": true,                     // Skip type checking of declaration files
     "outDir": "./dist",                       // Output directory for transpiled files
     "baseUrl": "./src",                       // Base URL for module resolution
-    "allowSyntheticDefaultImports": true      // Allows default imports from modules with no default export
+    "allowSyntheticDefaultImports": true,     // Allows default imports from modules with no default export
+    "declaration": true,                      // Generates corresponding .d.ts file
+    "declarationDir": "./dist/types"          // Output directory for .d.ts files
   },
-  "include": ["src/**/*"],                    // Include all files in src folder
-  "exclude": ["node_modules", "dist"]         // Exclude these folders
+  "include": [                                // Include all files in src folder
+    "src/**/*"
+  ],
+  "exclude": [                                // Exclude these folders
+    "node_modules",
+    "dist"
+  ]
 }
