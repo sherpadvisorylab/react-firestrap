@@ -2,10 +2,10 @@ import React, {createContext, useContext, useEffect, useState} from 'react';
 
 const defaultTheme = {
     Icons: {
-        default: 'ph-duotone ph-',
+        default: 'bi bi-',
         sidebar: 'bi bi-',
-        header: 'ph-duotone ph-',
-        profile: 'ph-duotone ph-',
+        header: 'bi bi-',
+        profile: 'bi bi-',
     },
     Grid: {
         Card: {

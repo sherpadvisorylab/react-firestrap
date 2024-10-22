@@ -1,31 +1,86 @@
 import {sleep} from "./utils";
-import {converter} from "./converter";
 
-export async function fetchRest(url, options = {}) {
-    const method = (options.method || "GET").toUpperCase();
-    const headers = options.headers || {};
-    const body = !["GET", "HEAD"].includes(method)
-        ? JSON.stringify(options.body || {})
-        : undefined;
-    const query = ["GET", "HEAD"].includes(method)
-        ? converter.toQueryString(options.body || {}, url.includes("?") ? "&" : "?")
-        : "";
-    const endpoint = url + query;
-    const request = {
+interface FetchOptions {
+    method?: "GET" | "POST" | "PUT" | "DELETE" | "HEAD" | "PATCH";
+    headers?: Record<string, string>;
+    body?: Record<string, any> | string;
+}
+
+function resolveContentType(options: FetchOptions) {
+    const { body, headers } = options;
+    const contentType = headers?.["Content-Type"] || "";
+
+    const allowedContentTypes = Array.isArray(body) || typeof body === 'object'
+        ? ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"]
+        : ["text/plain", "text/html"];
+
+    if (allowedContentTypes.includes(contentType)) {
+        return contentType;
+    }
+
+    return typeof body === 'object'
+        ? "application/json"
+        : typeof body === 'string' && body.startsWith("<")
+            ? "text/html"
+            : "text/plain";
+}
+
+export async function fetchRest(
+    url: string,
+    options: FetchOptions | null = null
+): Promise<any> {
+    const request: RequestInit = {
         redirect: "follow",
-        ...options,
-        method,
-        headers,
-        body,
+        method: options?.method?.toUpperCase() || "GET",
+        headers: options?.headers || {}
     };
 
-    return fetch(endpoint, request)
+    if (options?.body) {
+        if (["GET", "HEAD"].includes(request.method as string)) {
+            url += (url.includes("?") ? "&" : "?") + new URLSearchParams(options.body);
+        } else {
+            switch (resolveContentType(options)) {
+                case "application/json":
+                    request.body = JSON.stringify(options.body);
+                    break;
+
+                case "application/x-www-form-urlencoded":
+                    request.body = new URLSearchParams(options.body);
+                    break;
+
+                case "multipart/form-data": {
+                    const formData = new FormData();
+                    const body = options.body as Record<string, any>;
+                    for (const key in body) {
+                        formData.append(key, body[key]);
+                    }
+                    request.body = formData;
+                    break;
+                }
+                case "text/html":
+                case "text/plain":
+                    if (typeof options.body !== 'string') {
+                        throw new Error("Fetch: Body must be a string for text/plain or text/html content types.");
+                    }
+
+                    request.body = options.body;
+                    break;
+                default:
+                    throw new Error(`Fetch: Unsupported Content-Type`);
+            }
+        }
+    }
+
+    //options.mode = options.mode || "no-cors";
+    return fetch(url, request)
         .then(response => {
             if (!response.ok) {
                 return response.text().then(text => { throw { response, text }; });
             }
 
-            if (headers['Accept'] && headers['Accept'].split(";")[0] !== response.headers.get('Content-Type').split(";")[0]) {
+            const accept = options?.headers?.['Accept'];
+            const contentType = response.headers.get('Content-Type')?.split(";")[0];
+            if (accept && accept.split(";")[0] !== contentType) {
                 return response.text().then(text => { throw { response, text }; });
             }
 
@@ -35,19 +90,19 @@ export async function fetchRest(url, options = {}) {
         })
         .catch(error => {
             if (error.message) {
-                console.warn(`fetchRest: ${error.message}`, method, endpoint, request);
+                console.warn(`fetch: ${error.message}`, url, request);
                 return null;
             }
             const { response, text } = error;
             function getResponse() {
-                const contentType = response?.headers?.get('Content-Type')?.split(";")[0] || "";
+                const contentType = response?.headers.get('Content-Type')?.split(";")[0] || "";
 
                 if (contentType === "application/json" && (text.startsWith("{") || text.startsWith("["))) {
                     const json = JSON.parse(text);
-                    console.warn(`fetchRest: Error`, method, endpoint, response.status, request, json);
+                    console.warn(`fetch: Error`, url, request, response.status, json);
                     return json;
                 } else {
-                    const accept = headers?.['Accept']?.split(";")[0] || "";
+                    const accept = options?.headers?.['Accept']?.split(";")[0] || "";
 
                     const wrongContentType = accept !== contentType
                         ? "Request Accept header does not match response Content-Type (Accept: " + accept + ", Content-Type: " + contentType + ")"
@@ -55,10 +110,10 @@ export async function fetchRest(url, options = {}) {
                             ? "Request Accept header is application/json but response is not JSON"
                             : null;
 
-                    console.warn(`fetchRest: ${wrongContentType}`, method, endpoint, response.status, request, text);
+                    console.warn(`fetch: ${wrongContentType}`, url, request, response.status, text);
                     return (wrongContentType && accept === "application/json"
-                        ? {error: text, status: 520}
-                        : text
+                            ? {error: text, status: 520}
+                            : text
                     );
                 }
             }
@@ -67,37 +122,32 @@ export async function fetchRest(url, options = {}) {
         });
 }
 
-export async function fetchApi({url, method = "GET", body = {}, headers = {}}) {
-    const isGetOrHead = method.toUpperCase() === "GET" || method.toUpperCase() === "HEAD";
-    const options = {
-        method,
+export async function fetchJson(
+    url: string,
+    options: FetchOptions | null = null
+): Promise<any> {
+    return fetchRest(url, {
+        ...options,
         headers: {
+            "Accept": "application/json",
             "Content-Type": "application/json",
-            ...headers
-        },
-        body: isGetOrHead || !body ? undefined : JSON.stringify(body)
-    };
-
-    return fetchJson(isGetOrHead && body ? `${url}?${new URLSearchParams(body)}` : url, options);
+            ...options?.headers,
+        }
+    })
+    .then(response => {
+        if (response?.error) {
+            throw response;
+        }
+        return response;
+    });
 }
 
-export async function fetchJson(url, options = {}) {
-    //options.mode = options.mode || "no-cors";
-    return fetch(url, {
-            redirect: "follow",
-            ...options
-        })
-        .then(response => {
-            if (response.ok) {
-                return response.json();
-            }
-
-            console.error(`Failed to fetch Json`, response);
-            throw {response, url, options};
-        });
-}
-
-export async function fetchWithRetry(url, options = undefined, maxRetries = 3, statusNoRetry = [429]) {
+export async function fetchWithRetry(
+    url: string,
+    options: RequestInit = {},
+    maxRetries: number = 3,
+    statusNoRetry: number[] = [429]
+): Promise<any | Response> {
     return fetch(url, options)
         .then(response => {
             if (response.ok) {

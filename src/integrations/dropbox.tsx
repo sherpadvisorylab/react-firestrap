@@ -5,7 +5,7 @@ import {AuthButton, getAccessToken, useAccessToken} from "../auth";
 import type {IButton} from "../components/Buttons";
 import pathInfo from "../libs/path";
 
-
+const DROPBOX_CHECK_DELAY = 5000;
 const DROPBPX_URL = "https://www.dropbox.com/home";
 export const DROPBOX_AUTH_SERVER = 'www.dropbox.com/oauth2';
 
@@ -229,7 +229,7 @@ const copy = async (paths) => {
 
         let jobStatus = copyResponse;
         while (jobStatus?.['.tag'] === 'async_job_id' || jobStatus?.['.tag'] === 'in_progress') {
-            await sleep(2000);
+            await sleep(DROPBOX_CHECK_DELAY);
 
             jobStatus = await checkJobStatus(copyResponse.async_job_id);
         }
@@ -381,6 +381,9 @@ export const DropBoxConnectButton = (options: IButton = {}) => {
 }
 
 export const dropBox = {
+    setRootPath: (path) => {
+        config.rootPath = path;
+    },
     resolvePath: resolvePath,
     createFolders: createFolders,
     deleteBulk: deleteBulk,

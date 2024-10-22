@@ -72,19 +72,40 @@ function getDefaultTimeFormat() {
     }).join('');
 }
 
-export const converter = {
+
+type ConverterFunction = (value: string | undefined, format?: string | null) => string;
+
+interface Converter {
+    parse: (values: { [key: string]: string | undefined }, pattern: string) => string;
+    toDate: ConverterFunction;
+    toTime: ConverterFunction;
+    toDateTime: ConverterFunction;
+    toCamel: (str: string, separator?: string) => string;
+    toUpper: (str: string) => string;
+    toLower: (str: string) => string;
+    splitLast: (str: string, seps: string | string[], regExeption?: RegExp | null) => [string, string] | null;
+    splitFirst: (str: string, seps: string | string[], regExeption?: RegExp | null) => [string, string] | null;
+    padLeft: (str: string, length: number, char?: string, regex?: RegExp | null) => string;
+    padRight: (str: string, length: number, char?: string, regex?: RegExp | null) => string;
+    toQueryString: (params: { [key: string]: string | null }, startWith?: string, fill?: string | null) => string;
+    fillObject: <T>(obj: { [key: string]: T }, value?: any) => { [key: string]: any };
+    subStringCount: (str: string, subStr: string) => number;
+    [key: string]: (value: any, format?: any) => string | undefined;
+}
+
+export const converter: Converter = <Converter>{
     parse: (values, pattern) => {
         const parse = pattern.replace(/{([^}:]+)(?::([^}:]+))?(?::([^}:]+))?}/g, (_, Key, Func, format) => {
             const [pre, key] = ((Key || "").indexOf("(") === -1
-                ? ["", Key]
-                : Key.split("(", 2)
+                    ? ["", Key]
+                    : Key.split("(", 2)
             );
             const [func, post] = ((Func || "").indexOf(")") === -1
-                ? [Func, ""]
-                : Func.split(")", 2)
+                    ? [Func, ""]
+                    : Func.split(")", 2)
             );
 
-            if(!converter?.[func] || !values?.[key]) {
+            if (!converter?.[func] || !values?.[key]) {
                 //console.error(`Conversion failed`, values, key, func)
                 return values[key] || '';
             }
@@ -130,7 +151,7 @@ export const converter = {
         const splitter = (sep) => {
             const split = str.split(sep);
             let last = split.pop();
-            while(regExeption && regExeption.test(split[split.length - 1])) {
+            while (regExeption && regExeption.test(split[split.length - 1])) {
                 last = split.pop() + sep + last;
             }
 
@@ -148,7 +169,7 @@ export const converter = {
         const splitter = (sep) => {
             const split = str.split(sep);
             let first = split.shift();
-            while(regExeption && regExeption.test(split[0])) {
+            while (regExeption && regExeption.test(split[0])) {
                 first += sep + split.shift();
             }
 
@@ -163,13 +184,13 @@ export const converter = {
         return result || [str, ''];
     },
     padLeft: (str, length, char = ' ', regex = null) => {
-        if(regex) {
+        if (regex) {
             return str.replace(regex, match => match.padStart(length, char));
         }
         return str.padStart(length, char);
     },
     padRight: (str, length, char = ' ', regex = null) => {
-        if(regex) {
+        if (regex) {
             return str.replace(regex, match => match.padEnd(length, char));
         }
         return str.padEnd(length, char);

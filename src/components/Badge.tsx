@@ -1,11 +1,17 @@
 import React from "react";
 import {useTheme} from "../Theme";
 
-const Badge = ({children, type="info", size="", className = ""} : {
-    children: any,
-    type?: "info" | "success" | "warning" | "danger" | "primary" | "secondary" | "light" | "dark",
-    className?: string
-} = {}) => {
+type BadgeProps = {
+    children: string | React.ReactNode;
+    type?: "info" | "success" | "warning" | "danger" | "primary" | "secondary" | "light" | "dark";
+    className?: string;
+};
+
+const Badge = ({
+                   children,
+                   type         = "info",
+                   className    = ""
+}: BadgeProps) => {
     const theme = useTheme();
 
     return (

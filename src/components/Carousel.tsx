@@ -2,7 +2,25 @@ import React from 'react';
 import {useTheme} from "../Theme";
 import {generateUniqueId} from "../libs/utils";
 
-function Carousel({
+type AutoPlayOptions = {
+    interval: number;
+    pause: "hover" | "false" | "true";
+    wrap: boolean;
+};
+
+type CarouselProps = {
+    children: React.ReactNode[];
+    showIndicators?: boolean;
+    showControls?: boolean;
+    showCaption?: boolean;
+    layoutDark?: boolean;
+    autoPlay?: boolean | AutoPlayOptions;
+    startSlide?: number;
+    onParseCaption?: (image: React.ReactElement) => React.ReactElement | null;
+    onClick?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
+};
+
+const Carousel = ({
                     children,
                     showIndicators = null,
                     showControls = null,
@@ -12,21 +30,7 @@ function Carousel({
                     startSlide = 0,
                     onParseCaption = null,
                     onClick = null
-} : {
-    children: React.ReactNode[],
-    showIndicators?: boolean,
-    showControls?: boolean,
-    showCaption?: boolean,
-    layoutDark?: boolean,
-    startSlide?: number,
-    autoPlay?: boolean | {
-        interval: number,
-        pause: "hover" | "false" | "true",
-        wrap: boolean
-    },
-    onParseCaption?: (image: React.ReactElement) => React.ReactElement | null,
-    onClick?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
-}) {
+} : CarouselProps) => {
     const theme = useTheme();
     showIndicators = showIndicators || theme.Carousel.showIndicators;
     showControls = showControls || theme.Carousel.showControls;

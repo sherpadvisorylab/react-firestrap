@@ -1,7 +1,18 @@
 import React from 'react';
 import {Link} from "react-router-dom";
 import {useTheme} from "../Theme";
-const Brand = ({txt, url, icon}) => {
+
+type BrandProps = {
+    url: string;
+    txt?: string;
+    icon?: string;
+};
+
+const Brand = ({
+                   url,
+                   txt  = null,
+                   icon = null
+}: BrandProps) => {
     const theme = useTheme("brand");
 
     return (

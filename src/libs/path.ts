@@ -1,4 +1,19 @@
-const path = {
+interface PathUtils {
+    basename(path: string): string;
+    extname(path: string): string;
+    dirname(path: string): string;
+    filename(path: string): string;
+    parentBasename(path: string): string;
+    parentDirname(path: string): string;
+    parentFilename(path: string): string;
+    append(path: string, suffix: string): string;
+    prepend(path: string, prefix: string): string;
+    changeFilename(path: string, options?: { prefix?: string; suffix?: string; ext?: string | null }): string;
+    join(...paths: string[]): string;
+    parse(path: string): { root: string; dir: string; base: string; ext: string; name: string; };
+}
+
+const path: PathUtils = {
     // Restituisce l'ultimo segmento di un percorso, escludendo la barra finale se presente
     basename: (path) => {
         const segments = path.split('/').filter(Boolean);
@@ -20,7 +35,7 @@ const path = {
 
     // Restituisce il nome del file senza l'estensione
     filename: (path) => {
-        const base = path.split('/').pop();
+        const base = path.split('/').pop() || '';
         const ext = base.includes('.') ? base.slice(base.lastIndexOf('.')) : '';
         return base.replace(ext, '');
     },
@@ -52,7 +67,7 @@ const path = {
     // Aggiunge un suffisso al nome del file mantenendo l'estensione
     append: (path, suffix) => {
         const dir = path.split('/').slice(0, -1).join('/');
-        const base = path.split('/').pop();
+        const base = path.split('/').pop() || '';
         const ext = base.includes('.') ? base.slice(base.lastIndexOf('.')) : '';
         const name = base.replace(ext, '');
         return (dir ? dir + '/' : '') + name + suffix + ext;
@@ -61,7 +76,7 @@ const path = {
     // Aggiunge un prefisso al nome del file mantenendo l'estensione
     prepend: (path, prefix) => {
         const dir = path.split('/').slice(0, -1).join('/');
-        const base = path.split('/').pop();
+        const base = path.split('/').pop() || '';
         const ext = base.includes('.') ? base.slice(base.lastIndexOf('.')) : '';
         const name = base.replace(ext, '');
         return (dir ? dir + '/' : '') + prefix + name + ext;
@@ -70,7 +85,7 @@ const path = {
     // Modifica il nome del file aggiungendo un prefisso e/o un suffisso e opzionalmente cambiando l'estensione
     changeFilename: (path, { prefix = '', suffix = '', ext = null } = {}) => {
         const dir = path.split('/').slice(0, -1).join('/');
-        const base = path.split('/').pop();
+        const base = path.split('/').pop() || '';
         const currentExt = base.includes('.') ? base.slice(base.lastIndexOf('.')) : '';
         const name = base.replace(currentExt, '');
         //const newExt = ext === '' ? '' : ext.startsWith('.') ? ext : (ext ? '.' + ext : currentExt);
@@ -84,11 +99,11 @@ const path = {
     },
 
     // Divide il percorso in root, dir, base, ext, e name
-    parse: (path) => {
-        const ext = path.extname(path);
-        const base = path.basename(path);
-        const dir = path.dirname(path);
-        const root = path.startsWith('/') ? '/' : '';
+    parse: (inputPath) => {
+        const ext = path.extname(inputPath);
+        const base = path.basename(inputPath);
+        const dir = path.dirname(inputPath);
+        const root = inputPath.startsWith('/') ? '/' : '';
         const name = base.replace(ext, '');
 
         return {

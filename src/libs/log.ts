@@ -3,7 +3,13 @@ import {normalizeKey} from "./utils";
 import {getGlobalVars} from "../Global";
 
 
-const setLog = async (path, action, record, recordKey) => {
+
+const setLog = async (
+    path: string,
+    action: 'create' | 'update' | 'delete',
+    record: any,
+    recordKey: string
+): Promise<void> => {
     const when = new Date().toISOString();
     const user = getGlobalVars("user");
     const data = { user: user.email, when, action, record, recordKey };

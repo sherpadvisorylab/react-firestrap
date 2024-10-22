@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ES6",                          // Target ECMAScript version
+    "target": "ES2021",                       // Target ECMAScript version
     "module": "ESNext",                       // Module system
     "jsx": "react",                           // JSX support
     "strict": true,                           // Enable strict type-checking options

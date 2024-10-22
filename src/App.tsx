@@ -15,40 +15,77 @@ import initIntegration from "./integrations/init";
 import {fetchJson} from "./libs/fetch";
 import Alert from "./components/Alert";
 
-interface Config {
-    firebase: {
-        apiKey: string;
-        authDomain: string;
-        projectId: string;
-        storageBucket: string;
-        messagingSenderId: string;
-        appId: string;
-        measurementId: string
-    };
+type FirebaseConfig = {
+    apiKey: string;
+    authDomain: string;
+    projectId: string;
+    storageBucket: string;
+    messagingSenderId: string;
+    appId: string;
+    measurementId: string;
+};
+
+type GoogleOAuth2 = {
+    client_id: string;
+};
+
+type GoogleServiceAccount = {
+    type: string;
+    project_id: string;
+    private_key_id: string;
+    private_key: string;
+    client_email: string;
+    client_id: string;
+    auth_uri: string;
+    token_uri: string;
+    auth_provider_x509_cert_url: string;
+    client_x509_cert_url: string;
+} | null;
+
+type DropboxConfig = {
+    clientId: string;
+    rootPath: string;
+} | null;
+
+type AIConfig = {
+    geminiApiKey?: string;
+    chatGptApiKey?: string;
+} | null;
+
+type MenuConfig = {
+    [key: string]: {
+        title: string;
+        icon?: string;
+        path?: string;
+        page?: React.ComponentType;
+        layout?: React.ComponentType;
+    }[];
+};
+
+type Config = {
+    firebase: FirebaseConfig;
     google: {
-        oAuth2: { client_id: string };
-        serviceAccount?: {
-            type: string;
-            project_id: string;
-            private_key_id: string;
-            private_key: string;
-            client_email: string;
-            client_id: string;
-            auth_uri: string;
-            token_uri: string;
-            auth_provider_x509_cert_url: string;
-            client_x509_cert_url: string
-        } | null
+        oAuth2: GoogleOAuth2;
+        serviceAccount?: GoogleServiceAccount;
     };
-    dropbox?: {
-        clientId: string;
-        rootPath: string;
-    };
-    ai?: {
-        geminiApiKey?: string;
-        chatGptApiKey?: string;
-    };
-    multiTenantURI: string | null;
+    dropbox?: DropboxConfig;
+    ai?: AIConfig;
+    tenantsURI?: string;
+    proxyURI?: string;
+};
+
+type AppProps = {
+    importPage: (pagesPath: string) => Promise<{ default: React.ComponentType }>;
+    importTheme?: () => Promise<{ default: { theme: object } }> | null;
+    LayoutDefault?: React.ComponentType | null;
+    firebaseConfig: FirebaseConfig;
+    oAuth2: GoogleOAuth2;
+    serviceAccount?: GoogleServiceAccount;
+    dropBoxConfig?: DropboxConfig;
+    aiConfig?: AIConfig;
+    tenantsURI?: string;
+    proxyURI?: string;
+    menuConfig: MenuConfig;
 }
 
 let tenants = null;
@@ -57,65 +94,20 @@ let menu = {};
 
 function App({
                  importPage,
-                 importTheme = null,
-                 LayoutDefault = null,
+                 importTheme        = null,
+                 LayoutDefault      = null,
                  firebaseConfig,
                  oAuth2,
-                 serviceAccount = null,
-                 dropBoxConfig = null,
-                 aiConfig = null,
-                 multiTenantURI = null,
-                 menuConfig = {},
-}: {
-    importPage: (pagesPath: string) => Promise<{ default: React.ComponentType }>,
-    importTheme?: () => Promise<{ default: { theme: object } }> | null,
-    LayoutDefault?: React.ComponentType | null,
-    firebaseConfig: {
-        apiKey: string;
-        authDomain: string;
-        projectId: string;
-        storageBucket: string;
-        messagingSenderId: string;
-        appId: string;
-        measurementId: string
-    },
-    oAuth2: { client_id: string },
-    serviceAccount?: {
-        type: string;
-        project_id: string;
-        private_key_id: string;
-        private_key: string;
-        client_email: string;
-        client_id: string;
-        auth_uri: string;
-        token_uri: string;
-        auth_provider_x509_cert_url: string;
-        client_x509_cert_url: string
-    } | null,
-    dropBoxConfig?: {
-        clientId: string;
-        rootPath: string;
-    } | null,
-    aiConfig?: {
-        geminiApiKey?: string;
-        chatGptApiKey?: string;
-    } | null,
-    multiTenantURI?: string | null,
-    menuConfig: {
-        [key: string]: {
-            title: string;
-            icon?: string;
-            path?: string;
-            page?: React.ComponentType | null;
-            layout?: React.ComponentType | null;
-        }[]
-    }
-}) {
-    initTenant(firebaseConfig, oAuth2, serviceAccount, dropBoxConfig, aiConfig, multiTenantURI);
+                 serviceAccount     = null,
+                 dropBoxConfig      = null,
+                 aiConfig           = null,
+                 tenantsURI         = null,
+                 proxyURI           = null,
+                 menuConfig         = {},
+}: AppProps) {
+    initTenant(firebaseConfig, oAuth2, serviceAccount, dropBoxConfig, aiConfig, tenantsURI, proxyURI);
     initMenu(menuConfig);
-
     initIntegration(config);
-
 
     const LayoutEmpty = ({ children }) => <>{children}</>;
 
@@ -159,6 +151,7 @@ function App({
                 <ThemeProvider importTheme={importTheme}>
                     <Routes>
                         <Route path={AUTH_REDIRECT_URI} element={<Authorize />}></Route>
+                        <>
                         {renderRoutes({default: [{ path: "/" }], ...{
                             ...menu,
                             _auth: [{
@@ -167,6 +160,7 @@ function App({
                                 layout: LayoutDefault
                             }]
                         }})}
+                        </>
                     </Routes>
                 </ThemeProvider>
             </GlobalProvider>
@@ -174,9 +168,9 @@ function App({
     );
 }
 
-const initTenant = (firebaseConfig, oAuth2, serviceAccount, dropBoxConfig, aiConfig, multiTenantURI) => {
+const initTenant = (firebaseConfig, oAuth2, serviceAccount, dropBoxConfig, aiConfig, tenantsURI, proxyURI) => {
     const setTenant = () => {
-        const tenant = {firebaseConfig, oAuth2, serviceAccount, dropBoxConfig, aiConfig, multiTenantURI};
+        const tenant = {firebaseConfig, oAuth2, serviceAccount, dropBoxConfig, aiConfig, tenantsURI, proxyURI};
         localStorage.setItem("tenant", JSON.stringify(tenant));
         return tenant;
     }
@@ -189,6 +183,7 @@ const initMenu = (menuConfig) => {
 
 export const useTenants = (setTenants) => {
     const clickTenant = (tenant, index = null) => {
+        //todo probabilmente sbagliato. da gestire il cambio del config eccS
         initIntegration(tenant);
 
         if (tenants && index !== null) {
@@ -200,10 +195,10 @@ export const useTenants = (setTenants) => {
         console.log("change project", tenant);
     }
 
-    if(!config.multiTenantURI) return;
+    if(!config?.tenantsURI) return;
 
     if(!tenants) {
-        fetchJson(config.multiTenantURI).then(response => {
+        fetchJson(config.tenantsURI).then(response => {
             tenants = response
                 .filter(tenant => tenant.title)
                 .map((tenant, index) => ({
@@ -214,7 +209,7 @@ export const useTenants = (setTenants) => {
                     })
                 );
         }).catch(error => {
-            console.error('Error: Tenants not found ' + config.multiTenantURI, error);
+            console.error('Error: Tenants not found ' + config?.tenantsURI, error);
             tenants = [];
         }).finally(() => {
             setTenants(tenants);
@@ -245,6 +240,10 @@ export const useMenu = (type) => {
             active: index === activeId,
             onClick: () => setActiveId(index)
         }));
+}
+
+export const configProvider = () => {
+    return config;
 }
 
 export default App;

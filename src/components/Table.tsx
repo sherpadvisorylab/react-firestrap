@@ -2,20 +2,15 @@ import React from 'react';
 import {useTheme} from "../Theme";
 import {Wrapper} from "./GridSystem";
 
-function Table({
-                   header,
-                   body,
-                   Footer = null,
-                   onClick = null,
-                   wrapClass = null,
-                   scrollClass = null,
-                   tableClass = null,
-                   headerClass = null,
-                   bodyClass = null,
-                   footerClass = null,
-                   selectedClass=null
-} : {
-    header: { key: string, label: string, className?: string, sort?: boolean }[],
+export type TableHeaderProp = {
+    key: string,
+    label: string,
+    className?: string,
+    sort?: boolean
+};
+
+type TableProps = {
+    header: TableHeaderProp[],
     body: { key: string, [key: string]: any }[],
     Footer?: string | React.ReactNode,
     onClick?: (key: string) => void,
@@ -26,7 +21,21 @@ function Table({
     bodyClass?: string,
     footerClass?: string,
     selectedClass?: string
-}) {
+};
+
+function Table({
+                   header,
+                   body,
+                   Footer           = null,
+                   onClick          = null,
+                   wrapClass        = "",
+                   scrollClass      = "",
+                   tableClass       = "",
+                   headerClass      = "",
+                   bodyClass        = "",
+                   footerClass      = "",
+                   selectedClass    = ""
+} : TableProps) {
     const theme = useTheme();
     selectedClass = selectedClass || theme.Table.selectedClass;
 
@@ -37,7 +46,7 @@ function Table({
     }
 
     // Estrai le chiavi dal primo oggetto nell'array per creare le intestazioni della tabella
-    const headers = (header || Object.keys(body[0]));
+    const headers = (header || Object.keys(body[0]).map(key => ({ key, label: key })));
     const handleClick = (key, e) => {
         let currentElement = e.target;
 
@@ -56,7 +65,7 @@ function Table({
             currentElement.classList.add(selectedClass);
         }
 
-        onClick(key);
+        onClick && onClick(key);
     }
 
     const getField = (item, key) => {
@@ -74,17 +83,17 @@ function Table({
                     <table className={"table " + (tableClass || theme.Table.tableClass)}>
                         <thead className={headerClass || theme.Table.headerClass}>
                         <tr>
-                            {headers.map((header) => (
-                                header.label ? (
-                                    <th key={header.key} className={header.className}>
+                            {headers.map((hdr) => (
+                                hdr.label ? (
+                                    <th key={hdr.key} className={hdr.className}>
                                         <div
                                             className={
-                                                "th-inner" + (header.sort ? "pe-5 sortable both" : "")
+                                                "th-inner" + (hdr.sort ? "pe-5 sortable both" : "")
                                             }
-                                        >{header.label}</div>
+                                        >{hdr.label}</div>
                                     </th>
                                 ) : (
-                                    <th key={header.key} style={{ width: '1%', whiteSpace: 'nowrap' }}></th>
+                                    <th key={hdr.key} style={{ width: '1%', whiteSpace: 'nowrap' }}></th>
                                 )
                             ))}
                         </tr>
@@ -98,8 +107,8 @@ function Table({
                                         onClick && handleClick(item.key, e);
                                     }}
                                 >
-                                    {headers.map((header) => (
-                                        <td key={header.key}>{getField(item, header.key)}</td>
+                                    {headers.map((hdr) => (
+                                        <td key={hdr.key}>{getField(item, hdr.key)}</td>
                                     ))}
                                 </tr>
                             ))}

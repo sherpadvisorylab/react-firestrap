@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { fetchJson } from "./libs/fetch";
+import {fetchJson, fetchRest} from "./libs/fetch";
 import {ActionButton} from "./components/Buttons";
 import {IButton} from "./components/Buttons";
 import {getGlobalVars, setGlobalVars, useGlobalVars} from "./Global";
@@ -99,18 +99,18 @@ const Authorize = () => {
         const { authServer, clientID, codeVerifier } = authChallenge || {};
 
         if (code && codeVerifier) {
-            fetchJson(`https://${authServer}/token`, {
+            fetchRest(`https://${authServer}/token`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
                 },
-                body: new URLSearchParams({
+                body: {
                     grant_type: 'authorization_code',
                     client_id: clientID,
                     code: code,
                     redirect_uri: `${window.location.origin}${AUTH_REDIRECT_URI}`,
                     code_verifier: codeVerifier
-                })
+                }
             })
                 .then((authResponse: IAuthResponse) => {
                     setAuths(authServer, clientID, authResponse);
@@ -125,16 +125,16 @@ const Authorize = () => {
 };
 
 const refreshAccessToken = (authServer: string, clientID: string, refresh_token: string): Promise<string | null> => {
-    return fetchJson(`https://${authServer}/token`, {
+    return fetchRest(`https://${authServer}/token`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
         },
-        body: new URLSearchParams({
+        body: {
             grant_type: 'refresh_token',
             client_id: clientID,
             refresh_token: refresh_token
-        })
+        }
     })
         .then((authResponse: IAuthResponse) => {
             setAuths(authServer, clientID, authResponse);

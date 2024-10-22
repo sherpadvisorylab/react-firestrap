@@ -2,14 +2,29 @@ import React from 'react';
 import {Link, useLocation} from "react-router-dom";
 import {trimSlash} from "../libs/utils";
 
-export const Breadcrumbs = ({path, pClass = "", pre = null}) => {
+type Breadcrumb = {
+    label: string;
+    url: string;
+};
+
+type BreadcrumbsProps = {
+    path?: string | null;
+    pre?: React.ReactNode | null;
+    className?: string;
+};
+
+export const Breadcrumbs = ({
+                                path,
+                                pre         = null,
+                                className   = ""
+}: BreadcrumbsProps) => {
     const location = useLocation();
     const pathname = trimSlash(path || location.pathname);
 
     const tokens = pathname.split('/');
     const current = tokens.pop();
 
-    let breadcrumbs = [];
+    let breadcrumbs: Breadcrumb[] = [];
     let tokenPath = '';
     for(const token of tokens) {
         tokenPath += `/${token}`;
@@ -20,7 +35,7 @@ export const Breadcrumbs = ({path, pClass = "", pre = null}) => {
     }
 
     return (breadcrumbs.length || pre) && pathname ? (
-        <ol className={`breadcrumb ${pClass}`}>
+        <ol className={`breadcrumb ${className}`}>
             {pre && <li className="breadcrumb-item">{pre}</li>}
             {breadcrumbs.map((breadcrumb, index) => (
             <li className="breadcrumb-item" key={index}>

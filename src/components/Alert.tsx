@@ -1,11 +1,19 @@
 import React from 'react';
 import {useTheme} from '../Theme';
 
-const Alert = ({children, type="info", icon = null, className = ""} : {
-    children: any,
-    type?: "info" | "success" | "warning" | "danger" | "primary" | "secondary" | "light" | "dark",
-    className?: string
-} = {}) => {
+type AlertProps = {
+    children: string | React.ReactNode;
+    type?: "info" | "success" | "warning" | "danger" | "primary" | "secondary" | "light" | "dark";
+    icon?: string | boolean;
+    className?: string;
+};
+
+const Alert = ({
+                   children,
+                   type         = "info",
+                   icon         = true,
+                   className    = ""
+}: AlertProps) => {
     const theme = useTheme("alert");
 
     const ICONS = {
@@ -18,7 +26,7 @@ const Alert = ({children, type="info", icon = null, className = ""} : {
         light: "",
         dark: ""
     };
-    if (icon === null) {
+    if (icon === true) {
         icon = ICONS[type];
     }
     return (

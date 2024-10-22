@@ -1,6 +1,7 @@
 import {converter} from "./converter";
+import {configProvider} from "../App";
 
-export const decodeJWT = (token) => {
+export const decodeJWT = (token: string): any => {
     try {
         // Divide il token nelle sue parti: header, payload, firma
         const payloadEncoded = token.split('.');
@@ -14,7 +15,7 @@ export const decodeJWT = (token) => {
         console.error('Errore durante la decodifica del token:', error);
     }
 };
-export const copyToClipboard = (text) => {
+export const copyToClipboard = (text: string): void => {
     try {
         // Copia il selettore direttamente negli appunti
         navigator.clipboard.writeText(text)
@@ -29,13 +30,14 @@ export const copyToClipboard = (text) => {
     }
 };
 
-export const trimPath = (path) => {
+export const trimPath = (path?: string): string => {
     return normalizePath(path)
         .replace(/\/$/, "")
         .replace(/^\//, "");
 };
 
-export const normalizePath = (path) => {
+export const normalizePath = (path?: string): string => {
+    if(!path) return '';
     return path
         .replaceAll(" ", "-")
         .replaceAll("'", "-")
@@ -46,15 +48,16 @@ export const normalizePath = (path) => {
         .replace(/\/+/g, "/");
 };
 
-export const trimSlash = (path) => {
+export const trimSlash = (path?: string): string => {
+    if(!path) return '';
     return (path && path.startsWith('/')
             ? path.substring(1)
             : path
     );
 };
 
-export const normalizeKey = (key) => {
-    if(!key) return null;
+export const normalizeKey = (key?: string): string => {
+    if(!key) return '';
 
     return trimSlash(key)
         .trim()
@@ -75,11 +78,9 @@ export const normalizeKey = (key) => {
 
 
 
-export const dirname = (path) => {
+export const dirname = (path: string): string => {
     // Controlla se il path è una stringa vuota
-    if (!path) {
-        return "";
-    }
+    if (!path) return '';
 
     // Rimuovi lo slash finale se presente
     path = path.replace(/\/$/, "");
@@ -94,59 +95,69 @@ export const dirname = (path) => {
     return segments.join("/");
 };
 
-export async function sleep(ms){
+export async function sleep(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-export function proxy(url, format = 'json') {
+export function proxy(url: string, format: string = 'json'): string {
+    const config = configProvider();
     return (
-        process.env.REACT_APP_PROXY_API
-            ? process.env.REACT_APP_PROXY_API + encodeURIComponent(url) + "&f=" + format
+        config?.proxyURI
+            ? config.proxyURI + encodeURIComponent(url) + "&f=" + format
             : url
     );
 }
 
-export function generateUniqueId(name) {
+export function generateUniqueId(name = null) {
     const timestamp = Date.now().toString(36); // Converti il timestamp in base 36
     const randomStr = name || Math.random().toString(36).substring(2); // Genera una stringa casuale
 
     return `${timestamp}-${randomStr}`;
 }
 
-export function eventClosest(e, tagName) {
+export function eventClosest(e: Event, tagName: string): HTMLElement | null {
     // Se il target è già un elemento con il tag desiderato, restituisci il target stesso
-    if (e.target.tagName.toLowerCase() === tagName.toLowerCase()) {
-        return e.target;
+
+    let currentElement =  e.target as HTMLElement;
+    if (currentElement.tagName.toLowerCase() === tagName.toLowerCase()) {
+        return currentElement;
     }
 
     // Risali fino a trovare il primo elemento con il tag desiderato
-    let currentElement = e.target;
-
     while (currentElement.parentNode) {
-        if (currentElement.parentNode.tagName.toLowerCase() === tagName.toLowerCase()) {
+        const parentElement = currentElement.parentNode as HTMLElement;
+        if (parentElement.tagName.toLowerCase() === tagName.toLowerCase()) {
             // Trovato un elemento con il tag desiderato nel cammino verso l'alto
-            return currentElement.parentNode;
+            return parentElement;
         }
-        currentElement = currentElement.parentNode;
+        currentElement = parentElement;
     }
 
     // Se non hai trovato un elemento con il tag desiderato, restituisci null
     return null;
 }
 
-export const substrCount = (str, sub) => {
+
+export const substrCount = (str: string, sub: string): number => {
     return str.split(sub).length - 1;
 };
 
-
-export const replacePlaceholders = (pattern, arrPath) => {
-    return pattern.replace(/\$(\d+)/g, (match, placeholderIndex) => {
+export const replacePlaceholders = (
+    pattern: string,
+    arrPath: string[]
+): string => {
+    return pattern.replace(/\$(\d+)/g, (match: string, placeholderIndex: string) => {
         const index = parseInt(placeholderIndex);
         return arrPath[index] || "";
     }).trim();
 }
 
-export const checkConditions = (conds, metaObject, tokens) => {
+
+export const checkConditions = (
+    conds: Array<{ key: string; value: string; operator: string }>,
+    metaObject: { [key: string]: string | undefined },
+    tokens: string[]
+): boolean => {
     for (const cond of conds) {
         const key = normalizePath(replaceVariables(cond.key, metaObject));
         const value = normalizePath(replacePlaceholders(replaceVariables(cond.value, metaObject), tokens));
@@ -165,8 +176,8 @@ export const checkConditions = (conds, metaObject, tokens) => {
     return false;
 }
 
-export const crc32 = (str) => {
-    const crcTable = [];
+export const crc32 = (str: string) => {
+    const crcTable: number[] = [];
     for (let i = 0; i < 256; i++) {
         let c = i;
         for (let j = 0; j < 8; j++) {
@@ -188,8 +199,8 @@ export const crc32 = (str) => {
     return (crc ^ (-1)) >>> 0;
 }
 
-export const ucfirst = (str) => {
-    if (!str) return str;
+export const ucfirst = (str?: string): string => {
+    if (!str) return '';
     return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
@@ -217,41 +228,52 @@ export const loadScripts = (scriptData: Array<{ src: string; [key: string]: any 
     document.body.appendChild(scriptFragment);
 }
 
-export const intersectObjects = (obj1, obj2) => {
-    const result = {};
+export const intersectObjects = (
+    obj1: { [key: string]: any },
+    obj2: { [key: string]: any }
+): { [key: string]: any } => {
+    const result: { [key: string]: any } = {};
+
     for (const key in obj1) {
         if (obj1.hasOwnProperty(key) && key in obj2) {
             result[key] = obj1[key];
         }
     }
+
     return result;
 }
 
-
-
-export const replaceVariables = (pattern, metaObject) => {
-    // Estrae tutte le variabili delimitate da {}
+export const replaceVariables = (
+    pattern: string,
+    metaObject: { [key: string]: string | undefined }
+): string => {
     const matches = pattern.match(/{[^}]*}/g) || [];
 
-    // Per ogni variabile estratta, fa il replace con il valore corrispondente trovato in metaObject
     matches.forEach(match => {
-        const key = match.slice(1, -1).split(":"); // Rimuove le parentesi graffe dalla chiave
-        const value = (key.length > 1 && converter?.[key[1]]
-                ? converter[key[1]](metaObject[key[0]] || '')
-                : metaObject[key[0]] || ''
-        ); // Ottiene il valore dalla chiave dell'oggetto metaObject, impostando il valore a vuoto se non trovato
-        pattern = pattern.replaceAll(match, value); // Sostituisce la variabile con il valore trovato
+        const key = match.slice(1, -1).split(":");
+        const varName = key[0]; // Nome della variabile
+        const funcName = key[1]; // Nome della funzione
+
+        // Controlla se funcName è una funzione nel converter
+        const value = (funcName && typeof converter[funcName] === 'function'
+            ? converter[funcName](metaObject[varName])
+            : metaObject[varName]
+        )  || '';
+
+        pattern = pattern.replaceAll(match, value);
     });
 
     return pattern;
-}
+};
 
-export const arrayUnique = (array, key = null) => {
+
+
+export const arrayUnique = <T>(array: T[], key?: keyof T): T[] => {
     if (!key) {
         return [...new Set(array)];
     } else {
         const seen = new Set();
-        return array.filter(item => {
+        return array.filter((item: T) => {
             const value = item[key];
             if (!seen.has(value)) {
                 seen.add(value);
@@ -260,4 +282,5 @@ export const arrayUnique = (array, key = null) => {
             return false;
         });
     }
-}
+};
+

@@ -3,31 +3,33 @@ import {useTheme} from "../Theme";
 import {Wrapper} from "./GridSystem";
 import Loader from "./Loader";
 
+type CardProps = {
+    children: React.ReactNode;
+    title?: string;
+    header?: string | React.ReactNode;
+    footer?: string | React.ReactNode;
+    cardClass?: string;
+    headerClass?: string;
+    bodyClass?: string;
+    footerClass?: string;
+    wrapClass?: string;
+    showLoader?: boolean;
+    showArrow?: boolean;
+};
+
 const Card = ({
-                children,
-                title = null,
-                header = null,
-                footer = null,
-                cardClass = null,
-                headerClass = null,
-                bodyClass= null,
-                footerClass = null,
-                wrapClass = null,
-                showLoader = null,
-                showArrow = null
-}: {
-    children: any,
-    title?: string,
-    header?: any,
-    footer?: any,
-    cardClass?: string,
-    headerClass?: string,
-    bodyClass?: string,
-    footerClass?: string,
-    wrapClass?: string,
-    showLoader?: boolean,
-    showArrow?: boolean
-}) => {
+                  children,
+                  title         = "",
+                  header        = null,
+                  footer        = null,
+                  showLoader    = null,
+                  showArrow     = null,
+                  wrapClass     = "",
+                  cardClass     = "",
+                  headerClass   = "",
+                  bodyClass     = "",
+                  footerClass   = ""
+}: CardProps) => {
   const theme = useTheme();
 
   return (

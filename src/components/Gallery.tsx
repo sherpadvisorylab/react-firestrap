@@ -1,61 +1,72 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {useTheme} from "../Theme";
 import Carousel from "./Carousel";
 import {Wrapper} from "./GridSystem";
 import {converter} from "../libs/converter";
 
-function Gallery({
+type GalleryProps = {
+    body: React.ReactNode[];
+    Header?: string | React.ReactNode;
+    Footer?: string | React.ReactNode;
+    itemTopLeft?: string | React.ReactNode;
+    itemTopRight?: string | React.ReactNode;
+    itemBottomLeft?: string | React.ReactNode;
+    itemBottomRight?: string | React.ReactNode;
+    itemMiddleLeft?: string | React.ReactNode;
+    itemMiddleRight?: string | React.ReactNode;
+    onClick?: (key: string) => void;
+    gutterSize?: 0 | 1 | 2 | 3 | 4 | 5;
+    rowCols?: 1 | 2 | 3 | 4 | 6;
+    groupBy?: string | string[];
+    wrapClass?: string;
+    scrollClass?: string;
+    headerClass?: string;
+    bodyClass?: string;
+    footerClass?: string;
+    selectedClass?: string;
+};
+
+const Gallery = ({
                    body,
-                   Header = null,
-                   Footer = null,
-                   itemTopLeft = null,
-                   itemTopRight = null,
-                   itemBottomLeft = null,
-                   itemBottomRight = null,
-                   itemMiddleLeft = null,
-                   itemMiddleRight = null,
-                   onClick = null,
-                   wrapClass = null,
-                   scrollClass = null,
-                   headerClass = null,
-                   bodyClass = null,
-                   footerClass = null,
-                   selectedClass = null,
-                   gutterSize = null,
-                   rowCols = null,
-                   groupBy = null,
-               } : {
-    body: React.HTMLAttributes<HTMLImageElement>[],
-    Header?: string | React.ReactNode,
-    Footer?: string | React.ReactNode,
-    itemTopLeft?: string | React.ReactNode,
-    itemTopRight?: string | React.ReactNode,
-    itemBottomLeft?: string | React.ReactNode,
-    itemBottomRight?: string | React.ReactNode,
-    itemMiddleLeft?: string | React.ReactNode,
-    itemMiddleRight?: string | React.ReactNode,
-    onClick?: (key: string) => void,
-    wrapClass?: string,
-    scrollClass?: string,
-    tableClass?: string,
-    headerClass?: string,
-    bodyClass?: string,
-    footerClass?: string,
-    selectedClass?: string,
-    gutterSize?: [ 0 | 1 | 2 | 3 | 4 | 5 ],
-    rowCols?: [ 1 | 2 | 3 | 4 | 6 ],
-    groupBy: string
-}) {
-    const theme = useTheme();
-    selectedClass = selectedClass || theme.Gallery.selectedClass;
-    gutterSize = gutterSize || theme.Gallery.gutterSize;
-    rowCols = rowCols || theme.Gallery.rowCols;
+                   Header           = null,
+                   Footer           = null,
+                   itemTopLeft      = null,
+                   itemTopRight     = null,
+                   itemBottomLeft   = null,
+                   itemBottomRight  = null,
+                   itemMiddleLeft   = null,
+                   itemMiddleRight  = null,
+                   onClick          = null,
+                   gutterSize       = null,
+                   rowCols          = null,
+                   groupBy          = null,
+                   wrapClass        = "",
+                   scrollClass      = "",
+                   headerClass      = "",
+                   bodyClass        = "",
+                   footerClass      = "",
+                   selectedClass    = ""
+}: GalleryProps) => {
+    const theme     = useTheme();
+    selectedClass   = selectedClass || theme.Gallery.selectedClass;
+    gutterSize      = gutterSize || theme.Gallery.gutterSize;
+    rowCols         = rowCols || theme.Gallery.rowCols;
 
     if (!Array.isArray(body)) {
         return <p className={"p-4"}><i className={"spinner-border spinner-border-sm"}></i> Caricamento in corso...</p>;
     } else if (body.length === 0) {
         return <p className={"p-4"}>Nessun dato trovato</p>;
     }
+
+    const [Body, setBody] = useState<React.ReactNode[]>([]);
+
+    useEffect(() => {
+        const updatedBody = groupBy
+            ? getGroups(body, groupBy)
+            : body.map((item) => getImage(item));
+
+        setBody(updatedBody);
+    }, [groupBy, body]);
 
     const handleClick = (images, e) => {
         if (selectedClass) {
@@ -70,14 +81,14 @@ function Gallery({
 
             if (!currentElement.classList.contains(selectedClass)) {
                 Array.from(currentElement.parentNode.children).forEach(row => {
-                    row.classList.remove(selectedClass);
+                    row.classList.remove(selectedClass as string);
                 });
 
                 currentElement.classList.add(selectedClass);
             }
         }
 
-        onClick(images[0].key);
+        onClick && onClick(images[0].key);
     }
 
     const getImage = ((item) => React.isValidElement(item.img)
@@ -107,11 +118,11 @@ function Gallery({
         />
     );
 
-    const getGroups = (body: { key: string, [key: string]: any }[], seps: string | string[]) : React.ReactNode[] => {
-        const groups = Object.values(body.reduce((acc, item) => {
+    const getGroups = (body: React.ReactNode[], seps: string | string[]) : React.ReactNode[] => {
+        const groups = Object.values(body.reduce<{ [key: string]: React.ReactNode[] }>((acc, item) => {
             const imgElement = getImage(item);
-            const alt = imgElement.props.alt || "";
-            const src = imgElement.props.src || "";
+            const alt = (imgElement.props.alt || "") as string;
+            const src = (imgElement.props.src || "") as string;
             if(!alt || !src) return acc;
 
             const [leftPart] = converter.splitFirst(alt.toUpperCase(), seps, /^\d/g);
@@ -129,11 +140,6 @@ function Gallery({
             >{Images}</Carousel>
         ));
     }
-
-    const Body = (groupBy
-        ? getGroups(body, groupBy)
-        : body.map((item) => getImage(item))
-    );
 
     return (
         <Wrapper className={wrapClass || theme.Gallery.wrapClass}>

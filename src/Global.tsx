@@ -59,8 +59,12 @@ export const useGlobalVars = (namespace = null) => {
         : [globalVars, setGlobalVars, removeGlobalVars];
 };
 
+type GlobalVars = {
+    [key: string]: any;
+};
+
 // Funzione per ottenere variabili globali dal localStorage
-export const getGlobalVars = (namespace = null) => {
+export const getGlobalVars = (namespace: string | null = null): GlobalVars => {
     const globalVars = getStoredGlobalVars();
     return namespace ? globalVars[namespace] || {} : globalVars;
 };

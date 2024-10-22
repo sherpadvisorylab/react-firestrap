@@ -1,25 +1,81 @@
-import React from 'react';
+import React, {ChangeEvent} from 'react';
 import {generateUniqueId} from "../libs/utils";
 import {Wrapper} from "./GridSystem";
 
-export const Input = ({
-                          name,
-                          value,
-                          placeholder,
-                          label,
-                          type = "text",
-                          required = false,
-                          updatable = true,
-                          disabled = false,
-                          onChange,
-                          pre,
-                          post,
-                          feedback,
-                          min,
-                          max,
-                          wrapClass,
-                          inputClass
-                      }) => {
+interface InputProps {
+    name: string;
+    value?: string | number | null;
+    placeholder?: string | null;
+    label?: string | null;
+    type?: string;
+    required?: boolean;
+    updatable?: boolean;
+    disabled?: boolean;
+    onChange?: (event: ChangeEvent<HTMLInputElement>) => void;
+    pre?: React.ReactNode;
+    post?: React.ReactNode;
+    feedback?: string | null;
+    min?: number | null;
+    max?: number | null;
+    wrapClass?: string | null;
+    inputClass?: string | null;
+}
+
+type TypedInputProps = Omit<InputProps, 'type'>;
+
+interface CheckboxProps {
+    name: string;
+    value?: boolean;
+    onChange?: (event: ChangeEvent<HTMLInputElement>) => void;
+    label?: string;
+    required?: boolean;
+    valueChecked?: string;
+    checkboxClass?: string;
+    wrapClass?: string;
+}
+
+interface LabelProps {
+    label: string;
+    required?: boolean;
+    htmlFor?: string;
+    className?: string;
+}
+
+interface TextAreaProps {
+    name: string;
+    value?: string;
+    placeholder?: string;
+    label?: string;
+    required?: boolean;
+    updatable?: boolean;
+    disabled?: boolean;
+    rows?: number;
+    onChange?: (event: ChangeEvent<HTMLTextAreaElement>) => void;
+    pre?: React.ReactNode;
+    post?: React.ReactNode;
+    feedback?: string;
+    className?: string;
+    wrapClass?: string;
+}
+
+export const Input: React.FC<InputProps> = ({
+                                                name,
+                                                value = null,
+                                                placeholder = null,
+                                                label = null,
+                                                type = "text",
+                                                required = false,
+                                                updatable = true,
+                                                disabled = false,
+                                                onChange = null,
+                                                pre = null,
+                                                post = null,
+                                                feedback = null,
+                                                min = null,
+                                                max = null,
+                                                wrapClass = null,
+                                                inputClass = null
+                                            }) => {
     return (
         <Wrapper className={wrapClass}>
             {label && <Label label={label} required={required} />}
@@ -31,7 +87,7 @@ export const Input = ({
                     className={`form-control${inputClass ? " " + inputClass : ""}`}
                     placeholder={placeholder}
                     required={required}
-                    disabled={disabled || (!updatable && value)}
+                    disabled={disabled || (!updatable && value !== null)}
                     defaultValue={value}
                     onChange={onChange}
                     min={min}
@@ -44,242 +100,45 @@ export const Input = ({
     );
 };
 
-export const Number = ({
-                           name,
-                           value,
-                           placeholder,
-                           label,
-                           required,
-                           updatable,
-                           disabled,
-                           onChange,
-                           pre,
-                           post,
-                           feedback,
-                           min,
-                           max,
-                           wrapClass,
-                           inputClass
-                       }) => {
-    return (
-            <Input
-                name={name}
-                value={value}
-                placeholder={placeholder}
-                label={label}
-                required={required}
-                updatable={updatable}
-                disabled={disabled}
-                onChange={onChange}
-                pre={pre}
-                post={post}
-                feedback={feedback}
-                type="number"
-                min={min}
-                max={max}
-                inputClass={inputClass}
-                wrapClass={wrapClass}
-            />
-    );
-}
+export const Number: React.FC<TypedInputProps> = (props) => (
+    <Input {...props} type="number" />
+);
 
-export const String = ({
-                           name,
-                           value,
-                           placeholder,
-                           label,
-                           required,
-                           updatable,
-                           disabled,
-                           onChange,
-                           pre,
-                           post,
-                           feedback,
-                           inputClass,
-                           wrapClass
-}) => {
-    return (
-        <Input
-            name={name}
-            value={value}
-            placeholder={placeholder}
-            label={label}
-            required={required}
-            updatable={updatable}
-            disabled={disabled}
-            onChange={onChange}
-            pre={pre}
-            post={post}
-            feedback={feedback}
-            inputClass={inputClass}
-            wrapClass={wrapClass}
-        />
-    );
-};
+export const String: React.FC<TypedInputProps> = (props) => (
+    <Input {...props} type="text" />
+);
 
-export const Email = ({
-                          name,
-                          value,
-                          placeholder,
-                          label,
-                          required,
-                          updatable,
-                          disabled,
-                          onChange,
-                          pre,
-                          post,
-                          feedback,
-                          wrapClass,
-                          inputClass
-                      }) => {
-    return (
-        <Input
-            name={name}
-            value={value}
-            placeholder={placeholder}
-            label={label}
-            required={required}
-            updatable={updatable}
-            disabled={disabled}
-            onChange={onChange}
-            pre={pre}
-            post={post}
-            feedback={feedback}
-            type={"email"}
-            wrapClass={wrapClass}
-            inputClass={inputClass}
-        />
-    );
-};
+export const Email: React.FC<TypedInputProps> = (props) => (
+    <Input {...props} type="email" />
+);
 
-export const Date = ({
-                         name,
-                         value,
-                         placeholder,
-                         label,
-                         required,
-                         updatable,
-                         disabled,
-                         onChange,
-                         pre,
-                         post,
-                         feedback,
-                         wrapClass,
-                         inputClass
-                     }) => {
-    return (
-        <Input
-            name={name}
-            value={value}
-            placeholder={placeholder}
-            label={label}
-            required={required}
-            updatable={updatable}
-            disabled={disabled}
-            onChange={onChange}
-            pre={pre}
-            post={post}
-            feedback={feedback}
-            type={"date"}
-            wrapClass={wrapClass}
-            inputClass={inputClass}
-        />
-    );
-};
+export const Date: React.FC<TypedInputProps> = (props) => (
+    <Input {...props} type="date" />
+);
 
-export const Time = ({
-                         name,
-                         value,
-                         placeholder,
-                         label,
-                         required,
-                         updatable,
-                         disabled,
-                         onChange,
-                         pre,
-                         post,
-                         feedback,
-                         wrapClass,
-                         inputClass
-                     }) => {
-    return (
-        <Input
-            name={name}
-            value={value}
-            placeholder={placeholder}
-            label={label}
-            required={required}
-            updatable={updatable}
-            disabled={disabled}
-            onChange={onChange}
-            pre={pre}
-            post={post}
-            feedback={feedback}
-            type={"time"}
-            wrapClass={wrapClass}
-            inputClass={inputClass}
-        />
-    );
-};
+export const Time: React.FC<TypedInputProps> = (props) => (
+    <Input {...props} type="time" />
+);
 
-export const DateTime = ({
-                             name,
-                             value,
-                             placeholder,
-                             label,
-                             required,
-                             updatable,
-                             disabled,
-                             onChange,
-                             pre,
-                             post,
-                             feedback,
-                             wrapClass,
-                             inputClass
-                         }) => {
-    return (
-        <Input
-            name={name}
-            value={value}
-            placeholder={placeholder}
-            label={label}
-            required={required}
-            updatable={updatable}
-            disabled={disabled}
-            onChange={onChange}
-            pre={pre}
-            post={post}
-            feedback={feedback}
-            type={"datetime-local"}
-            wrapClass={wrapClass}
-            inputClass={inputClass}
-        />
-    );
-};
-export const Checkbox = ({
-                             name,
-                             value = null,
-                             onChange = () => {},
-                             label = null,
-                             required = null,
-                             valueChecked="on",
-                             checkboxClass = "",
-                             wrapClass = ""
-} : {
-    name: string,
-    value?: string,
-    onChange?: any,
-    label?: string,
-    required?: boolean,
-    valueChecked?: string,
-    checkboxClass?: string,
-    wrapClass?: string
-}) => {
+export const DateTime: React.FC<TypedInputProps> = (props) => (
+    <Input {...props} type="datetime-local" />
+);
+
+export const Checkbox: React.FC<CheckboxProps> = ({
+                                                      name,
+                                                      value = false,
+                                                      onChange = null,
+                                                      label = null,
+                                                      required = false,
+                                                      valueChecked = "on",
+                                                      checkboxClass = null,
+                                                      wrapClass = null
+                                                  }) => {
     const key = name || label;
     const handleCheckboxChange = (event) => {
         event.target.value = event.target.checked ? valueChecked : ""
 
-        onChange(event);
+        onChange && onChange(event);
     };
     if (!wrapClass && label) {
        wrapClass = "checkbox"
@@ -302,30 +161,35 @@ export const Checkbox = ({
     );
 };
 
-export const Label = ({ htmlFor, label, required, pClass}) => {
+export const Label: React.FC<LabelProps> = ({
+                                                label,
+                                                required = false,
+                                                htmlFor = null,
+                                                className = null
+}) => {
   return (
-    <label htmlFor={htmlFor} className={`form-label${pClass ? " " + pClass : ""}`}>
+    <label htmlFor={htmlFor} className={`form-label${className ? " " + className : ""}`}>
       {label} {required && <span className="text-danger">*</span>}
     </label>
   );
 };
 
-export const TextArea = ({
-                             name,
-                             value,
-                             placeholder,
-                             label,
-                             required = false,
-                             updatable = true,
-                             disabled = false,
-                             rows,
-                             onChange,
-                             pClass,
-                             pre,
-                             post,
-                             feedback,
-                             useRef = {},
-                             wrapClass
+export const TextArea: React.FC<TextAreaProps> = ({
+                                                      name,
+                                                      value = null,
+                                                      placeholder = null,
+                                                      label = null,
+                                                      required = false,
+                                                      updatable = true,
+                                                      disabled = false,
+                                                      rows = 4,
+                                                      onChange = null,
+                                                      useRef = {},
+                                                      pre = null,
+                                                      post = null,
+                                                      feedback = null,
+                                                      className = null,
+                                                      wrapClass = null
                          }) => {
   return (
       <Wrapper className={wrapClass}>
@@ -334,9 +198,9 @@ export const TextArea = ({
               {pre && <span className="input-group-text">{pre}</span>}
               <textarea
                   name={name}
-                  className={`form-control${pClass ? " " + pClass : ""}`}
+                  className={`form-control${className ? " " + className : ""}`}
                   ref={(button) => (useRef = button)}
-                  rows={rows || 4}
+                  rows={rows}
                   placeholder={placeholder}
                   required={required}
                   disabled={disabled || (!updatable && value)}
@@ -386,7 +250,7 @@ export const SwitchInput = ({ label, status, handleClick, pClass }) => {
 };
 
 export const ListGroup = ({items, active, onClick, pClass = "", indexLoading}) => {
-    const iLoder = parseInt(indexLoading || -1);
+    const iLoder = parseInt(indexLoading || "-1");
     return (
         <div className={`list-group${pClass ? " " + pClass : ""}`}>
             {items.map((item, index) => (
