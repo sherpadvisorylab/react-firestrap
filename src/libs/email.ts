@@ -11,7 +11,6 @@ function populateTemplate(message, variables) {
 }
 const getTo = (recipient) => {
     console.log("email Sent to: ", Array.isArray(recipient) ? recipient : [recipient.email]);
-    return ["wolfgan@gmail.com"]; //todo:da togliere
 
     return Array.isArray(recipient) ? recipient : [recipient.email];
 }

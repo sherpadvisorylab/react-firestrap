@@ -113,7 +113,7 @@ export const converter: Converter = <Converter>{
             return pre + converter[func](values[key], format) + post;
         });
 
-        return replacer(parse);
+        return splitter(replacer(parse));
     },
     toDate: (date, format = null) => {
         const defaultFormat = getDefaultDateFormat();
@@ -221,5 +221,11 @@ export const converter: Converter = <Converter>{
 function replacer(pattern) {
     return pattern.replace(/replace\(([^,]+),([^,]+),([^)]+)\)/gi, (_, key, from, to) => {
         return key.replaceAll(from, to);
+    });
+}
+
+function splitter(pattern) {
+    return pattern.replace(/split\(([^,]+),([^,]+),([^)]+)\)/gi, (_, key, sep, index = 0) => {
+        return key.split(sep)[index];
     });
 }
