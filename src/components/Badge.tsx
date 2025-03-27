@@ -10,9 +10,9 @@ type BadgeProps = {
 const Badge = ({
                    children,
                    type         = "info",
-                   className    = ""
-}: BadgeProps) => {
-    const theme = useTheme();
+                   className    = undefined
+               }: BadgeProps) => {
+    const theme = useTheme("badge");
 
     return (
         <span className={"badge bg-" + type + " " + (className || theme.Badge.className)}>

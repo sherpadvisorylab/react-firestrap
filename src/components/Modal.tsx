@@ -2,69 +2,66 @@ import React, {useState} from 'react';
 import {useTheme} from "../Theme";
 import {ActionButton, LoadingButton} from "./Buttons";
 
-const Modal = ({
-                   size = null,
-                   title,
-                   header,
-                   children,
-                   footer,
-                   onClose,
-                   onSave,
-                   onDelete,
-                   display = null,
-                   showFullscreen = true,
-                   wrapClass = null,
-                   modalClass = null,
-                   headerClass = null,
-                   titleClass = null,
-                   bodyClass = null,
-                   footerClass = null
-
-}) => {
-    return <ModalDefault
-        size={size}
-        title={title}
-        header={header}
-        children={children}
-        footer={footer}
-        onClose={onClose}
-        onSave={onSave}
-        onDelete={onDelete}
-        display={display}
-        showFullscreen={showFullscreen}
-        wrapClass={wrapClass}
-        modalClass={modalClass}
-        headerClass={headerClass}
-        titleClass={titleClass}
-        bodyClass={bodyClass}
-        footerClass={footerClass}
-    />
+interface ModalProps {
+    children: React.ReactNode;
+    title?: string;
+    header?: React.ReactNode;
+    footer?: React.ReactNode | false;
+    onClose?: () => void;
+    onSave?: (e: React.MouseEvent<HTMLButtonElement>) => Promise<void>;
+    onDelete?: (e: React.MouseEvent<HTMLButtonElement>) => Promise<void>;
+    size?: string;
+    display?: string | null;
+    showFullscreen?: boolean;
+    wrapClass?: string;
+    modalClass?: string;
+    headerClass?: string;
+    titleClass?: string;
+    bodyClass?: string;
+    footerClass?: string;
 }
 
-const ModalDefault = ({
-                 size = null,
-                 title,
-                 header,
-                 children,
-                 footer,
-                 onClose,
-                 onSave,
-                 onDelete,
-                 display = null,
-                 showFullscreen = true,
-                 wrapClass = null,
-                 modalClass = null,
-                 headerClass = null,
-                 titleClass = null,
-                 bodyClass = null,
-                 footerClass = null
+interface ModalYesNoProps {
+    title?: string;
+    children: React.ReactNode;
+    onYes?: (e: React.MouseEvent<HTMLButtonElement>) => Promise<void>;
+    onNo?: (e: React.MouseEvent<HTMLButtonElement>) => Promise<void>;
+    onClose?: () => void;
+}
 
-}) => {
-    const theme = useTheme();
+interface ModalOkProps {
+    children: React.ReactNode;
+    title?: string;
+    onClose?: () => void;
+}
+
+const Modal = (props: ModalProps) => {
+    return <ModalDefault {...props} />;
+};
+
+const ModalDefault = ({
+                          children,
+                          title             = undefined,
+                          header            = undefined,
+                          footer            = undefined,
+                          onClose           = undefined,
+                          onSave            = undefined,
+                          onDelete          = undefined,
+                          size              = undefined,
+                          display           = undefined,
+                          showFullscreen    = true,
+                          wrapClass         = undefined,
+                          modalClass        = undefined,
+                          headerClass       = undefined,
+                          titleClass        = undefined,
+                          bodyClass         = undefined,
+                          footerClass       = undefined
+}: ModalProps) => {
+    const theme = useTheme("modal");
 
     const [fullScreen, setFullScreen] = useState(size === "fullscreen");
 
-    let positionClass = "";
+    let positionClass: string;
     switch (display || theme.Modal.display) {
         case "right":
             positionClass = " position-absolute end-0 bottom-0 top-0";
@@ -154,7 +151,13 @@ const ModalDefault = ({
     </>);
 };
 
-export const ModalYesNo = ({title, children, onYes, onNo, onClose}) => {
+export const ModalYesNo = ({
+                               children,
+                               title    = undefined,
+                               onYes    = undefined,
+                               onNo     = undefined,
+                               onClose  = undefined
+}: ModalYesNoProps) => {
     return <ModalDefault
         title={title}
         showFullscreen={false}
@@ -184,7 +187,11 @@ export const ModalYesNo = ({title, children, onYes, onNo, onClose}) => {
     </ModalDefault>
 }
 
-export const ModalOk = ({title, children, onClose}) => {
+export const ModalOk = ({
+                            children,
+                            title       = undefined,
+                            onClose     = undefined
+                        }: ModalOkProps) => {
     return <ModalDefault
         title={title}
         showFullscreen={false}

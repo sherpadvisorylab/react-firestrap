@@ -9,29 +9,29 @@ type AutoPlayOptions = {
 };
 
 type CarouselProps = {
-    children: React.ReactNode[];
+    children: React.ReactElement[];
     showIndicators?: boolean;
     showControls?: boolean;
     showCaption?: boolean;
     layoutDark?: boolean;
-    autoPlay?: boolean | AutoPlayOptions;
+    autoPlay?: AutoPlayOptions;
     startSlide?: number;
-    onParseCaption?: (image: React.ReactElement) => React.ReactElement | null;
+    onParseCaption?: (image: React.ReactElement) => React.ReactElement;
     onClick?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
 };
 
 const Carousel = ({
                     children,
-                    showIndicators = null,
-                    showControls = null,
-                    showCaption = null,
-                    layoutDark =null,
-                    autoPlay = null,
-                    startSlide = 0,
-                    onParseCaption = null,
-                    onClick = null
+                    showIndicators  = false,
+                    showControls    = false,
+                    showCaption     = false,
+                    layoutDark      = false,
+                    autoPlay        = undefined,
+                    startSlide      = 0,
+                    onParseCaption  = undefined,
+                    onClick         = undefined
 } : CarouselProps) => {
-    const theme = useTheme();
+    const theme = useTheme("carousel");
     showIndicators = showIndicators || theme.Carousel.showIndicators;
     showControls = showControls || theme.Carousel.showControls;
     showCaption = showCaption || theme.Carousel.showCaption;
@@ -77,7 +77,7 @@ const Carousel = ({
                     );
                 })}
             </ol>}
-            <div className="carousel-inner" onClick={onClick} style={{cursor: onClick ? "pointer" : "cursor"}}>
+            <div className="carousel-inner" onClick={onClick} style={{cursor: onClick ? "pointer" : "default"}}>
                 {children.map((image, index) => {
                     return (
                         <div key={index} className={`carousel-item${index === startSlide ? " active" : ""}`}>

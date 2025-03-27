@@ -1,89 +1,135 @@
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {OptionalPostfixToken, useEffect, useMemo, useState} from 'react';
 import database from "../libs/database";
 import {Label} from "./Input";
 import {Wrapper} from "./GridSystem"
 import {useTheme} from "../Theme";
-import {arrayUnique} from "../libs/utils";
+import {arrayUnique, isEmpty} from "../libs/utils";
+import {DatabaseOptions, RecordArray} from "../integrations/google/firedatabase";
 
-let ids= 0;
-
-function genKey() {
-    return ids++;
+interface Option {
+    label: string;
+    value: any;
 }
 
+interface DBConfig extends DatabaseOptions {
+    srcPath: string;
+}
 
+interface OrderConfig {
+    field: 'label' | 'value';
+    dir: 'asc' | 'desc';
+}
+
+interface BaseProps {
+    name: string;
+    value?: string | number | any[];
+    onChange?: (e: { target: { name: string; value: any } }, options?: Option[]) => void;
+    required?: boolean;
+    updatable?: boolean;
+    disabled?: boolean;
+    label?: string;
+    title?: string;
+    pre?: string;
+    post?: string;
+    feedback?: string;
+    options?: Option[] | string[] | number[];
+    db?: DBConfig;
+    order?: OrderConfig;
+    wrapClass?: string;
+    className?: string;
+}
+
+export interface SelectProps extends BaseProps {
+    optionEmpty?: Option;
+    value?: string | number;
+}
+
+export interface AutocompleteProps extends BaseProps {
+    min?: number;
+    max?: number;
+    placeholder?: string;
+}
+
+export interface ChecklistProps extends BaseProps {
+    checkClass?: string;
+}
+
+let ids= 0;
+const genKey = () => (ids++).toString();
+
+const valueToArray = (value: string | number | any[] | undefined): any[] => {
+    if(!value) return []
+
+    return typeof value === 'string' || typeof value === "number"
+        ? value.toString().split(',')
+        : value;
+}
+
+const normalizeOption = (
+    fieldMap: Record<string, any> | string | number | undefined
+): Option => {
+    if (!fieldMap) {
+        return { label: '', value: '' };
+    }
+
+    if (typeof fieldMap !== 'object') {
+        return { label: fieldMap.toString(), value: fieldMap.toString() };
+    }
+
+    return {
+        label: fieldMap?.label || '',
+        value: fieldMap?.value || ''
+    };
+};
+
+const getOptions = (
+    options: Array<string | number | Option>,
+    lookup: RecordArray,
+    order?: OrderConfig
+) : Option[] => {
+    return [
+        ...options.map(normalizeOption),
+        ...lookup as Option[] //TODO: da togliere
+    ].sort((a, b) => order?.dir === "desc"
+        ? b[order?.field || "label"].localeCompare(a[order?.field || "label"])
+        : a[order?.field || "label"].localeCompare(b[order?.field || "label"])
+    );
+}
 
 export const Select = ({
                               name,
-                              value = null,
-                              onChange = () => {},
-                              required = false,
-                              updatable = true,
-                              disabled = false,
-                              optionEmpty = {
-                                  label: "Select...",
-                                  value: ""
-                              },
-                              label = null,
-                              title = null,
-                              pre = null,
-                              post = null,
-                              feedback = null,
-                              options = [],
-                              db = null,
-                              order = null,
-                              wrapClass = null,
-                              className = null,
-                          } : {
-    name: string,
-    value?: string,
-    onChange?: (e : {target: {name: string, value: string[]}}, options: any[]) => void,
-    required?: boolean,
-    updatable?: boolean,
-    disabled?: boolean,
-    optionEmpty?: boolean | {label: string, value: string},
-    label?: string,
-    title?: string,
-    pre?: string,
-    post?: string,
-    feedback?: string,
-    options?: any[],
-    db ?: {
-        srcPath: string,
-        fieldMap: string | {label: string, value: string},
-        where?: {[key]: string, op?: string},
-        onLoad?: (data: any[]) => any[]
-    },
-    order ?: {
-        field: "label" | "value",
-        dir: "asc" | "desc"
-    },
-    wrapClass?: string,
-    className?: string,
-}) => {
-    const theme = useTheme();
+                              value         = undefined,
+                              onChange      = undefined,
+                              required      = false,
+                              updatable     = true,
+                              disabled      = false,
+                              optionEmpty   = {
+                                              label: "Select...",
+                                              value: ""
+                                            },
+                              label         = undefined,
+                              title         = undefined,
+                              pre           = undefined,
+                              post          = undefined,
+                              feedback      = undefined,
+                              options       = [],
+                              db            = undefined,
+                              order         = undefined,
+                              wrapClass     = undefined,
+                              className     = undefined,
+} : SelectProps) => {
+    const theme = useTheme("select");
 
     const [selectedValue, setSelectedValue] = useState(value);
     useEffect(() => {
         setSelectedValue(value);
     }, [value]);
 
-    const [lookup, setLookup] = useState([]);
-    database.useListener(db?.srcPath, setLookup, {fieldMap : db?.fieldMap, where: db?.where, onLoad:db?.onLoad});
+    const [lookup, setLookup] = useState<RecordArray>([]);
+    database.useListener(db?.srcPath, setLookup, {fieldMap : normalizeOption(db?.fieldMap), where: db?.where, onLoad:db?.onLoad});
 
     const opts = useMemo(() => {
-        const combinedOptions = [
-            ...options.map(option =>
-                typeof option === "string" || typeof option === "number"
-                    ? { label: option + "", value: option + "" }
-                    : option
-            ),
-            ...lookup
-        ].sort((a, b) => order?.dir === "desc"
-            ? b[order?.field || "label"].localeCompare(a[order?.field || "label"])
-            : a[order?.field || "label"].localeCompare(b[order?.field || "label"])
-        );
-
+        const combinedOptions = getOptions(options, lookup, order);
         // Add the value to the options if it is not already present
         if (selectedValue && !combinedOptions.length) {
             combinedOptions.push({label: "🔄 Caricamento...", value: selectedValue});
@@ -95,7 +141,7 @@ export const Select = ({
     console.log("SELECT", selectedValue, opts);
 
     if (!selectedValue && !optionEmpty && opts.length > 0) {
-        onChange({target: {name: name, value: opts[0].value}}, opts);
+        onChange?.({target: {name: name, value: opts[0].value}}, opts);
     }
 
     return (
@@ -108,7 +154,7 @@ export const Select = ({
                     className={`form-select ${className || theme.Select.className}`}
                     defaultValue={selectedValue}
                     required={required}
-                    disabled={disabled || (!updatable && selectedValue)}
+                    disabled={disabled || (!updatable && !isEmpty(selectedValue))}
                     onChange={onChange}
                     title={title}
                 >
@@ -130,88 +176,42 @@ export const Select = ({
 
 export const Autocomplete = ({
                                 name,
-                                value = null,
-                                min = null,
-                                max =  null,
-                                onChange = () => {},
-                                required = false,
-                                updatable = true,
-                                disabled = false,
-                                label = null,
-                                placeholder = null,
-                                pre = null,
-                                post = null,
-                                feedback = null,
-                                options = [],
-                                db = null,
-                                order = null,
-                                wrapClass = null,
-                                className = null,
-                             } : {
-    name: string,
-    value?: string,
-    min?: number,
-    max?: number,
-    onChange?: (e : {target: {name: string, value: string[]}}, options: any[]) => void,
-    required?: boolean,
-    updatable?: boolean,
-    disabled?: boolean,
-    label?: string,
-    placeholder?: string,
-    pre?: string,
-    post?: string,
-    feedback?: string,
-    options?: any[],
-    db ?: {
-        srcPath: string,
-        fieldMap?: string | {label: string, value: string},
-        where?: {[key]: string, op?: string},
-        onLoad?: (data: any[]) => any[]
-    },
-    order ?: {
-        field: "label" | "value",
-        dir: "asc" | "desc"
-    },
-    wrapClass?: string,
-    className?: string,
-}) => {
-    const theme = useTheme();
+                                value           = undefined,
+                                min             = undefined,
+                                max             = undefined,
+                                onChange        = undefined,
+                                required        = undefined,
+                                updatable       = undefined,
+                                disabled        = undefined,
+                                label           = undefined,
+                                placeholder     = undefined,
+                                pre             = undefined,
+                                post            = undefined,
+                                feedback        = undefined,
+                                options         = [],
+                                db              = undefined,
+                                order           = undefined,
+                                wrapClass       = undefined,
+                                className       = undefined,
+} : AutocompleteProps) => {
+    const theme = useTheme("select");
 
-    const [selectedItems, setSelectedItems] = useState(
-        typeof value === 'string' || typeof value === "number"
-            ? value ? value.split(',') : []
-            : value || []
-    );
+    const [selectedItems, setSelectedItems] = useState<any[]>(() => valueToArray(value));
     useEffect(() => {
-        setSelectedItems(
-            typeof value === 'string' || typeof value === "number"
-                ? value ? value.split(',') : []
-                : value || []
-        );
+        setSelectedItems(valueToArray(value));
     }, [value]);
 
-    const [lookup, setLookup] = useState([]);
-    database.useListener(db?.srcPath, setLookup, {fieldMap : db?.fieldMap, where: db?.where, onLoad:db?.onLoad});
+    const [lookup, setLookup] = useState<RecordArray>([]);
+    database.useListener(db?.srcPath, setLookup, {fieldMap : normalizeOption(db?.fieldMap), where: db?.where, onLoad:db?.onLoad});
 
     const opts = useMemo(() => {
-        const combinedOptions = [
-            ...options.map(option =>
-                typeof option === "string" || typeof option === "number"
-                    ? { label: option + "", value: option + "" }
-                    : option
-            ),
-            ...lookup
-        ].sort((a, b) => order?.dir === "desc"
-            ? b[order?.field || "label"].localeCompare(a[order?.field || "label"])
-            : a[order?.field || "label"].localeCompare(b[order?.field || "label"])
-        );
-
+        const combinedOptions = getOptions(options, lookup, order);
         return arrayUnique(combinedOptions, 'value');
     }, [options, lookup]);
 
 console.log("AUTOCOMPLETE", selectedItems, opts);
 
-    const handleChange = (e) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const currentValue = e.target.value;
 
         if (opts.filter(op => op.value === currentValue).length === 0) {
@@ -226,7 +226,7 @@ console.log("AUTOCOMPLETE", selectedItems, opts);
         setSelectedItems(prevState => {
             const updatedItems = [...prevState, currentValue];
             setTimeout(() => {
-                onChange({target: {name: name, value: updatedItems}}, opts);
+                onChange?.({target: {name: name, value: updatedItems}}, opts);
             }, 0);
 
             return updatedItems;
@@ -235,11 +235,11 @@ console.log("AUTOCOMPLETE", selectedItems, opts);
         e.target.value = '';
     };
 
-    const removeItem = (currentValue) => {
+    const removeItem = (currentValue: string) => {
         setSelectedItems(prevState => {
             const updatedItems = prevState.filter(item => item !== currentValue);
             setTimeout(() => {
-                onChange({target: {name: name, value: updatedItems}});
+                onChange?.({target: {name: name, value: updatedItems}}, opts);
             }, 0);
 
             return updatedItems;
@@ -262,8 +262,8 @@ console.log("AUTOCOMPLETE", selectedItems, opts);
                     {(!max || selectedItems.length < max) && <input
                         type={"text"}
                         className={`border-0 p-0 bg-transparent ${className || theme.Autocomplete.className}`}
-                        required={required && selectedItems.length < min}
-                        disabled={disabled || (!updatable && value)}
+                        required={required && selectedItems.length < (min || 0)}
+                        disabled={disabled || (!updatable && !isEmpty(value))}
                         placeholder={placeholder}
                         list={name}
                         onChange={handleChange}
@@ -287,87 +287,42 @@ console.log("AUTOCOMPLETE", selectedItems, opts);
 
 export const Checklist = ({
                                 name,
-                                value = [],
-                                onChange = () => {},
-                                required = false,
-                                updatable = true,
-                                disabled = false,
-                                label = null,
-                                title = null,
-                                pre = null,
-                                post = null,
-                                feedback = null,
-                                options = [],
-                                db = null,
-                                order = null,
-                                wrapClass = null,
-                                checkClass = null,
-                             } : {
-    name: string,
-    value?: string,
-    onChange?: (e : {target: {name: string, value: string[]}}, options: any[]) => void,
-    required?: boolean,
-    updatable?: boolean,
-    disabled?: boolean,
-    label?: string,
-    title?: string,
-    pre?: string,
-    post?: string,
-    feedback?: string,
-    options?: any[],
-    db ?: {
-        srcPath: string,
-        fieldMap: string | {label: string, value: string},
-        where?: {[key]: string, op?: string},
-        onLoad?: (data: any[]) => any[]
-    },
-    order ?: {
-        field: "label" | "value",
-        dir: "asc" | "desc"
-    },
-    wrapClass?: string,
-    checkClass?: string,
-}) => {
-
-    const [selectedItems, setSelectedItems] = useState(
-        typeof value === 'string' || typeof value === "number"
-        ? value ? value.split(',') : []
-        : value || []
-    );
+                                value       = [],
+                                onChange    = undefined,
+                                required    = false,
+                                updatable   = true,
+                                disabled    = false,
+                                label       = undefined,
+                                title       = undefined,
+                                pre         = undefined,
+                                post        = undefined,
+                                feedback    = undefined,
+                                options     = [],
+                                db          = undefined,
+                                order       = undefined,
+                                wrapClass   = undefined,
+                                checkClass  = undefined,
+} : ChecklistProps) => {
+    const [selectedItems, setSelectedItems] = useState(() => valueToArray(value));
     useEffect(() => {
-        setSelectedItems(
-            typeof value === 'string' || typeof value === "number"
-                ? value ? value.split(',') : []
-                : value || []
-        );
+        setSelectedItems(valueToArray(value));
     }, [value]);
 
-    const [lookup, setLookup] = useState([]);
-    database.useListener(db?.srcPath, setLookup, {fieldMap : db?.fieldMap, where: db?.where, onLoad:db?.onLoad});
+    const [lookup, setLookup] = useState<RecordArray>([]);
+    database.useListener(db?.srcPath, setLookup, {fieldMap : normalizeOption(db?.fieldMap), where: db?.where, onLoad:db?.onLoad});
 
     const opts = useMemo(() => {
-        const combinedOptions = [
-            ...options.map(option =>
-                typeof option === "string" || typeof option === "number"
-                    ? { label: option + "", value: option + "" }
-                    : option
-            ),
-            ...lookup
-        ].sort((a, b) => order?.dir === "desc"
-            ? b[order?.field || "label"].localeCompare(a[order?.field || "label"])
-            : a[order?.field || "label"].localeCompare(b[order?.field || "label"])
-        );
-
+        const combinedOptions = getOptions(options, lookup, order);
         return arrayUnique(combinedOptions, 'value');
     }, [options, lookup]);
 
     console.log("CHECKLIST", selectedItems, opts);
 
-    const removeItem = (currentValue) => {
+    const removeItem = (currentValue: string) => {
         setSelectedItems(prevState => {
             const updatedItems = prevState.filter(item => item !== currentValue);
             setTimeout(() => {
-                onChange({target: {name: name, value: updatedItems}}, opts);
+                onChange?.({target: {name: name, value: updatedItems}}, opts);
             }, 0);
             console.log("CHECKLIST REMOVE", updatedItems);
 
@@ -375,7 +330,7 @@ export const Checklist = ({
         });
     };
 
-    const handleChange = (e) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const currentValue = e.target.value;
 
         if(!e.target.checked) {
@@ -394,7 +349,7 @@ export const Checklist = ({
         setSelectedItems(prevState => {
             const updatedItems = [...prevState, currentValue];
             setTimeout(() => {
-                onChange({target: {name: name, value: updatedItems}});
+                onChange?.({target: {name: name, value: updatedItems}}, opts);
             }, 0);
 
             console.log("CHECKLIST CHANGE", updatedItems);

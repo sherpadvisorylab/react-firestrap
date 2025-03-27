@@ -10,134 +10,76 @@ import setLog from "../libs/log";
 import {useTheme} from "../Theme";
 import Alert from "./Alert";
 
-function Form({
-                  children,
-                  header= null,
-                  footer= null,
-                  dataStoragePath = null,
-                  dataObject = null,
-                  onLoad = null,
-                  onInsert = null,
-                  onUpdate = null,
-                  onDelete = null,
-                  onFinally = null,
-                  log = false,
-                  showNotice = true,
-                  wrapClass = null,
-                  headerClass = null,
-                  className = null,
-                  footerClass = null
-              }) {
-
-
-    return dataObject
-        ? <FormData
-            children={children}
-            header={header}
-            footer={footer}
-            dataStoragePath={dataStoragePath}
-            dataObject={dataObject}
-            onLoad={onLoad}
-            onInsert={onInsert}
-            onUpdate={onUpdate}
-            onDelete={onDelete}
-            onFinally={onFinally}
-            log={log}
-            showNotice={showNotice}
-            wrapClass={wrapClass}
-            headerClass={headerClass}
-            className={className}
-            footerClass={footerClass}
-        />
-        : <FormDatabase
-            children={children}
-            header={header}
-            footer={footer}
-            dataStoragePath={dataStoragePath}
-            onLoad={onLoad}
-            onInsert={onInsert}
-            onUpdate={onUpdate}
-            onDelete={onDelete}
-            onFinally={onFinally}
-            log={log}
-            showNotice={showNotice}
-            wrapClass={wrapClass}
-            headerClass={headerClass}
-            className={className}
-            footerClass={footerClass}
-        />
+interface FormProps {
+    children: React.ReactNode;
+    header?: React.ReactNode;
+    footer?: React.ReactNode | false;
+    dataStoragePath?: string;
+    dataObject?: any;
+    onLoad?: () => void;
+    onInsert?: (record: any) => Promise<void>;
+    onUpdate?: (record: any) => Promise<void>;
+    onDelete?: (record: any) => Promise<void>;
+    onFinally?: () => Promise<void>;
+    log?: boolean;
+    showNotice?: boolean;
+    wrapClass?: string;
+    headerClass?: string;
+    className?: string;
+    footerClass?: string;
 }
 
-function FormDatabase({
-                          children,
-                          header = null,
-                          footer = null,
-                          dataStoragePath = null,
-                          onLoad = null,
-                          onInsert = null,
-                          onUpdate = null,
-                          onDelete = null,
-                          onFinally = null,
-                          log = false,
-                          showNotice = true,
-                          wrapClass = null,
-                          headerClass = null,
-                          className = null,
-                          footerClass = null
-                      }) {
-    const [record, setRecord] = useState(null);
+function Form(props: FormProps) {
+    return props.dataObject
+        ? <FormData {...props} />
+        : <FormDatabase {...props} />;
+}
+
+function FormDatabase(props: FormProps) {
+    const [record, setRecord] = useState<any>(null);
     const location = useLocation();
-    const dbStoragePath = dataStoragePath || (dataStoragePath === false ? null : trimSlash(location.pathname));
+    const dbStoragePath = props.dataStoragePath ?? trimSlash(location.pathname);
 
-    db.useListener(dbStoragePath, setRecord);
+    useEffect(() => {
+        db.useListener(dbStoragePath, setRecord);
+    }, [dbStoragePath]);
 
-    return <FormData
-        children={children}
-        header={header}
-        footer={footer}
-        dataStoragePath={dbStoragePath}
-        dataObject={record}
-        onLoad={onLoad}
-        onInsert={onInsert}
-        onUpdate={onUpdate}
-        onDelete={onDelete}
-        onFinally={onFinally}
-        log={log}
-        showNotice={showNotice}
-        wrapClass={wrapClass}
-        headerClass={headerClass}
-        className={className}
-        footerClass={footerClass}
-    />
+    return <FormData {...props} dataObject={record} dataStoragePath={dbStoragePath} />;
 }
+
+type NoticeProps = {
+    type: "danger" | "success" | "info" | "warning" | "primary" | "secondary" | "light" | "dark";
+    message: string;
+};
+
 
 function FormData({
                   children,
-                  header = null,
-                  footer = null,
-                  dataStoragePath = null,
-                  dataObject = null,
-                  onLoad = null,
-                  onInsert = null,
-                  onUpdate = null,
-                  onDelete = null,
-                  onFinally = null,
-                  log = false,
-                  showNotice = true,
-                  wrapClass = null,
-                  headerClass = null,
-                  className = null,
-                  footerClass = null
-              }) {
-    const theme = useTheme();
+                  header            = undefined,
+                  footer            = undefined,
+                  dataStoragePath   = undefined,
+                  dataObject        = undefined,
+                  onLoad            = undefined,
+                  onInsert          = undefined,
+                  onUpdate          = undefined,
+                  onDelete          = undefined,
+                  onFinally         = undefined,
+                  log               = false,
+                  showNotice        = true,
+                  wrapClass         = undefined,
+                  headerClass       = undefined,
+                  className         = undefined,
+                  footerClass       = undefined
+} : FormProps) {
+    const theme = useTheme("form");
 
-    const [record, setRecord] = useState(undefined);
-    const [notification, setNotification] = useState(null);
+    const [record, setRecord] = useState<Record<string, any> | undefined>(undefined);
+    const [notification, setNotification] = useState<NoticeProps | undefined>(undefined);
 
-    const notice = (message, type = "danger") => {
+    const notice = ({ message, type = "danger" }: NoticeProps) => {
         if (showNotice) {
             setNotification({type, message});
-            setTimeout(() => setNotification(null), 5000);
+            setTimeout(() => setNotification(undefined), 5000);
         }
     };
 
@@ -145,39 +87,39 @@ function FormData({
         setRecord(prevData => prevData == dataObject ? prevData : dataObject);
     }, [dataObject]);
 
-    const handleChange = (e) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setRecord(prevState => ({
             ...prevState,
             [e.target.name]: e.target.value
         }));
     };
 
-    const handleSave = async (e) => {
+    const handleSave = async (e: React.ChangeEvent<HTMLInputElement>) => {
         e.preventDefault();
 
-        showNotice && setNotification(null);
+        showNotice && setNotification(undefined);
         dataObject && onInsert && await onInsert(record);
         !dataObject && onUpdate && await onUpdate(record);
         dataStoragePath && await db.set(dataStoragePath, record);
 
-        await handleFinally(dataObject ? "update" : "insert");
+        await handleFinally(dataObject ? "update" : "create");
     };
 
-    const handleDelete = async (e) => {
+    const handleDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
 
-        showNotice && setNotification(null);
+        showNotice && setNotification(undefined);
         dataStoragePath && await db.remove(dataStoragePath);
 
         await handleFinally("delete");
     };
 
-    const handleFinally = async(action) => {
-        log && setLog(dataStoragePath, action, record);
+    const handleFinally = async(action: 'create' | 'update' | 'delete') => {
+        log && dataStoragePath && setLog(dataStoragePath, action, record);
 
         onFinally && await onFinally();
 
-        notice(`Record ${action}ed successfully`, "success");
+        notice({message: `Record ${action}ed successfully`, type: "success"});
     }
 
     return (

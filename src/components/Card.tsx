@@ -19,18 +19,18 @@ type CardProps = {
 
 const Card = ({
                   children,
-                  title         = "",
-                  header        = null,
-                  footer        = null,
-                  showLoader    = null,
-                  showArrow     = null,
-                  wrapClass     = "",
-                  cardClass     = "",
-                  headerClass   = "",
-                  bodyClass     = "",
-                  footerClass   = ""
+                  title         = undefined,
+                  header        = undefined,
+                  footer        = undefined,
+                  showLoader    = undefined,
+                  showArrow     = undefined,
+                  wrapClass     = undefined,
+                  cardClass     = undefined,
+                  headerClass   = undefined,
+                  bodyClass     = undefined,
+                  footerClass   = undefined
 }: CardProps) => {
-  const theme = useTheme();
+  const theme = useTheme("card");
 
   return (
     <Wrapper className={wrapClass || theme.Card.wrapClass}>

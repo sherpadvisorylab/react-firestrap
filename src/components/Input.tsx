@@ -1,12 +1,12 @@
 import React, {ChangeEvent} from 'react';
-import {generateUniqueId} from "../libs/utils";
+import {generateUniqueId, isEmpty} from "../libs/utils";
 import {Wrapper} from "./GridSystem";
 
 interface InputProps {
     name: string;
-    value?: string | number | null;
-    placeholder?: string | null;
-    label?: string | null;
+    value?: string | number;
+    placeholder?: string;
+    label?: string;
     type?: string;
     required?: boolean;
     updatable?: boolean;
@@ -14,11 +14,11 @@ interface InputProps {
     onChange?: (event: ChangeEvent<HTMLInputElement>) => void;
     pre?: React.ReactNode;
     post?: React.ReactNode;
-    feedback?: string | null;
-    min?: number | null;
-    max?: number | null;
-    wrapClass?: string | null;
-    inputClass?: string | null;
+    feedback?: string;
+    min?: number;
+    max?: number;
+    wrapClass?: string;
+    inputClass?: string;
 }
 
 type TypedInputProps = Omit<InputProps, 'type'>;
@@ -28,6 +28,7 @@ interface CheckboxProps {
     value?: boolean;
     onChange?: (event: ChangeEvent<HTMLInputElement>) => void;
     label?: string;
+    title?: string;
     required?: boolean;
     valueChecked?: string;
     checkboxClass?: string;
@@ -56,26 +57,27 @@ interface TextAreaProps {
     feedback?: string;
     className?: string;
     wrapClass?: string;
+    useRef?: any; //da verificare se serve
 }
 
-export const Input: React.FC<InputProps> = ({
+export const Input = ({
                                                 name,
-                                                value = null,
-                                                placeholder = null,
-                                                label = null,
-                                                type = "text",
-                                                required = false,
-                                                updatable = true,
-                                                disabled = false,
-                                                onChange = null,
-                                                pre = null,
-                                                post = null,
-                                                feedback = null,
-                                                min = null,
-                                                max = null,
-                                                wrapClass = null,
-                                                inputClass = null
-                                            }) => {
+                                                value       = undefined,
+                                                placeholder = undefined,
+                                                label       = undefined,
+                                                type        = "text",
+                                                required    = false,
+                                                updatable   = true,
+                                                disabled    = false,
+                                                onChange    = undefined,
+                                                pre         = undefined,
+                                                post        = undefined,
+                                                feedback    = undefined,
+                                                min         = undefined,
+                                                max         = undefined,
+                                                wrapClass   = undefined,
+                                                inputClass  = undefined
+}: InputProps) => {
     return (
         <Wrapper className={wrapClass}>
             {label && <Label label={label} required={required} />}
@@ -87,7 +89,7 @@ export const Input: React.FC<InputProps> = ({
                     className={`form-control${inputClass ? " " + inputClass : ""}`}
                     placeholder={placeholder}
                     required={required}
-                    disabled={disabled || (!updatable && value !== null)}
+                    disabled={disabled || (!updatable && !isEmpty(value))}
                     defaultValue={value}
                     onChange={onChange}
                     min={min}
@@ -100,45 +102,46 @@ export const Input: React.FC<InputProps> = ({
     );
 };
 
-export const Number: React.FC<TypedInputProps> = (props) => (
+export const Number = (props: TypedInputProps) => (
     <Input {...props} type="number" />
 );
 
-export const String: React.FC<TypedInputProps> = (props) => (
+export const String = (props: TypedInputProps) => (
     <Input {...props} type="text" />
 );
 
-export const Email: React.FC<TypedInputProps> = (props) => (
+export const Email = (props: TypedInputProps) => (
     <Input {...props} type="email" />
 );
 
-export const Date: React.FC<TypedInputProps> = (props) => (
+export const Date = (props: TypedInputProps) => (
     <Input {...props} type="date" />
 );
 
-export const Time: React.FC<TypedInputProps> = (props) => (
+export const Time = (props: TypedInputProps) => (
     <Input {...props} type="time" />
 );
 
-export const DateTime: React.FC<TypedInputProps> = (props) => (
+export const DateTime = (props: TypedInputProps) => (
     <Input {...props} type="datetime-local" />
 );
 
-export const Checkbox: React.FC<CheckboxProps> = ({
+export const Checkbox = ({
                                                       name,
-                                                      value = false,
-                                                      onChange = null,
-                                                      label = null,
-                                                      required = false,
-                                                      valueChecked = "on",
-                                                      checkboxClass = null,
-                                                      wrapClass = null
-                                                  }) => {
+                                                      value         = false,
+                                                      onChange      = undefined,
+                                                      label         = undefined,
+                                                      title         = undefined,
+                                                      required      = false,
+                                                      valueChecked  = "on",
+                                                      checkboxClass = undefined,
+                                                      wrapClass     = undefined
+}: CheckboxProps) => {
     const key = name || label;
-    const handleCheckboxChange = (event) => {
+    const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         event.target.value = event.target.checked ? valueChecked : ""
 
-        onChange && onChange(event);
+        onChange?.(event);
     };
     if (!wrapClass && label) {
        wrapClass = "checkbox"
@@ -149,6 +152,7 @@ export const Checkbox: React.FC<CheckboxProps> = ({
                 type="checkbox"
                 id={key}
                 name={name}
+                title={title}
                 className={`form-check-input${checkboxClass ? " " + checkboxClass : ""}`}
                 defaultChecked={value}
                 onChange={handleCheckboxChange}
@@ -161,12 +165,12 @@ export const Checkbox: React.FC<CheckboxProps> = ({
     );
 };
 
-export const Label: React.FC<LabelProps> = ({
+export const Label = ({
                                                 label,
-                                                required = false,
-                                                htmlFor = null,
-                                                className = null
-}) => {
+                                                required    = false,
+                                                htmlFor     = undefined,
+                                                className   = undefined
+}: LabelProps) => {
   return (
     <label htmlFor={htmlFor} className={`form-label${className ? " " + className : ""}`}>
       {label} {required && <span className="text-danger">*</span>}
@@ -174,23 +178,23 @@ export const Label: React.FC<LabelProps> = ({
   );
 };
 
-export const TextArea: React.FC<TextAreaProps> = ({
+export const TextArea = ({
                                                       name,
-                                                      value = null,
-                                                      placeholder = null,
-                                                      label = null,
-                                                      required = false,
-                                                      updatable = true,
-                                                      disabled = false,
-                                                      rows = 4,
-                                                      onChange = null,
-                                                      useRef = {},
-                                                      pre = null,
-                                                      post = null,
-                                                      feedback = null,
-                                                      className = null,
-                                                      wrapClass = null
-                         }) => {
+                                                      value         = undefined,
+                                                      placeholder   = undefined,
+                                                      label         = undefined,
+                                                      required      = false,
+                                                      updatable     = true,
+                                                      disabled      = false,
+                                                      rows          = 4,
+                                                      onChange      = undefined,
+                                                      useRef        = {},
+                                                      pre           = undefined,
+                                                      post          = undefined,
+                                                      feedback      = undefined,
+                                                      className     = undefined,
+                                                      wrapClass     = undefined
+}: TextAreaProps) => {
   return (
       <Wrapper className={wrapClass}>
           {label && <Label required={required} label={label}/>}
@@ -203,7 +207,7 @@ export const TextArea: React.FC<TextAreaProps> = ({
                   rows={rows}
                   placeholder={placeholder}
                   required={required}
-                  disabled={disabled || (!updatable && value)}
+                  disabled={disabled || (!updatable && !isEmpty(value))}
                   defaultValue={value}
                   onChange={onChange}
               />
@@ -214,48 +218,111 @@ export const TextArea: React.FC<TextAreaProps> = ({
   );
 };
 
-export const DateInput = ({value, onChange, pClass}) => {
-  return (
-    <div className="input-group w-50">
-      <input
-        type="text"
-        className={`form-control${pClass ? " " + pClass : ""}`}
-        id="datepicker-component"
-        placeholder="Whitelist Start At"
-        defaultValue={value}
-        onChange={onChange}
-      />
-      <label className="input-group-text" htmlFor="datepicker-component">
-        <i className="fa fa-calendar"></i>
-      </label>
-    </div>
-  );
-};
+interface DateInputProps {
+    placeholder: string;
+    onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    value?: string;
+    className?: string;
+    id?: string;
+}
 
-export const SwitchInput = ({ label, status, handleClick, pClass }) => {
-  return (
-    <>
-    <input
-        type="checkbox"
-        className={`form-check-input${pClass ? " " + pClass : ""}`}
-        id="mint-switch"
-        checked={status}
-        onChange={handleClick}
-      />
-      <label className="form-check-label" htmlFor="mint-switch">
-        {label}
-      </label>
-    </>
-  );
-};
-
-export const ListGroup = ({items, active, onClick, pClass = "", indexLoading}) => {
-    const iLoder = parseInt(indexLoading || "-1");
+export const DateInput = ({
+                                                        placeholder,
+                                                        onChange,
+                                                        value           = undefined,
+                                                        className       = undefined,
+                                                        id              = 'datepicker-component'
+}: DateInputProps) => {
+    const fullClassName = `form-control${className ? ' ' + className : ''}`;
     return (
-        <div className={`list-group${pClass ? " " + pClass : ""}`}>
-            {items.map((item, index) => (
-                <a key={generateUniqueId()} onClick={(e) => e.target.tagName.toLowerCase() !== 'a' && iLoder !== index && onClick(e, index)} className={`list-group-item list-group-item-action p-0${index === active ? " bg-white bg-opacity-15" : ""}${iLoder === index ? " loading" : ""}`}>{item}</a>
-            ))}
+        <div className="input-group w-50">
+            <input
+                type="text"
+                className={fullClassName}
+                id={id}
+                placeholder={placeholder}
+                defaultValue={value}
+                onChange={onChange}
+            />
+            <label className="input-group-text" htmlFor={id}>
+                <i className="fa fa-calendar"></i>
+            </label>
         </div>
     );
+};
+
+interface SwitchInputProps {
+    label: string;
+    status: boolean;
+    onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    className?: string;
+    id?: string; // opzionale se vuoi personalizzare l'id
 }
+
+export const SwitchInput = ({
+                                                            label,
+                                                            status,
+                                                            onChange,
+                                                            className   = undefined,
+                                                            id          = 'mint-switch'
+}: SwitchInputProps) => {
+    const fullClassName = `form-check form-switch${className ? ' ' + className : ''}`;
+    return (
+        <div className={fullClassName}>
+            <input
+                type="checkbox"
+                className="form-check-input"
+                id={id}
+                checked={status}
+                onChange={onChange}
+            />
+            <label className="form-check-label" htmlFor={id}>
+                {label}
+            </label>
+        </div>
+    );
+};
+
+interface ListGroupProps {
+    items: React.ReactNode[];
+    onClick: (event: React.MouseEvent<HTMLAnchorElement>, index: number) => void;
+    active?: number;
+    className?: string;
+    indexLoading?: number | string;
+}
+export const ListGroup = ({
+                                                        items,
+                                                        onClick,
+                                                        active          = undefined,
+                                                        className       = undefined,
+                                                        indexLoading    = undefined
+}: ListGroupProps) => {
+    const fullClassName = `list-group${className ? ' ' + className : ''}`;
+    const iLoader = parseInt((indexLoading ?? '-1') as string , 10);
+
+    return (
+        <div className={fullClassName}>
+            {items.map((item, index) => {
+                const isActive = index === active;
+                const isLoading = index === iLoader;
+                const itemClass = `list-group-item list-group-item-action p-0${
+                    isActive ? ' bg-white bg-opacity-15' : ''
+                }${isLoading ? ' loading' : ''}`;
+
+                return (
+                    <a
+                        key={generateUniqueId()}
+                        onClick={(e) => {
+                            if (e.currentTarget.tagName.toLowerCase() !== 'a' && !isLoading) {
+                                onClick?.(e, index);
+                            }
+                        }}
+                        className={itemClass}
+                    >
+                        {item}
+                    </a>
+                );
+            })}
+        </div>
+    );
+};

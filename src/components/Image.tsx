@@ -4,8 +4,8 @@ import { Wrapper } from "./GridSystem";
 type ImageProps = {
     src: string;
     placeholder?: string;
-    label?: string | null;
-    title?: string | null;
+    label?: string;
+    title?: string;
     pre?: React.ReactNode;
     post?: React.ReactNode;
     feedback?: React.ReactNode;
@@ -16,15 +16,15 @@ type ImageProps = {
 
 const Image = ({
                    src,
-                   label        = null,
+                   label        = undefined,
                    placeholder  = "/assets/images/noimg.svg",
-                   title        = null,
-                   pre          = null,
-                   post         = null,
-                   feedback     = null,
-                   style        = null,
-                   wrapClass    = "",
-                   className    = ""
+                   title        = undefined,
+                   pre          = undefined,
+                   post         = undefined,
+                   feedback     = undefined,
+                   style        = undefined,
+                   wrapClass    = undefined,
+                   className    = undefined
 }: ImageProps) => {
 
     return (

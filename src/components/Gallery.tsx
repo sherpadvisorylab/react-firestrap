@@ -3,9 +3,10 @@ import {useTheme} from "../Theme";
 import Carousel from "./Carousel";
 import {Wrapper} from "./GridSystem";
 import {converter} from "../libs/converter";
+import {RecordArray, RecordProps} from "../integrations/google/firedatabase";
 
 type GalleryProps = {
-    body: React.ReactNode[];
+    body?: RecordArray;
     Header?: string | React.ReactNode;
     Footer?: string | React.ReactNode;
     itemTopLeft?: string | React.ReactNode;
@@ -14,7 +15,7 @@ type GalleryProps = {
     itemBottomRight?: string | React.ReactNode;
     itemMiddleLeft?: string | React.ReactNode;
     itemMiddleRight?: string | React.ReactNode;
-    onClick?: (key: string) => void;
+    onClick?: (record: RecordProps) => void;
     gutterSize?: 0 | 1 | 2 | 3 | 4 | 5;
     rowCols?: 1 | 2 | 3 | 4 | 6;
     groupBy?: string | string[];
@@ -27,27 +28,27 @@ type GalleryProps = {
 };
 
 const Gallery = ({
-                   body,
-                   Header           = null,
-                   Footer           = null,
-                   itemTopLeft      = null,
-                   itemTopRight     = null,
-                   itemBottomLeft   = null,
-                   itemBottomRight  = null,
-                   itemMiddleLeft   = null,
-                   itemMiddleRight  = null,
-                   onClick          = null,
-                   gutterSize       = null,
-                   rowCols          = null,
-                   groupBy          = null,
-                   wrapClass        = "",
-                   scrollClass      = "",
-                   headerClass      = "",
-                   bodyClass        = "",
-                   footerClass      = "",
-                   selectedClass    = ""
+                   body             = undefined,
+                   Header           = undefined,
+                   Footer           = undefined,
+                   itemTopLeft      = undefined,
+                   itemTopRight     = undefined,
+                   itemBottomLeft   = undefined,
+                   itemBottomRight  = undefined,
+                   itemMiddleLeft   = undefined,
+                   itemMiddleRight  = undefined,
+                   onClick          = undefined,
+                   gutterSize       = undefined,
+                   rowCols          = undefined,
+                   groupBy          = undefined,
+                   wrapClass        = undefined,
+                   scrollClass      = undefined,
+                   headerClass      = undefined,
+                   bodyClass        = undefined,
+                   footerClass      = undefined,
+                   selectedClass    = undefined
 }: GalleryProps) => {
-    const theme     = useTheme();
+    const theme     = useTheme("gallery");
     selectedClass   = selectedClass || theme.Gallery.selectedClass;
     gutterSize      = gutterSize || theme.Gallery.gutterSize;
     rowCols         = rowCols || theme.Gallery.rowCols;

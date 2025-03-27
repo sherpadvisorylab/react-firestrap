@@ -1,9 +1,35 @@
-function DateTime(date) {
-    const d = new Date(isNaN(date) ? date : parseInt(date));
 
-    const padToTwoDigits = (num) => {
-        return num.toString().padStart(2, '0');
-    };
+interface DateTimeResult {
+    year: string;
+    shortYear: string;
+    month: string;
+    day: string;
+    hours: string;
+    minutes: string;
+    seconds: string;
+    hour: string;
+    minute: string;
+    second: string;
+}
+
+function DateTime(date : string | number | Date): DateTimeResult {
+    const d = new Date(typeof date === 'number' || /^\d+$/.test(String(date)) ? Number(date) : date);
+    if (isNaN(d.getTime())) {
+        return {
+            year: '',
+            shortYear: '',
+            month: '',
+            day: '',
+            hours: '',
+            minutes: '',
+            seconds: '',
+            hour: '',
+            minute: '',
+            second: '',
+        };
+    }
+
+    const padToTwoDigits = (num: number): string => num.toString().padStart(2, '0');
 
     return {
         year: d.getFullYear().toString(),
@@ -19,12 +45,12 @@ function DateTime(date) {
     };
 }
 
-function formatDate(date, format) {
+function formatDate(date: string | number | Date, format: string): string {
     const {
         year, shortYear, month, day, hours, minutes, seconds, hour, minute, second
     } = DateTime(date);
 
-    const replacements = {
+    const replacements: Record<string, string> = {
         'YYYY': year,
         'YY': shortYear,
         'MM': month,
@@ -40,7 +66,7 @@ function formatDate(date, format) {
     return format.replace(/YYYY|YY|MM|DD|hh|mm|ss|h|m|s/g, match => replacements[match] || match);
 }
 
-function getDefaultDateFormat() {
+function getDefaultDateFormat(): string {
     const date = new Date();
     const formatter = new Intl.DateTimeFormat(undefined, {
         year: 'numeric', month: '2-digit', day: '2-digit'
@@ -56,7 +82,7 @@ function getDefaultDateFormat() {
     }).join('');
 }
 
-function getDefaultTimeFormat() {
+function getDefaultTimeFormat(): string {
     const date = new Date();
     const formatter = new Intl.DateTimeFormat(undefined, {
         hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
@@ -73,24 +99,27 @@ function getDefaultTimeFormat() {
 }
 
 
-type ConverterFunction = (value: string | undefined, format?: string | null) => string;
+type ConverterFunction = (value: string | number | Date, format?: string) => string;
 
-interface Converter {
-    parse: (values: { [key: string]: string | undefined }, pattern: string) => string;
+interface ConverterCore {
     toDate: ConverterFunction;
     toTime: ConverterFunction;
     toDateTime: ConverterFunction;
     toCamel: (str: string, separator?: string) => string;
     toUpper: (str: string) => string;
     toLower: (str: string) => string;
-    splitLast: (str: string, seps: string | string[], regExeption?: RegExp | null) => [string, string] | null;
-    splitFirst: (str: string, seps: string | string[], regExeption?: RegExp | null) => [string, string] | null;
-    padLeft: (str: string, length: number, char?: string, regex?: RegExp | null) => string;
-    padRight: (str: string, length: number, char?: string, regex?: RegExp | null) => string;
-    toQueryString: (params: { [key: string]: string | null }, startWith?: string, fill?: string | null) => string;
-    fillObject: <T>(obj: { [key: string]: T }, value?: any) => { [key: string]: any };
     subStringCount: (str: string, subStr: string) => number;
-    [key: string]: (value: any, format?: any) => string | undefined;
+}
+
+interface Converter extends ConverterCore {
+    parse: (values: Record<string, string>, pattern: string) => string;
+    splitLast: (str: string, seps: string | string[], regException?: RegExp) => [string, string];
+    splitFirst: (str: string, seps: string | string[], regException?: RegExp) => [string, string];
+    padLeft: (str: string, length: number, char?: string, regex?: RegExp) => string;
+    padRight: (str: string, length: number, char?: string, regex?: RegExp) => string;
+    toQueryString: (params: Record<string, string>, startWith?: string, fill?: string) => string;
+    fillObject: <T>(obj: Record<string, T>, value?: any) => Record<string, any>;
+    [key: string]: ConverterCore[keyof ConverterCore] | any;
 }
 
 export const converter: Converter = <Converter>{
@@ -115,21 +144,21 @@ export const converter: Converter = <Converter>{
 
         return splitter(replacer(parse));
     },
-    toDate: (date, format = null) => {
+    toDate: (date, format = undefined) => {
         const defaultFormat = getDefaultDateFormat();
         if (format === 'ISO') {
             return formatDate(date, 'YYYY-MM-DD');
         }
         return formatDate(date, format || defaultFormat);
     },
-    toTime: (date, format = null) => {
+    toTime: (date, format = undefined) => {
         const defaultFormat = getDefaultTimeFormat();
         if (format === 'ISO') {
             return formatDate(date, 'hh:mm:ss');
         }
         return formatDate(date, format || defaultFormat);
     },
-    toDateTime: (date, format = null) => {
+    toDateTime: (date, format = undefined) => {
         const defaultDateFormat = getDefaultDateFormat();
         const defaultTimeFormat = getDefaultTimeFormat();
         const defaultFormat = `${defaultDateFormat} ${defaultTimeFormat}`;
@@ -147,64 +176,68 @@ export const converter: Converter = <Converter>{
     toLower: (str) => {
         return str.toLowerCase();
     },
-    splitLast: (str, seps, regExeption = null) => {
-        const splitter = (sep) => {
+    splitLast: (str, seps, regException = undefined) => {
+        const splitter = (sep: string): [string, string] => {
             const split = str.split(sep);
-            let last = split.pop();
-            while (regExeption && regExeption.test(split[split.length - 1])) {
+
+            let last = split.pop() || '';
+            while (regException && regException.test(split[split.length - 1])) {
                 last = split.pop() + sep + last;
             }
 
-            return split.length
-                ? [split.join(sep), last]
-                : null;
+            return [split.join(sep), last];
+        };
+
+        const separators: string[] = typeof seps === 'string' ? [seps] : Array.isArray(seps) ? seps : [];
+        for (const sep of separators) {
+            const result = splitter(sep);
+            if (result) return result;
         }
 
-        const separators = typeof seps === 'string' ? [seps] : Array.isArray(seps) ? seps : [];
-        const result = separators.reduce((acc, sep) => acc || splitter(sep), null);
-
-        return result || [str, ''];
+        return [str, ''];
     },
-    splitFirst: (str, seps, regExeption = null) => {
-        const splitter = (sep) => {
+    splitFirst: (str, seps, regException = undefined) => {
+        const splitter = (sep: string): [string, string] => {
             const split = str.split(sep);
-            let first = split.shift();
-            while (regExeption && regExeption.test(split[0])) {
+            let first = split.shift() || '';
+            while (regException && regException.test(split[0])) {
                 first += sep + split.shift();
             }
 
-            return split.length
-                ? [first, split.join(sep)]
-                : null;
+            return [first, split.join(sep)];
+        };
+
+        const separators: string[] = typeof seps === 'string' ? [seps] : Array.isArray(seps) ? seps : [];
+        for (const sep of separators) {
+            const result = splitter(sep);
+            if (result) return result;
         }
 
-        const separators = typeof seps === 'string' ? [seps] : Array.isArray(seps) ? seps : [];
-        const result = separators.reduce((acc, sep) => acc || splitter(sep), null);
-
-        return result || [str, ''];
+        return [str, ''];
     },
-    padLeft: (str, length, char = ' ', regex = null) => {
+    padLeft: (str, length, char = ' ', regex = undefined) => {
         if (regex) {
             return str.replace(regex, match => match.padStart(length, char));
         }
         return str.padStart(length, char);
     },
-    padRight: (str, length, char = ' ', regex = null) => {
+    padRight: (str, length, char = ' ', regex = undefined) => {
         if (regex) {
             return str.replace(regex, match => match.padEnd(length, char));
         }
         return str.padEnd(length, char);
     },
-    toQueryString: (params, startWith = "?", fill = null) => {
+    toQueryString: (params, startWith = "?", fill = undefined) => {
         const query = Object.keys(params);
+
         return (query.length > 0 ? startWith : "") + query.map(key => {
-            return `${encodeURIComponent(key)}=${encodeURIComponent(fill === null
+            return `${encodeURIComponent(key)}=${encodeURIComponent(fill === undefined
                 ? params[key]
                 : fill)}`;
         }).join('&');
     },
     fillObject: (obj, value = null) => {
-        const result = {};
+        const result: Record<string, any> = {};
         for (const key in obj) {
             result[key] = value;
         }
@@ -218,13 +251,13 @@ export const converter: Converter = <Converter>{
 };
 
 
-function replacer(pattern) {
+function replacer(pattern: string) {
     return pattern.replace(/replace\(([^,]+),([^,]+),([^)]+)\)/gi, (_, key, from, to) => {
         return key.replaceAll(from, to);
     });
 }
 
-function splitter(pattern) {
+function splitter(pattern: string) {
     return pattern.replace(/split\(([^,]+),([^,]+),([^)]+)\)/gi, (_, key, sep, index = 0) => {
         return key.split(sep)[index];
     });

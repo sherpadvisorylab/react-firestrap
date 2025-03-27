@@ -9,6 +9,8 @@ export interface IButton {
     pre?: string,
     post?: string,
     title?: string,
+    disabled?: boolean,
+    showLoader?: boolean,
     className?: string,
     badgeClass?: string,
     toggle?: string,
@@ -16,16 +18,16 @@ export interface IButton {
 }
 export const LoadingButton = ({
                                   onClick,
-                                  icon = null,
-                                  label = null,
-                                  badge = null,
-                                  pre = null,
-                                  post = null,
-                                  title = null,
-                                  disabled = false,
-                                  showLoader = false,
-                                  className = null,
-                                  badgeClass = null
+                                  icon          = undefined,
+                                  label         = undefined,
+                                  badge         = undefined,
+                                  pre           = undefined,
+                                  post          = undefined,
+                                  title         = undefined,
+                                  disabled      = false,
+                                  showLoader    = false,
+                                  className     = undefined,
+                                  badgeClass    = undefined
 } : IButton = {} ) => {
     const [loader, setLoader] = useState(showLoader);
     const [disable, setDisable] = useState(disabled);
@@ -48,7 +50,7 @@ export const LoadingButton = ({
                 //target.setAttribute("disabled", "disabled");
                 setDisable(true);
                 setLoader(true);
-                await onClick(e);
+                await onClick?.(e);
                 setLoader(false);
                 setDisable(false);
                 //target.removeAttribute("disabled");
@@ -67,17 +69,17 @@ export const LoadingButton = ({
 
 export const ActionButton = ({
                                  onClick,
-                                 icon = null,
-                                 label = null,
-                                 badge = null,
-                                 pre = null,
-                                 post = null,
-                                 title = null,
-                                 disabled = false,
-                                 className = null,
-                                 badgeClass = null,
-                                 toggle = "",
-                                 target = ""
+                                 icon           = undefined,
+                                 label          = undefined,
+                                 badge          = undefined,
+                                 pre            = undefined,
+                                 post           = undefined,
+                                 title          = undefined,
+                                 disabled       = false,
+                                 className      = undefined,
+                                 badgeClass     = undefined,
+                                 toggle         = undefined,
+                                 target         = undefined
 } : IButton = {}) => {
     const theme = useTheme("button");
 
@@ -92,7 +94,7 @@ export const ActionButton = ({
                 e.preventDefault();
                 e.stopPropagation();
 
-                onClick(e);
+                onClick?.(e);
             }}
         >
             {pre}
@@ -104,7 +106,15 @@ export const ActionButton = ({
     );
 };
 
-export const GoSite = ({ label, url }) => {
+interface GoSiteProps {
+    label: string;
+    url: string;
+}
+
+export const GoSite = ({
+                           label,
+                           url
+}: GoSiteProps) => {
   return (
     <h1 className="page-header mb-0">
       {label + " "}
@@ -115,7 +125,19 @@ export const GoSite = ({ label, url }) => {
   );
 };
 
-export const ReferSite = ({ title, url, imageUrl, width }) => {
+interface ReferSiteProps {
+    title: string;
+    url: string;
+    imageUrl: string;
+    width?: number | string;
+}
+
+export const ReferSite = ({
+                              title,
+                              url,
+                              imageUrl,
+                              width
+}: ReferSiteProps) => {
   return (
     <a
       href={url}

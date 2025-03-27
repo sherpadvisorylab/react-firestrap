@@ -3,7 +3,24 @@ import {Dropdown, DropdownLink} from "./Dropdown";
 import {useTheme} from "../Theme";
 import {Wrapper} from "./GridSystem";
 
-function Notifications({children = [], badge = null, wrapClass = null}) {
+interface NotificationItem {
+    title: string;
+    url: string;
+    time: string;
+    icon: string;
+}
+
+interface NotificationsProps {
+    children?: NotificationItem[];
+    badge?: React.ReactNode;
+    wrapClass?: string;
+}
+
+function Notifications({
+                           children     = [],
+                           badge        = undefined,
+                           wrapClass    = undefined
+}: NotificationsProps) {
   const theme = useTheme("notifications");
 
   return (
@@ -18,15 +35,15 @@ function Notifications({children = [], badge = null, wrapClass = null}) {
               footer="SEE ALL"
           >
               {(children || []).map((notify, index) => {
-                  let addClass = " w-20px";
-                  if (index === 0) addClass = "";
+                  const iconClass = index === 0 ? "fs-20px" : "fs-20px w-20px";
+
                   return (
                       <DropdownLink
+                          key={index}
                           className="py-10px text-wrap"
                           url={notify.url}
-                          key={index}
                       >
-                          <div className={"fs-20px" + addClass}>
+                          <div className={iconClass}>
                               <i className={`${theme.getIcon(notify.icon)} text-theme`}/>
                           </div>
                           <div className="flex-1 flex-wrap ps-3">
@@ -34,7 +51,7 @@ function Notifications({children = [], badge = null, wrapClass = null}) {
                               <div className="small">{notify.time}</div>
                           </div>
                           <div className="ps-2 fs-16px">
-                              <i className={`${theme.getIcon("chevron-right")}`}/>
+                              <i className={theme.getIcon("chevron-right")}/>
                           </div>
                       </DropdownLink>
                   );

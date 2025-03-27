@@ -8,11 +8,17 @@ const setLog = async (
     path: string,
     action: 'create' | 'update' | 'delete',
     record: any,
-    recordKey: string
+    recordKey?: string
 ): Promise<void> => {
     const when = new Date().toISOString();
     const user = getGlobalVars("user");
-    const data = { user: user.email, when, action, record, recordKey };
+    const data = {
+        user: user.email ?? 'unknown',
+        when,
+        action,
+        record,
+        recordKey
+    };
 
     await db.set(`/log/${path}/${normalizeKey(when)}`, data);
 };

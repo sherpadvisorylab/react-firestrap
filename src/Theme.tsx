@@ -1,4 +1,20 @@
-import React, {createContext, useContext, useEffect, useState} from 'react';
+import React, {createContext, useContext, useEffect, useState, ReactNode} from 'react';
+
+interface Theme {
+    Icons: {
+        [key: string]: string;
+    };
+    [key: string]: any;
+}
+
+interface UseTheme extends Theme {
+    getIcon: (iconName: string) => string;
+}
+
+interface ThemeProviderProps {
+    children: ReactNode;
+    importTheme?: () => Promise<any>;
+}
 
 const defaultTheme = {
     Icons: {
@@ -147,8 +163,10 @@ const defaultTheme = {
     },
 }
 
+const ThemeContext = createContext<Theme>(defaultTheme);
+
 // Funzione per unire profondamente due oggetti
-const deepMerge = (target, source) => {
+const deepMerge = (target: any, source: any) => {
     for (const key in source) {
         if (source.hasOwnProperty(key)) {
             if (typeof source[key] === 'object' && source[key] !== null) {
@@ -164,10 +182,12 @@ const deepMerge = (target, source) => {
     return target;
 };
 
-const ThemeContext = createContext();
 
-export const ThemeProvider = ({children, importTheme = null}) => {
-    const [theme, setTheme] = useState(null);
+export const ThemeProvider = ({
+                                                                children,
+                                                                importTheme = undefined
+}: ThemeProviderProps) => {
+    const [theme, setTheme] = useState<Theme>();
 
     useEffect(() => {
         const loadTheme = async () => {
@@ -182,7 +202,7 @@ export const ThemeProvider = ({children, importTheme = null}) => {
             }
         };
         loadTheme();
-    }, []);
+    }, [importTheme]);
 
     if (!theme) {
         //todo: aggiungere un loader
@@ -196,12 +216,13 @@ export const ThemeProvider = ({children, importTheme = null}) => {
     );
 };
 
-export const useTheme = (iconType = null) => {
-    const theme = useContext(ThemeContext);
+
+export const useTheme = (iconType: string): UseTheme => {
+    const theme = useContext(ThemeContext) as Theme;
 
     return {
         ...theme,
-        getIcon(iconName) : string {
+        getIcon(iconName : string) : string {
             return (theme.Icons[iconType] || theme.Icons.default) + iconName;
         },
     };

@@ -3,24 +3,54 @@ import {Link} from "react-router-dom";
 import {useTheme} from "../Theme";
 import {Wrapper} from "./GridSystem";
 
-export const Dropdown = ({
-                             icon = null,
-                             label = null,
-                             badge = null,
-                             header = null,
-                             footer = null,
-                             children,
-                             keepDropdownOpen = false,
-                             height = null,
-                             wrapClass = null,
-                             className = null,
-                             buttonClass = null,
-                             badgeClass = null,
-                             menuClass = null,
-                             headerClass = null,
-                             footerClass = null,
+interface DropdownProps {
+    icon?: string;
+    label?: string;
+    badge?: React.ReactNode;
+    header?: React.ReactNode;
+    footer?: React.ReactNode;
+    children: React.ReactNode;
+    keepDropdownOpen?: boolean;
+    height?: string | number;
+    wrapClass?: string;
+    className?: string;
+    buttonClass?: string;
+    badgeClass?: string;
+    menuClass?: string;
+    headerClass?: string;
+    footerClass?: string;
+}
 
-}) => {
+interface DropdownButtonProps {
+    url?: string;
+    children: React.ReactNode;
+}
+
+interface DropdownLinkProps {
+    url?: string;
+    onClick?: React.MouseEventHandler<HTMLAnchorElement | HTMLButtonElement>;
+    className?: string;
+    children: React.ReactNode;
+}
+
+export const Dropdown = ({
+                             children,
+                             icon               = undefined,
+                             label              = undefined,
+                             badge              = undefined,
+                             header             = undefined,
+                             footer             = undefined,
+                             keepDropdownOpen   = false,
+                             height             = "auto",
+                             wrapClass          = undefined,
+                             className          = undefined,
+                             buttonClass        = undefined,
+                             badgeClass         = undefined,
+                             menuClass          = undefined,
+                             headerClass        = undefined,
+                             footerClass        = undefined,
+
+}: DropdownProps) => {
   const theme = useTheme("dropdown");
   return (
       <Wrapper className={wrapClass || theme.Dropdown.wrapClass}>
@@ -38,7 +68,7 @@ export const Dropdown = ({
               </button>}
                   <div className={"dropdown-menu dropdown-menu-end " + (menuClass || theme.Dropdown.menuClass)}
                    onClick={(e) => keepDropdownOpen && e.stopPropagation()}
-                   style={{height: height || "auto"}}
+                   style={{height: height}}
               >
                   {header && <h6 className={"dropdown-header " + (headerClass || theme.Dropdown.headerClass)}>{header}</h6>}
                   {children}
@@ -55,7 +85,10 @@ export const Dropdown = ({
 };
 
 
-export const DropdownButton = ({ url, children }) => {
+export const DropdownButton = ({
+                                   children,
+                                   url = undefined
+}: DropdownButtonProps) => {
     return (
         <a
             href={url || "#"}
@@ -68,7 +101,12 @@ export const DropdownButton = ({ url, children }) => {
     );
 };
 
-export const DropdownLink = ({ url, onClick, className = "", children }) => {
+export const DropdownLink = ({
+                                 children,
+                                 url        = undefined,
+                                 onClick    = undefined,
+                                 className  = undefined
+}: DropdownLinkProps) => {
     return (
         url
             ? <Link to={url || "#"}

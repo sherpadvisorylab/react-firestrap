@@ -10,8 +10,8 @@ type BrandProps = {
 
 const Brand = ({
                    url,
-                   txt  = null,
-                   icon = null
+                   txt  = undefined,
+                   icon = undefined
 }: BrandProps) => {
     const theme = useTheme("brand");
 

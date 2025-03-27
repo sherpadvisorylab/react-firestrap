@@ -1,6 +1,7 @@
 import React from 'react';
 import {useTheme} from "../Theme";
 import {Wrapper} from "./GridSystem";
+import {RecordArray, RecordProps} from "../integrations/google/firedatabase";
 
 export type TableHeaderProp = {
     key: string,
@@ -11,9 +12,9 @@ export type TableHeaderProp = {
 
 type TableProps = {
     header: TableHeaderProp[],
-    body: { key: string, [key: string]: any }[],
+    body?: RecordArray,
     Footer?: string | React.ReactNode,
-    onClick?: (key: string) => void,
+    onClick?: (record: RecordProps) => void;
     wrapClass?: string,
     scrollClass?: string,
     tableClass?: string,
@@ -25,18 +26,18 @@ type TableProps = {
 
 function Table({
                    header,
-                   body,
-                   Footer           = null,
-                   onClick          = null,
-                   wrapClass        = "",
-                   scrollClass      = "",
-                   tableClass       = "",
-                   headerClass      = "",
-                   bodyClass        = "",
-                   footerClass      = "",
-                   selectedClass    = ""
+                   body             = undefined,
+                   Footer           = undefined,
+                   onClick          = undefined,
+                   wrapClass        = undefined,
+                   scrollClass      = undefined,
+                   tableClass       = undefined,
+                   headerClass      = undefined,
+                   bodyClass        = undefined,
+                   footerClass      = undefined,
+                   selectedClass    = undefined
 } : TableProps) {
-    const theme = useTheme();
+    const theme = useTheme("table");
     selectedClass = selectedClass || theme.Table.selectedClass;
 
     if (!Array.isArray(body)) {
@@ -47,28 +48,28 @@ function Table({
 
     // Estrai le chiavi dal primo oggetto nell'array per creare le intestazioni della tabella
     const headers = (header || Object.keys(body[0]).map(key => ({ key, label: key })));
-    const handleClick = (key, e) => {
-        let currentElement = e.target;
+    const handleClick = (record: RecordProps, e: React.MouseEvent<HTMLElement>) => {
+        let currentElement = e.target as HTMLElement;
 
         while (currentElement && currentElement.tagName !== 'TR') {
             if (currentElement.tagName === 'A' || currentElement.tagName === 'BUTTON' ) {
                 return;
             }
-            currentElement = currentElement.parentNode;
+            currentElement = currentElement.parentNode as HTMLElement;
         }
 
         if (selectedClass && !currentElement.classList.contains(selectedClass)) {
-            Array.from(currentElement.parentNode.children).forEach(row => {
+            Array.from(currentElement.parentNode?.children || []).forEach(row => {
                 row.classList.remove(selectedClass);
             });
 
             currentElement.classList.add(selectedClass);
         }
 
-        onClick && onClick(key);
+        onClick?.(record);
     }
 
-    const getField = (item, key) => {
+    const getField = (item: RecordProps, key: string) => {
         if (typeof item[key] === 'object' && !React.isValidElement(item[key]) && !Array.isArray(item[key])) {
             return "";
         }
@@ -99,16 +100,16 @@ function Table({
                         </tr>
                         </thead>
                         <tbody className={bodyClass || theme.Table.bodyClass}>
-                            {body.map((item, index) => (
+                            {body.map((record, index) => (
                                 <tr
                                     key={index}
                                     style={{ cursor: onClick ? "pointer": "cursor" }}
                                     onClick={(e) => {
-                                        onClick && handleClick(item.key, e);
+                                        onClick && handleClick(record, e);
                                     }}
                                 >
                                     {headers.map((hdr) => (
-                                        <td key={hdr.key}>{getField(item, hdr.key)}</td>
+                                        <td key={hdr.key}>{getField(record, hdr.key)}</td>
                                     ))}
                                 </tr>
                             ))}

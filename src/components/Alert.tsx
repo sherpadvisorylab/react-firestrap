@@ -12,7 +12,7 @@ const Alert = ({
                    children,
                    type         = "info",
                    icon         = true,
-                   className    = ""
+                   className    = undefined
 }: AlertProps) => {
     const theme = useTheme("alert");
 

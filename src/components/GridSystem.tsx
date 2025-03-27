@@ -1,24 +1,53 @@
-export const Wrapper = ({children, className = null}) => {
-    return (className
-            ? <div className={className}>{children}</div>
-            : children
-    );
+import React, { CSSProperties, ReactNode } from 'react';
+
+type BaseProps = {
+    children: ReactNode;
+    className?: string;
 };
 
-export const Container = ({children, className = null}) => {
-    className = className ? `container ${className}` : 'container';
-
-    return (<div className={className}>{children}</div>);
+type RowProps = BaseProps & {
+    style?: CSSProperties;
 };
 
-export const Row = ({children, className = null, style = null}) => {
-    className = className ? `row ${className}` : 'row';
-
-    return (<div className={className} style={style}>{children}</div>);
+type ColProps = BaseProps & {
+    size?: number;
 };
 
-export const Col = ({children, size = 6, className = null}) => {
-    className = className ? `col-${size} ${className}` : `col-${size}`;
+export const Wrapper = ({
+                            children,
+                            className = undefined
+} : BaseProps) => {
+    return className
+        ? <div className={className}>{children}</div>
+        : <>{children}</>;
+};
 
-    return (<div className={className}>{children}</div>);
+
+export const Container = ({
+                                                   children,
+                                                   className = undefined
+}: BaseProps) => {
+    const fullClassName = className ? `container ${className}` : 'container';
+
+    return (<div className={fullClassName}>{children}</div>);
+};
+
+export const Row = ({
+                        children,
+                        className = undefined,
+                        style = undefined
+}: RowProps) => {
+    const fullClassName = className ? `row ${className}` : 'row';
+
+    return (<div className={fullClassName} style={style}>{children}</div>);
+};
+
+export const Col = ({
+                        children,
+                        className = undefined,
+                        size = 6
+}: ColProps) => {
+    const fullClassName = className ? `col-${size} ${className}` : `col-${size}`;
+
+    return (<div className={fullClassName}>{children}</div>);
 };

@@ -3,7 +3,9 @@ import {Link} from "react-router-dom";
 import {useTheme} from "../Theme";
 
 
-
+interface SearchProps {
+    handleSearch?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+}
 export const SearchButton = () => {
     const theme = useTheme("button");
     return (
@@ -22,12 +24,14 @@ export const SearchButton = () => {
     );
 };
 
-function Search (props) {
+function Search ({
+                     handleSearch = undefined
+}: SearchProps) {
     return (
 
         <div>
             <SearchButton />
-            <input className={"d-none"} type="text" placeholder="Search" onChange={props.handleSearch}/>
+            <input className={"d-none"} type="text" placeholder="Search" onChange={handleSearch}/>
         </div>
     )
 }

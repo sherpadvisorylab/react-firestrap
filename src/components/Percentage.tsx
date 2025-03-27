@@ -1,28 +1,36 @@
 import React, { useEffect, useState } from "react";
 
+interface PercentageProps {
+    val?: number;
+    max?: number;
+    min?: number;
+    children?: React.ReactNode;
+    styleType?: "rounded" | "progress";
+}
+
 const Percentage = ({
-    val = null,
-    max = null,
-    min = null,
-    styleType = "rounded", // or "progress"
-    children
-}) => {
+                        val = undefined,
+                        max = undefined,
+                        min = undefined,
+                        children = undefined,
+                        styleType = "rounded" // or "progress"
+}: PercentageProps) => {
     // Calcola il numero di campi completati
-    const initialCompletedFields = React.Children.toArray(children).reduce((count, child) => {
-        if (React.isValidElement(child) && child.props.value) {
+    const initialCompletedFields = React.Children.toArray(children).reduce((count: number, child) => {
+        if (React.isValidElement(child) && (child as React.ReactElement).props.value) {
             return count + 1;
         }
         return count;
     }, 0);
 
-    const [value, setValue] = useState(val !== null ? val : initialCompletedFields);
+    const [value, setValue] = useState(val !== undefined ? val : initialCompletedFields);
 
     const peak = max || React.Children.count(children);
     const pit = min || 0;
 
     const [progress, setProgress] = useState(((value - pit) / (peak - pit)) * 100);
 
-    const handleChange = (e) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setValue(prev => prev + (e.target.value.length ? 1 : -1));
     };
 
@@ -33,7 +41,7 @@ const Percentage = ({
 
         const newProps = {
             ...rest, 
-            onChange: (event) => {
+            onChange: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
                 onChange?.(event);
                 handleChange?.(event);
             },
@@ -48,7 +56,7 @@ const Percentage = ({
         setProgress(((value - pit) / (peak - pit)) * 100);
     }, [value, peak, pit]);
 
-    const getSegmentColors = (index) => {
+    const getSegmentColors = (index: number) => {
         const colors = ['#4db8ff', '#ff4d4d', '#4dff4d', '#ffff4d', '#4d4dff']; // Esempio di colori
         return colors[index % colors.length];
     };
@@ -116,38 +124,27 @@ const Percentage = ({
         };
     });
 
-    const containerStyle = {
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        position: 'relative',
-        width: `${radius * 2}px`,
-        height: `${radius * 2}px`,
-    };
-
-    const backgroundCircleStyle = {
-        stroke: '#e6e6e6',
-        strokeWidth: `${strokeWidth}px`,
-        fill: 'none',
-    };
-
-    const textStyle = {
-        fontSize: '20px',
-        fill: '#000',
-        dominantBaseline: 'middle',
-        textAnchor: 'middle',
-    };
-
     return (
         <>
-            <div style={containerStyle}>
+            <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                position: 'relative',
+                width: `${radius * 2}px`,
+                height: `${radius * 2}px`,
+            }}>
                 <svg
                     width={radius * 2}
                     height={radius * 2}
                     viewBox={`0 0 ${radius * 2} ${radius * 2}`}
                 >
                     <circle
-                        style={backgroundCircleStyle}
+                        style={{
+                            stroke: '#e6e6e6',
+                            strokeWidth: `${strokeWidth}px`,
+                            fill: 'none',
+                        }}
                         r={normalizedRadius}
                         cx={radius}
                         cy={radius}
@@ -164,7 +161,12 @@ const Percentage = ({
                     <text
                         x="50%"
                         y="50%"
-                        style={textStyle}
+                        style={{
+                            fontSize: '20px',
+                            fill: '#000',
+                            dominantBaseline: 'middle',
+                            textAnchor: 'middle',
+                        }}
                     >
                         {`${Math.round(progress)}%`}
                     </text>

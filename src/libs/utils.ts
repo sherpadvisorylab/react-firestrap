@@ -284,3 +284,7 @@ export const arrayUnique = <T>(array: T[], key?: keyof T): T[] => {
     }
 };
 
+export const isEmpty = (data: any): boolean => {
+    return data === undefined || data === null || data === '';
+};
+

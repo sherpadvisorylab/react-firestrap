@@ -1,14 +1,21 @@
 import React from 'react';
 import {useTheme} from "../Theme";
 
+interface LoaderProps {
+    show?: boolean;
+    children: React.ReactNode;
+    icon?: string;
+    title?: string;
+    description?: string;
+}
 function Loader({
-                    show = false,
                     children,
-                    icon = null,
-                    title = null,
-                    description = null
-}) {
-    const theme = useTheme();
+                    show            = false,
+                    icon            = undefined,
+                    title           = undefined,
+                    description     = undefined
+}: LoaderProps) {
+    const theme = useTheme("loader");
     icon = icon || theme.Loader.icon;
     title = title || theme.Loader.title;
     description = description || theme.Loader.description;

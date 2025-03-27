@@ -8,15 +8,15 @@ type Breadcrumb = {
 };
 
 type BreadcrumbsProps = {
-    path?: string | null;
-    pre?: React.ReactNode | null;
+    path?: string;
+    pre?: React.ReactNode;
     className?: string;
 };
 
 export const Breadcrumbs = ({
-                                path,
-                                pre         = null,
-                                className   = ""
+                                path        = undefined,
+                                pre         = undefined,
+                                className   = undefined
 }: BreadcrumbsProps) => {
     const location = useLocation();
     const pathname = trimSlash(path || location.pathname);
