@@ -1,72 +1,67 @@
 import React, {useState} from 'react';
 import {ActionButton} from "./Buttons";
 import ComponentEnhancer from "./ComponentEnhancer";
-import {converter} from "../libs";
+import {converter} from "../libs/converter";
 
-const TabTop = ({menu, content}) => {
-    return <>
-        <ul className="nav nav-tabs">
-            {menu}
-        </ul>
-        <div className="tab-content pt-3">
-            {content}
-        </div>
+interface TabLayoutProps {
+    menu: React.ReactNode;
+    content: React.ReactNode;
+}
+
+interface TabProps {
+    children: React.ReactNode;
+    name?: string;
+    onChange?: (e: { target: { name: string; value: any[] } }) => void;
+    value?: any[];
+    label?: string;
+    min?: number;
+    max?: number;
+    activeIndex?: number;
+    title?: string;
+    onAdd?: () => void;
+    onRemove?: (index: number) => void;
+    readOnly?: boolean;
+    tabPosition?: "top" | "left" | "right";
+}
+
+
+const TabTop = ({menu, content}: TabLayoutProps) => (
+    <>
+        <ul className="nav nav-tabs">{menu}</ul>
+        <div className="tab-content pt-3">{content}</div>
     </>
-}
+);
 
 
-const TabLeft = ({menu, content}) => {
-    return <div className="d-flex">
-        <ul className="nav nav-tabs flex-column text-nowrap border-end border-bottom-0">
-            {menu}
-        </ul>
-        <div className="tab-content ps-3 pt-3 border-top">
-            {content}
-        </div>
+const TabLeft = ({menu, content}: TabLayoutProps) => (
+    <div className="d-flex">
+        <ul className="nav nav-tabs flex-column text-nowrap border-end border-bottom-0">{menu}</ul>
+        <div className="tab-content ps-3 pt-3 border-top">{content}</div>
     </div>
-}
+);
 
-const TabRight = ({menu, content}) => {
-    return <div className="d-flex">
-        <div className="tab-content pe-3 pt-3 border-top">
-            {content}
-        </div>
-        <ul className="nav nav-tabs flex-column text-nowrap border-start border-bottom-0">
-            {menu}
-        </ul>
+const TabRight = ({menu, content}: TabLayoutProps) => (
+    <div className="d-flex">
+        <div className="tab-content pe-3 pt-3 border-top">{content}</div>
+        <ul className="nav nav-tabs flex-column text-nowrap border-start border-bottom-0">{menu}</ul>
     </div>
-}
+);
 
 const Tab = ({
                  children,
-                 name = null,
-                 onChange = () => {
-                 },
-                 value = null,
-                 label = "Tab",
-                 min = 1,
-                 max = null,
-                 activeIndex = 0,
-                 title,
-                 onAdd,
-                 onRemove,
-                 readOnly = false,
-                 tabPosition = "top"
-             }: {
-    children: any,
-    name?: string,
-    onChange?: any,
-    value?: any[],
-    label?: string,
-    min?: number,
-    max?: number,
-    activeIndex?: number,
-    title?: string,
-    onAdd?: any,
-    onRemove?: any,
-    readOnly: boolean,
-    tabPosition: "top" | "left" | "right"
-}) => {
+                 name           = undefined,
+                 onChange       = undefined,
+                 value          = undefined,
+                 label          = "Tab",
+                 min            = 1,
+                 max            = undefined,
+                 activeIndex    = 0,
+                 title          = undefined,
+                 onAdd          = undefined,
+                 onRemove       = undefined,
+                 readOnly       = false,
+                 tabPosition    = "top"
+}: TabProps) => {
     // const recordEmpty = propsComponentEnhancer(children);
     const [active, setActive] = useState(activeIndex);
     const [uniqueKey, setUniqueKey] = useState(0);

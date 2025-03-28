@@ -3,10 +3,25 @@ import {useTheme} from "../Theme";
 import Carousel from "./Carousel";
 import {Wrapper} from "./GridSystem";
 import {converter} from "../libs/converter";
-import {RecordArray, RecordProps} from "../integrations/google/firedatabase";
+import {RecordProps} from "../integrations/google/firedatabase";
+
+type ImageProps = React.ReactElement<HTMLImageElement>;
+type GalleryRecord = RecordProps & {
+    img?: React.ReactElement<{
+        className: string;
+        style?: React.CSSProperties;
+        onClick?: (e: React.MouseEvent<HTMLImageElement>) => void
+    }>;
+    thumbnail?: string;
+    mimetype?: string;
+    width?: number;
+    height?: number;
+    name?: string;
+};
+
 
 type GalleryProps = {
-    body?: RecordArray;
+    body?: GalleryRecord[];
     Header?: string | React.ReactNode;
     Footer?: string | React.ReactNode;
     itemTopLeft?: string | React.ReactNode;
@@ -69,19 +84,19 @@ const Gallery = ({
         setBody(updatedBody);
     }, [groupBy, body]);
 
-    const handleClick = (images, e) => {
+    const handleClick = (images: GalleryRecord[], e: React.MouseEvent<HTMLElement>) => {
         if (selectedClass) {
-            let currentElement = e.target;
+            let currentElement = e.target as HTMLElement;
 
             while (currentElement && !currentElement.classList.contains("item")) {
                 if (currentElement.tagName === 'A' || currentElement.tagName === 'BUTTON') {
                     return;
                 }
-                currentElement = currentElement.parentNode;
+                currentElement = currentElement.parentNode as HTMLElement;
             }
 
             if (!currentElement.classList.contains(selectedClass)) {
-                Array.from(currentElement.parentNode.children).forEach(row => {
+                Array.from(currentElement.parentNode?.children || []).forEach(row => {
                     row.classList.remove(selectedClass as string);
                 });
 
@@ -92,35 +107,42 @@ const Gallery = ({
         onClick && onClick(images[0].key);
     }
 
-    const getImage = ((item) => React.isValidElement(item.img)
-        ? React.cloneElement(item.img, {
-            className: "img-fluid",
-            style: {
-                ...item.img.props.style,
-                cursor: onClick ? "pointer" : "cursor"
-            },
-            onClick: (e) => {
-                handleClick([item], e);
-                item.img.props.onClick && item.img.props.onClick(e);
-            }
-        })
-        : <img
-            key={item.key}
-            className={"img-fluid"}
-            src={item.thumbnail
-                ? item.mimetype + item.thumbnail
-                : 'data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAgAAAAwAAAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw=='
-            }
-            alt={item.name}
-            width={item.width}
-            height={item.height}
-            style={{cursor: onClick ? "pointer" : "cursor"}}
-            onClick={(e) => handleClick([item], e)}
-        />
-    );
+    const getImage = (item: GalleryRecord): ImageProps => {
+        const imgElement = item.img;
+        if (imgElement && React.isValidElement(imgElement)) {
+            return React.cloneElement(imgElement, {
+                className: "img-fluid",
+                style: {
+                    ...(imgElement.props.style || {}),
+                    cursor: onClick ? "pointer" : "default",
+                },
+                onClick: (e: React.MouseEvent<HTMLImageElement>) => {
+                    handleClick([item], e);
+                    imgElement.props.onClick?.(e);
+                },
+            }) as ImageProps;
+        }
 
-    const getGroups = (body: React.ReactNode[], seps: string | string[]) : React.ReactNode[] => {
-        const groups = Object.values(body.reduce<{ [key: string]: React.ReactNode[] }>((acc, item) => {
+        return (
+            <img
+                key={item.key}
+                className="img-fluid"
+                src={
+                    item.thumbnail
+                        ? item.mimetype + item.thumbnail
+                        : 'data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAgAAAAwAAAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw=='
+                }
+                alt={item.name}
+                width={item.width}
+                height={item.height}
+                style={{ cursor: onClick ? "pointer" : "default" }}
+                onClick={(e: React.MouseEvent<HTMLImageElement>) => handleClick([item], e)}
+            />
+        );
+    };
+
+    const getGroups = (body: GalleryRecord[], seps: string | string[]) : React.ReactElement[] => {
+        const groups = Object.values(body.reduce((acc: { [key: string]: ImageProps[] }, item: GalleryRecord) => {
             const imgElement = getImage(item);
             const alt = (imgElement.props.alt || "") as string;
             const src = (imgElement.props.src || "") as string;
@@ -134,10 +156,10 @@ const Gallery = ({
             return acc;
         }, {}));
 
-        return groups.map((Images, index) => (
+        return groups.map((Images: ImageProps[], index: number) => (
             <Carousel
                 key={index}
-                onClick={(e) => handleClick(Images, e)}
+                onClick={(e: React.MouseEvent<HTMLElement>) => handleClick(Images, e)}
             >{Images}</Carousel>
         ));
     }

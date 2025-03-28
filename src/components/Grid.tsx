@@ -5,7 +5,7 @@ import Gallery from "./Gallery";
 import Card from "./Card";
 import db from "../libs/database";
 import Modal from "./Modal";
-import {generateUniqueId, normalizeKey, trimSlash, ucfirst} from "../libs/utils";
+import {generateUniqueId, normalizeKey, safeClone, trimSlash, ucfirst} from "../libs/utils";
 import {useLocation} from "react-router-dom";
 import {converter} from "../libs/converter";
 import ComponentEnhancer, {extractComponentProps} from "./ComponentEnhancer";
@@ -34,15 +34,15 @@ type GridProps = {
     Footer?: string | React.ReactNode;
     allowedActions?: Array<"add" | "edit" | "delete">;
     modalSize?: string;
-    setModalHeader?: (record?: any) => string;
-    setPrimaryKey?: (record: any) => string;
-    onLoadRecord?: (record: any, index: number) => any;
-    onDisplayBefore?: (records: any, setRecords: (records: any) => void, setLoader: (loader: boolean) => void) => void;
-    onInsertRecord?: (record: any) => any;
-    onUpdateRecord?: (record: any, key: string) => any;
-    onDeleteRecord?: (record: any, key: string) => boolean;
-    onFinallyRecord?: (action: string, record: any, key: string) => any;
-    onClick?: (record: RecordProps) => any;
+    setModalHeader?: (record?: RecordProps) => string;
+    setPrimaryKey?: (record: RecordProps) => string;
+    onLoadRecord?: (record: RecordProps, index: number) => RecordProps | boolean;
+    onDisplayBefore?: (records: RecordArray, setRecords: React.Dispatch<React.SetStateAction<RecordArray | undefined>>, setLoader: React.Dispatch<React.SetStateAction<boolean>>) => void;
+    onInsertRecord?: (record: RecordProps) => Promise<RecordProps>;
+    onUpdateRecord?: (record: RecordProps, key: string) => Promise<RecordProps>;
+    onDeleteRecord?: (record: RecordProps, key: string) => Promise<boolean>;
+    onFinallyRecord?: (action: string, record: RecordProps, key: string) => Promise<RecordProps>;
+    onClick?: (record: RecordProps) => void;
     Form?: any;
     scroll?: boolean;
     type?: "table" | "gallery";
@@ -54,23 +54,24 @@ type GridProps = {
 };
 
 type RecordForm = {
+    data: RecordProps;
+    savePath: string;
     key?: string;
-    data?: any;
     title?: string;
     form?: React.ReactNode;
-    savePath: string;
-    onInsert?: (record: any) => any;
-    onUpdate?: (record: any, key: string) => any;
-    onDelete?: (record: any, key: string) => boolean;
-    onFinally?: (action: string, record: any, key: string) => any;
-    genKey: (record: any) => string;
+    onInsert?: (record: RecordProps) => Promise<RecordProps>;
+    onUpdate?: (record: RecordProps, key: string) => Promise<RecordProps>;
+    onDelete?: (record: RecordProps, key: string) => Promise<boolean>;
+    onFinally?: (action: string, record: RecordProps, key: string) => Promise<RecordProps>;
+    genKey: (record: RecordProps) => string;
 };
 
 interface OpenModalParams {
     title?: string;
-    data?: any;
+    data?: RecordProps;
     savePath?: string;
 }
+
 
 const Grid = (props: GridProps) => {
     return props.dataArray
@@ -122,7 +123,7 @@ const GridArray = ({
     const [records, setRecords] = useState<RecordArray | undefined>(undefined);
     const [record, setRecord] = useState<RecordForm | undefined>(undefined);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const refDomElem = useRef({});
+    const refDomElem = useRef<Record<string, HTMLElement | null>>({});
     const location = useLocation();
     //@todo: da valutare se serve o meno
     //const dbStoragePath = dataStoragePath || (dataStoragePath === false ? null : trimSlash(location.pathname));
@@ -132,17 +133,21 @@ const GridArray = ({
     console.warn(records, dataArray);
     if(!records && Array.isArray(dataArray) && dataArray.length === 0) {
         console.error("Revert records => dataArray");
-        dataArray = records;
+        //dataArray = records;
     }
 
     useEffect(() => {
-        if (onDisplayBefore && dataArray) {
-            onDisplayBefore([...dataArray], setRecords, setLoader);
+        if (!dataArray) return;
+
+        const cloned = safeClone(dataArray);
+
+        if (onDisplayBefore) {
+            onDisplayBefore(cloned, setRecords, setLoader);
         } else {
-            //setRecords(dataArray);
-            setRecords(prevData => prevData == dataArray ? prevData : dataArray);
+            setRecords(cloned);
         }
     }, [dataArray, onDisplayBefore]);
+
 
     if (!columns && records) {
         columns = (
@@ -190,28 +195,28 @@ const GridArray = ({
         return acc;
     }, {} as Record<string, ColumnFunction>);
 
-    const body: RecordArray | undefined = records?.map((item, index) => {
-        const originalRecord = typeof structuredClone === 'function'
-            ? structuredClone(item)
-            : JSON.parse(JSON.stringify(item));
+    const body: RecordArray | undefined = records?.reduce((acc, item, index) => {
+        const transformed = onLoadRecord ? onLoadRecord(item, index) : item;
 
-        const onLoadResult = onLoadRecord ? onLoadRecord(originalRecord, index) : originalRecord;
-        const record = onLoadResult === true ? originalRecord : { ...onLoadResult };
+        if (!transformed) return acc;
 
-        for (const [key, value] of Object.entries(originalRecord)) {
+        const source = transformed === true ? item : transformed;
+        const result: RecordProps = {};
+        for (const [key, value] of Object.entries(source)) {
             if (key.startsWith("_")) {
-                record[key] = value;
+                result[key] = value;
             } else if (columnsFunc[key]) {
-                record[key] = columnsFunc[key]({
+                result[key] = columnsFunc[key]({
                     value,
-                    record: originalRecord,
-                    key: originalRecord._key
+                    record: source,
+                    key: source._key,
                 });
             }
         }
 
-        return record;
-    });
+        acc.push(result);
+        return acc;
+    }, [] as RecordArray);
 
     //@todo: da capire chi valorizza a []
     if(Array.isArray(dataArray) && dataArray.length === 0) {
@@ -236,7 +241,7 @@ const GridArray = ({
     ): void => {
         setRecord({
             key: key,
-            data: data,
+            data: data || {},
             title: title,
             form: Form && <ComponentEnhancer
                 components={typeof Form === "function"
@@ -252,21 +257,35 @@ const GridArray = ({
             onDelete: onDeleteRecord,
             onFinally: onFinallyRecord,
             genKey: setPrimaryKey || (() => generateUniqueId())
-        } as RecordForm);
+        });
         setIsModalOpen(true);
     };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const name = e.target.name;
-        const value = e.target.value;
+    const getValue = (e: React.ChangeEvent<any>) => {
+        const { type, value, checked } = e.target;
 
-        setRecord((prevState) => ({
-            ...prevState,
-            data: typeof prevState.data === 'string' ? value : {
-                ...prevState.data,
-                [name]: typeof value === 'string' ? value.trim() : value,
-            },
-        }));
+        if (type === 'checkbox') {
+            return checked ? value : null;
+        }
+
+        return value.trim();
+    };
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name } = e.target;
+        const value = getValue(e);
+
+        setRecord((prevState) => {
+            if (!prevState) return undefined;
+
+            return {
+                ...prevState,
+                data: {
+                    ...prevState.data,
+                    [name]: value,
+                },
+            };
+        });
     };
 
     const handleSave = async () => {
@@ -284,28 +303,28 @@ const GridArray = ({
         }
         dbStoragePath && db.set(`${dbStoragePath}/${key}${record.savePath}`, data)
             .then(() => {
-                if (!record.key && key && refDomElem[key]) {
-                    refDomElem[key].click();
+                if (!record.key && key && refDomElem.current[key]) {
+                    refDomElem.current[key]?.click();
                 }
                 console.log('Data updated successfully in Firebase');
             })
             .catch((error) => {
                 console.error('Error updating data in Firebase:', error);
             })
-            .finally(() => {
+            .finally(async() => {
                 closeModal();
 
                 const action = record.key ? "update" : "create";
                 log && setLog(dbStoragePath, action, record.data, key);
-                return record.onFinally && record.onFinally(action, record.data, key);
+                return record.onFinally && await record.onFinally(action, record.data, key);
             });
     };
 
-    const handleDelete = () => {
+    const handleDelete = async () => {
         if(!record?.key) return;
 
         const key = record.key;
-        if (record.onDelete && record.onDelete(record.data, key)) {
+        if (record.onDelete && await record.onDelete(record.data, key)) {
             return;
         }
 
@@ -316,18 +335,18 @@ const GridArray = ({
             .catch((error) => {
                 console.error('Error deleting element from Firebase:', error);
             })
-            .finally(() => {
+            .finally(async() => {
                 closeModal();
 
                 log && setLog(dbStoragePath, "delete", record.data, key);
-                return record.onFinally && record.onFinally("delete", record.data, key);
+                return record.onFinally && await record.onFinally("delete", record.data, key);
 
             });
     };
 
     const actionAddNew = Form && (!allowedActions || allowedActions.includes("add")) && <button className="btn btn-primary" onClick={() => {
         openModal({
-            title: setModalHeader && setModalHeader(),
+            title: setModalHeader?.(),
         })
     }}>Aggiungi</button>
 

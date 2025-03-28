@@ -288,3 +288,11 @@ export const isEmpty = (data: any): boolean => {
     return data === undefined || data === null || data === '';
 };
 
+
+export function safeClone<T>(obj: T): T {
+    return typeof structuredClone === 'function'
+        ? structuredClone(obj)
+        : JSON.parse(JSON.stringify(obj))
+}
+
+
