@@ -12,8 +12,7 @@ import ComponentEnhancer, {extractComponentProps} from "./ComponentEnhancer";
 import setLog from "../libs/log";
 import {RecordArray, RecordProps} from "../integrations/google/firedatabase";
 //todo: fare pulizia dei //todo: da togliere
-//todo: sistemare le key usando _key
-//todo: far un altro useListener scorporando i filedmap. E cosi togliere i filedmap dal listener di base
+//todo: gestire refDomElem poiche non viene mai scritto
 type ColumnFunction = (args: {
     value: any;
     record: any;
