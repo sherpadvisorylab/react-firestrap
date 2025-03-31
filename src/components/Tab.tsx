@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import {ActionButton} from "./Buttons";
 import ComponentEnhancer from "./ComponentEnhancer";
 import {converter} from "../libs/converter";
+import {RecordProps} from "../integrations/google/firedatabase";
 
 interface TabLayoutProps {
     menu: React.ReactNode;
@@ -89,7 +90,7 @@ const Tab = ({
         );
     });
 
-    const addComponent = (index, record) => {
+    const addComponent = (index: number, record) => {
         return (<ComponentEnhancer
             components={children}
             record={record}

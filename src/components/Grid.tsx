@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {useTheme} from "../Theme";
 import Table, {TableHeaderProp} from "./Table";
 import Gallery from "./Gallery";
@@ -22,6 +22,8 @@ type ColumnFunction = (args: {
 type Column = TableHeaderProp & {
     onDisplay?: ColumnFunction;
 };
+
+type ColumnMap = Record<string, ColumnFunction>;
 
 type GridProps = {
     columns?: Column[];
@@ -68,6 +70,7 @@ type RecordForm = {
 interface OpenModalParams {
     title?: string;
     data?: RecordProps;
+    key ?: string;
     savePath?: string;
 }
 
@@ -148,74 +151,78 @@ const GridArray = ({
     }, [dataArray, onDisplayBefore]);
 
 
-    if (!columns && records) {
-        columns = (
+    // 1. Calcolo colonne
+    const computedColumns: Column[] = useMemo(() => {
+        if (columns) return columns;
+        if (!records) return [];
+
+        return (
             Form && typeof Form !== 'function'
-            ? extractComponentProps(Form, (child) => ({
-                label: converter.toCamel(child.props.name, " "),
-                key: child.props.name,
-                sort: true,
-            }))
-            : Object.entries(records[0]).reduce((acc: Column[], [key, value]) => {
-                if (key.startsWith("_")) return acc;
-                if (
-                    React.isValidElement(value) ||
-                    typeof value !== 'object' ||
-                    //value === null ||         todo: da capire se serve
-                    Array.isArray(value)
-                ) {
-                    acc.push({
-                        label: converter.toCamel(key, " "),
-                        key,
-                        sort: true,
-                    });
-                }
-                return acc;
-            }, [])
-        ) as Column[];
-    }
+                ? extractComponentProps(Form, (child) => ({
+                    label: converter.toCamel(child.props.name, " "),
+                    key: child.props.name,
+                    sort: true,
+                }))
+                : Object.entries(records[0]).reduce((acc: Column[], [key, value]) => {
+                    if (key.startsWith("_")) return acc;
+                    if (
+                        React.isValidElement(value) ||
+                        typeof value !== 'object' ||
+                        Array.isArray(value)
+                    ) {
+                        acc.push({
+                            label: converter.toCamel(key, " "),
+                            key,
+                            sort: true,
+                        });
+                    }
+                    return acc;
+                }, [])
+        );
+    }, [columns, records, Form]);
 
-    const columnsFunc = (columns || []).reduce((acc, column) => {
-        const key = column.key;
-        const formatKey = format?.[column.key];
+    // 2. Funzioni di formattazione colonne
+    const columnsFunc: ColumnMap = useMemo(() => {
+        return (computedColumns || []).reduce((acc: ColumnMap, column: Column) => {
+            const key = column.key;
+            const formatKey = format?.[column.key];
 
-        if (column?.onDisplay) {
-            acc[key] = column.onDisplay;
-        } else if (formatKey && typeof formatKey === "function") {
-            acc[key] = formatKey;
-        } else if (formatKey) {
-            const convFunc = (converter[formatKey]
-                    ? formatKey
-                    : `to${ucfirst(formatKey)}`
-            )
+            if (column?.onDisplay) {
+                acc[key] = column.onDisplay;
+            } else if (formatKey && typeof formatKey === "function") {
+                acc[key] = formatKey;
+            } else if (formatKey) {
+                const convFunc = (converter[formatKey]
+                        ? formatKey
+                        : `to${ucfirst(formatKey)}`
+                );
+                acc[key] = ({ value }) => (converter[convFunc]?.(value)) || value;
+            }
+            return acc;
+        }, {});
+    }, [computedColumns, format]);
 
-            acc[key] = ({value}) => (converter[convFunc] && converter[convFunc](value)) || value;
-        }
-        return acc;
-    }, {} as Record<string, ColumnFunction>);
+    // 3. Applicazione columnsFunc e onLoadRecord
+    const body: RecordArray | undefined = useMemo(() => {
+        if (!records) return undefined;
 
-    const body: RecordArray | undefined = records?.reduce((acc, item, index) => {
-        const transformed = onLoadRecord ? onLoadRecord(item, index) : item;
+        return records.reduce((acc: RecordArray, item: RecordProps, index: number) => {
+            const transformed = onLoadRecord ? onLoadRecord(item, index) : item;
+            if (!transformed) return acc;
 
-        if (!transformed) return acc;
-
-        const source = transformed === true ? item : transformed;
-        const result: RecordProps = {};
-        for (const [key, value] of Object.entries(source)) {
-            if (key.startsWith("_")) {
-                result[key] = value;
-            } else if (columnsFunc[key]) {
+            const result = (transformed === true ? item : transformed);
+            for (const key of Object.keys(columnsFunc)) {
                 result[key] = columnsFunc[key]({
-                    value,
-                    record: source,
-                    key: source._key,
+                    value: result[key],
+                    record: result,
+                    key: result?._key
                 });
             }
-        }
 
-        acc.push(result);
-        return acc;
-    }, [] as RecordArray);
+            acc.push(result);
+            return acc;
+        }, []);
+    }, [records, onLoadRecord, columnsFunc]);
 
     //@todo: da capire chi valorizza a []
     if(Array.isArray(dataArray) && dataArray.length === 0) {
@@ -232,15 +239,15 @@ const GridArray = ({
 
     const openModal = (
         {
-           title    = undefined,
-           data     = undefined,
-           savePath = ""
-        }: OpenModalParams,
-        key?: string
+            title       = undefined,
+            data        = undefined,
+            key         = undefined,
+            savePath    = ""
+        }: OpenModalParams
     ): void => {
         setRecord({
             key: key,
-            data: data || {},
+            data: data || {} as RecordProps,
             title: title,
             form: Form && <ComponentEnhancer
                 components={typeof Form === "function"
@@ -353,11 +360,13 @@ const GridArray = ({
     const handleClick = (record: RecordProps) => {
         onClick?.(record);
 
-        if (canEdit && record._key) {
+        const data = safeClone(dataArray?.[record._index]);
+        if (canEdit && data?._key) {
             openModal({
                 title: setModalHeader?.(record),
-                data: record
-            }, record._key);
+                data: data,
+                key: data._key
+            });
         }
     }
 

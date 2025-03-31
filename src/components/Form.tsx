@@ -9,6 +9,7 @@ import {LoadingButton} from "./Buttons";
 import setLog from "../libs/log";
 import {useTheme} from "../Theme";
 import Alert from "./Alert";
+import {RecordProps} from "../integrations/google/firedatabase";
 
 interface FormProps {
     children: React.ReactNode;
@@ -73,7 +74,7 @@ function FormData({
 } : FormProps) {
     const theme = useTheme("form");
 
-    const [record, setRecord] = useState<Record<string, any> | undefined>(undefined);
+    const [record, setRecord] = useState<RecordProps | undefined>(undefined);
     const [notification, setNotification] = useState<NoticeProps | undefined>(undefined);
 
     const notice = ({ message, type = "danger" }: NoticeProps) => {

@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {useTheme} from "../Theme";
 import Carousel from "./Carousel";
 import {Wrapper} from "./GridSystem";
@@ -74,17 +74,13 @@ const Gallery = ({
         return <p className={"p-4"}>Nessun dato trovato</p>;
     }
 
-    const [Body, setBody] = useState<React.ReactNode[]>([]);
+    const renderedBody = useMemo(() =>
+            groupBy
+                ? getGroups(body, groupBy)
+                : body.map((item) => getImage(item))
+        , [body, groupBy]);
 
-    useEffect(() => {
-        const updatedBody = groupBy
-            ? getGroups(body, groupBy)
-            : body.map((item) => getImage(item));
-
-        setBody(updatedBody);
-    }, [groupBy, body]);
-
-    const handleClick = (images: GalleryRecord[], e: React.MouseEvent<HTMLElement>) => {
+    const handleClick = (record: GalleryRecord, e: React.MouseEvent<HTMLElement>) => {
         if (selectedClass) {
             let currentElement = e.target as HTMLElement;
 
@@ -104,7 +100,7 @@ const Gallery = ({
             }
         }
 
-        onClick && onClick(images[0].key);
+        onClick?.(record);
     }
 
     const getImage = (item: GalleryRecord): ImageProps => {
@@ -117,7 +113,7 @@ const Gallery = ({
                     cursor: onClick ? "pointer" : "default",
                 },
                 onClick: (e: React.MouseEvent<HTMLImageElement>) => {
-                    handleClick([item], e);
+                    handleClick(item, e);
                     imgElement.props.onClick?.(e);
                 },
             }) as ImageProps;
@@ -136,40 +132,47 @@ const Gallery = ({
                 width={item.width}
                 height={item.height}
                 style={{ cursor: onClick ? "pointer" : "default" }}
-                onClick={(e: React.MouseEvent<HTMLImageElement>) => handleClick([item], e)}
+                onClick={(e: React.MouseEvent<HTMLImageElement>) => handleClick(item, e)}
             />
         );
     };
 
-    const getGroups = (body: GalleryRecord[], seps: string | string[]) : React.ReactElement[] => {
-        const groups = Object.values(body.reduce((acc: { [key: string]: ImageProps[] }, item: GalleryRecord) => {
+    const getGroups = (body: GalleryRecord[], seps: string | string[]): React.ReactElement[] => {
+        const groupMap: Record<string, ImageProps[]> = {};
+        const result: React.ReactElement[] = [];
+
+        for (const item of body) {
             const imgElement = getImage(item);
-            const alt = (imgElement.props.alt || "") as string;
-            const src = (imgElement.props.src || "") as string;
-            if(!alt || !src) return acc;
+            const alt = imgElement.props.alt || "";
+            const src = imgElement.props.src || "";
+            if (!alt || !src) continue;
 
             const [leftPart] = converter.splitFirst(alt.toUpperCase(), seps, /^\d/g);
-            if (!acc[leftPart]) {
-                acc[leftPart] = [];
-            }
-            acc[leftPart].push(imgElement);
-            return acc;
-        }, {}));
 
-        return groups.map((Images: ImageProps[], index: number) => (
-            <Carousel
-                key={index}
-                onClick={(e: React.MouseEvent<HTMLElement>) => handleClick(Images, e)}
-            >{Images}</Carousel>
-        ));
-    }
+            if (!groupMap[leftPart]) {
+                groupMap[leftPart] = [];
+                result.push(
+                    <Carousel
+                        key={leftPart}
+                    >
+                        {groupMap[leftPart]}
+                    </Carousel>
+                );
+            }
+
+            groupMap[leftPart].push(imgElement);
+        }
+
+        return result;
+    };
+
 
     return (
         <Wrapper className={wrapClass || theme.Gallery.wrapClass}>
             {Header && <div className={headerClass || theme.Gallery.headerClass}>{Header}</div>}
             <Wrapper className={scrollClass || theme.Gallery.scrollClass}>
                 <div className={"d-flex flex-wrap text-center align-items-center g-2 row-cols-" + rowCols + " " + (bodyClass || theme.Gallery.bodyClass)}>
-                    {Body.map((Component, index) => (
+                    {renderedBody.map((Component, index) => (
                         <div key={index} className={"item position-relative p-" + gutterSize}>
                             {Component}
                             {itemTopLeft && <div className={"position-absolute start-0 top-0 p-" + gutterSize}>

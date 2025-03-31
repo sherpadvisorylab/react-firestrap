@@ -1,15 +1,16 @@
 import React from 'react';
+import {RecordProps} from "../integrations/google/firedatabase";
 
 type ApplyOnChangeParams = {
     children: React.ReactNode;
-    record?: Record<string, any>;
+    record?: RecordProps;
     handleChange?: (event: React.ChangeEvent<any>) => void;
     onEnhance?: (child: React.ReactElement) => void;
 };
 
 interface ComponentEnhancerProps {
     components: React.ReactNode | React.ReactNode[];
-    record?: Record<string, any>;
+    record?: RecordProps;
     handleChange?: (event: React.ChangeEvent<any>) => void;
 }
 
@@ -23,12 +24,12 @@ const applyOnChangeRecursive = ({
         if (React.isValidElement(child)) {
             const onChange = handleChange && ((event: React.ChangeEvent<any>) => {
                 child.props.onChange?.(event);
-                handleChange && handleChange(event);
+                handleChange?.(event);
             });
 
             if (typeof child.type !== 'string' && (child.type as any).enhance) {
                 return React.cloneElement(child as any, {
-                    value: record?.[child.props.name] || null,
+                    value: record?.[child.props.name],
                     onChange: onChange
                 });
             }
@@ -76,10 +77,27 @@ const ComponentEnhancer = ({
     );
 }
 
-export const extractComponentProps = (
+export function extractComponentProps<T>(
     components: React.ReactNode | React.ReactNode[],
-    onEnhance?: (child: React.ReactElement) => any
-) : any[] | { [key: string]: string } => {
+    onEnhance: (child: React.ReactElement) => T
+): T[] {
+    const children = Array.isArray(components) ? components : [components];
+    const result: T[] = [];
+
+    applyOnChangeRecursive({
+        children,
+        onEnhance: (child) => {
+            result.push(onEnhance(child));
+        }
+    });
+
+    return result;
+}
+
+export function extractComponentProps2<T = any>(
+    components: React.ReactNode | React.ReactNode[],
+    onEnhance?: (child: React.ReactElement) => T
+) : T[] | { [key: string]: string } {
     const children = Array.isArray(components) ? components : [components];
     const props = onEnhance ? [] : {};
 
@@ -87,7 +105,7 @@ export const extractComponentProps = (
         children,
         onEnhance: (child) => {
             if (onEnhance) {
-                (props as any[]).push(onEnhance(child));
+                (props as T[]).push(onEnhance(child));
             } else {
                 (props as { [key: string]: string })[child.props.name] = "";
             }

@@ -16,13 +16,13 @@ type WhereClause = {
 
 type RecordObject = Record<string, FieldMap>;
 
-export type RecordProps = FieldMap & { _key?: string };
+export type RecordProps = FieldMap & { _key: string, _index: number };
 export type RecordArray = Array<RecordProps>;
 
 type RecordFN = (records: RecordArray) => void;
 export interface DatabaseOptions {
     where?: WhereClause;
-    fieldMap?: FieldMap;
+    fieldMap?: Record<string, string>;
     onLoad?: (data: RecordArray) => RecordArray;
 }
 
@@ -88,13 +88,15 @@ const db = {
         } = {}
     ) => {
         const dbRef = query(getDatabase().ref(path), where);
-        if (shallow) {
-            dbRef.limitToFirst(1);
-        }
         try {
             const snapshot = await dbRef.get();
             if (snapshot.exists()) {
                 consoleLog(`Info: Data found in Firebase for path ${path}`);
+
+                if (shallow) {
+                    return Object.keys(snapshot.val());
+                }
+
                 return (toArray
                         ? Object.values(snapshot.val())
                         : snapshot.val()
@@ -150,26 +152,40 @@ const db = {
                     }
 
                     if (!fieldMap) {
-                        const records = Object.entries(val).map(([key, value]) => ({ _key: key, ...value }));
+                        const records: RecordProps[] = Object.entries(val).map(
+                            ([key, value], index) => ({
+                                _index: index,
+                                _key: key,
+                                ...value
+                            })
+                        );
                         setRecords(onLoad ? onLoad(records) : records);
                         return;
                     }
 
                     const mapKeys = Object.keys(fieldMap);
-                    const records = Object.keys(val).map((key) => {
-                        return mapKeys.reduce((acc: FieldMap, prop) => {
+                    const records: RecordArray = [];
+                    let index = 0;
+
+                    for (const [key, value] of Object.entries(val)) {
+                        const mapped: FieldMap = {};
+
+                        for (let i = 0; i < mapKeys.length; i++) {
+                            const prop = mapKeys[i];
                             const field = fieldMap[prop];
 
-                            acc[prop] =
-                                field.includes("{")
-                                    ? converter.parse({ key, ...val[key] }, field)
-                                    : field === "key" && !val[key]?.[field]
-                                        ? key
-                                        : val[key]?.[field];
+                            mapped[prop] = field.includes("{")
+                                ? converter.parse({ key, ...value }, field)
+                                : value[field];
+                        }
 
-                            return acc;
-                        }, {});
-                    });
+                        records.push({
+                            _key: key,
+                            _index: index++,
+                            ...mapped
+                        });
+                    }
+
                     setRecords(onLoad ? onLoad(records) : records);
                 };
 
