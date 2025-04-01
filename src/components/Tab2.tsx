@@ -1,7 +1,28 @@
 import React, {useState} from 'react';
 import {ActionButton} from "./Buttons";
 
-function Tab2({ items, key = "tab", activeIndex = 0, onAdd, onRemove }) {
+interface TabItem {
+    label: React.ReactNode;
+    content: React.ReactNode;
+}
+
+interface Tab2Props {
+    items: TabItem[];
+    key?: string;
+    activeIndex?: number;
+    onAdd?: () => void;
+    onRemove?: (index: number) => void;
+    className?: string;
+}
+
+const Tab2 = ({
+                  items,
+                  key = "tab",
+                  activeIndex = 0,
+                  onAdd,
+                  onRemove,
+                  className = undefined
+}: Tab2Props) => {
     const [active, setActive] = useState(activeIndex);
 
     return (
@@ -14,7 +35,7 @@ function Tab2({ items, key = "tab", activeIndex = 0, onAdd, onRemove }) {
                            className={`nav-link ${index === active ? 'active' : ''}`}
                            data-bs-toggle="tab">
                             {item.label}
-                            {onRemove && <ActionButton pClass={"border-0 ms-1"} label={"x"} click={() => {
+                            {onRemove && <ActionButton className={"border-0 ms-1"} label={"x"} onClick={() => {
                                 onRemove(index);
                                 setActive(index - 1);
                             }} />}

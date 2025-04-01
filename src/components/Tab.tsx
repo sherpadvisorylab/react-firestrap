@@ -2,7 +2,7 @@ import React, {useState} from 'react';
 import {ActionButton} from "./Buttons";
 import ComponentEnhancer from "./ComponentEnhancer";
 import {converter} from "../libs/converter";
-import {RecordProps} from "../integrations/google/firedatabase";
+import {RecordArray, RecordProps} from "../integrations/google/firedatabase";
 
 interface TabLayoutProps {
     menu: React.ReactNode;
@@ -67,7 +67,7 @@ const Tab = ({
     const [active, setActive] = useState(activeIndex);
     const [uniqueKey, setUniqueKey] = useState(0);
 
-    const [records, setRecords] = useState(() => {
+    const [records, setRecords] = useState<RecordArray>(() => {
         if (!value) {
             value = [];
         }
@@ -90,7 +90,7 @@ const Tab = ({
         );
     });
 
-    const addComponent = (index: number, record) => {
+    const addComponent = (index: number, record: RecordProps) => {
         return (<ComponentEnhancer
             components={children}
             record={record}
@@ -98,7 +98,7 @@ const Tab = ({
         />)
     }
 
-    const handleChange = (e, index) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, index: number) => {
         setRecords(prevRecords => {
             const newRecords = [...prevRecords];
             newRecords[index] = {...newRecords[index], [e.target.name]: e.target.value};
@@ -114,7 +114,7 @@ const Tab = ({
     };
 
     const handleAdd = () => {
-        const updatedRecords = [...records, {}];
+        const updatedRecords = [...records, {} as RecordProps];
         const lastIndex = updatedRecords.length - 1;
 
         setRecords(updatedRecords);
@@ -127,7 +127,7 @@ const Tab = ({
     };
 
 
-    const handleRemove = (index) => {
+    const handleRemove = (index: number) => {
         setRecords(prevRecords => {
             const updatedRecords = [...prevRecords];
             updatedRecords.splice(index, 1);
@@ -154,7 +154,7 @@ const Tab = ({
             return updatedRecords;
         });
     }
-    const setLabel = (index) => {
+    const setLabel = (index: number) => {
         return (label.includes("{")
             ? converter.parse(records[index], label) || "New " + (index + 1)
             : label + " " + (index + 1)
