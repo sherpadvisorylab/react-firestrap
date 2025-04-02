@@ -5,7 +5,6 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { converter } from "../../libs/converter";
 import {consoleLog} from "../../constant";
 
-type FieldMap = Record<string, any>;
 type Operator = "eq" | "lt" | "lte" | "gt" | "gte";
 type Condition = {
     [op in Operator]?: string | number | boolean | null;
@@ -14,16 +13,16 @@ type WhereClause = {
     [field: string]: Condition | string | number | boolean | null;
 };
 
+type FieldMap = Record<string, any>;
 type RecordObject = Record<string, FieldMap>;
-
-export type RecordProps = FieldMap & { _key: string, _index: number };
+export type RecordProps = FieldMap & { _key?: string, _index?: number };
 export type RecordArray = Array<RecordProps>;
 
-type RecordFN = (records: RecordArray) => void;
-export interface DatabaseOptions {
+type RecordFN<T extends RecordProps = RecordProps> = (records: T[]) => void;
+export interface DatabaseOptions<T extends RecordProps = RecordProps> {
     where?: WhereClause;
     fieldMap?: Record<string, string>;
-    onLoad?: (data: RecordArray) => RecordArray;
+    onLoad?: (data: T[]) => T[];
 }
 
 let databaseInstance: firebase.database.Database;
@@ -126,14 +125,14 @@ const db = {
             handleError(`rimozione dei dati in Firebase per ${path}`, error, exception);
         }
     },
-    useListener: (
+    useListener: <T extends RecordProps = RecordProps>(
         path: string | undefined,
-        setRecords: RecordFN,
+        setRecords: RecordFN<T>,
         {
-            where       = undefined,
-            fieldMap    = undefined,
-            onLoad      = undefined
-        }: DatabaseOptions = {}
+            where = undefined,
+            fieldMap = undefined,
+            onLoad = undefined
+        }: DatabaseOptions<T> = {}
     ) => {
         const auth = useMemo(() => getAuth(), []); // Ottieni l'oggetto auth una sola volta
 
@@ -152,19 +151,19 @@ const db = {
                     }
 
                     if (!fieldMap) {
-                        const records: RecordProps[] = Object.entries(val).map(
+                        const records: T[] = Object.entries(val).map(
                             ([key, value], index) => ({
                                 _index: index,
                                 _key: key,
                                 ...value
-                            })
+                            }) as T
                         );
                         setRecords(onLoad ? onLoad(records) : records);
                         return;
                     }
 
                     const mapKeys = Object.keys(fieldMap);
-                    const records: RecordArray = [];
+                    const records: T[] = [];
                     let index = 0;
 
                     for (const [key, value] of Object.entries(val)) {
@@ -183,7 +182,7 @@ const db = {
                             _key: key,
                             _index: index++,
                             ...mapped
-                        });
+                        } as T);
                     }
 
                     setRecords(onLoad ? onLoad(records) : records);

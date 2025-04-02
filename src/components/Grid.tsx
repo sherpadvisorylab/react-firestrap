@@ -360,7 +360,18 @@ const GridArray = ({
     const handleClick = (record: RecordProps) => {
         onClick?.(record);
 
-        const data = safeClone(dataArray?.[record._index]);
+        const index = record._index;
+        if (typeof index !== "number") {
+            console.error("handleClick: _index non valido o assente nel record", record);
+            return;
+        }
+
+        const data = safeClone(dataArray?.[index]);
+        if (!data) {
+            console.error(`handleClick: Nessun dato trovato in dataArray all'indice ${index}`);
+            return;
+        }
+
         if (canEdit && data?._key) {
             openModal({
                 title: setModalHeader?.(record),

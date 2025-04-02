@@ -47,7 +47,7 @@ export const GlobalProvider = ({ children }) => {
 };
 
 // Hook per utilizzare globalVars con o senza namespace
-export const useGlobalVars = (namespace = null) => {
+export const useGlobalVars = (namespace?: string) => {
     const { globalVars, setGlobalVars, removeGlobalVars } = useContext(GlobalContext);
 
     return namespace

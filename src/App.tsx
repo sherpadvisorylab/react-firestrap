@@ -40,26 +40,35 @@ type GoogleServiceAccount = {
     token_uri: string;
     auth_provider_x509_cert_url: string;
     client_x509_cert_url: string;
-} | null;
+};
 
 type DropboxConfig = {
     clientId: string;
     rootPath: string;
-} | null;
+};
 
 type AIConfig = {
     geminiApiKey?: string;
     chatGptApiKey?: string;
-} | null;
+};
+
+interface MenuItem {
+    path: string;
+    title?: string;
+    icon?: string;
+    [key: string]: any;
+}
+
+interface UseMenuItem extends MenuItem {
+    active: boolean;
+    onClick: () => void;
+}
 
 type MenuConfig = {
-    [key: string]: {
-        title: string;
-        icon?: string;
-        path?: string;
+    [key: string]:(MenuItem & {
         page?: React.ComponentType;
         layout?: React.ComponentType;
-    }[];
+    })[];
 };
 
 type Config = {
@@ -74,10 +83,7 @@ type Config = {
     proxyURI?: string;
 };
 
-type AppProps = {
-    importPage: (pagesPath: string) => Promise<{ default: React.ComponentType }>;
-    importTheme?: () => Promise<{ default: { theme: object } }> | null;
-    LayoutDefault?: React.ComponentType | null;
+type TenantConfig = {
     firebaseConfig: FirebaseConfig;
     oAuth2: GoogleOAuth2;
     serviceAccount?: GoogleServiceAccount;
@@ -85,33 +91,52 @@ type AppProps = {
     aiConfig?: AIConfig;
     tenantsURI?: string;
     proxyURI?: string;
-    menuConfig: MenuConfig;
+};
+
+interface Tenant {
+    name: string;
+    appId: string;
+    [key: string]: any;
 }
 
-let tenants = null;
+interface TenantItem {
+    title: string;
+    icon: string;
+    active: boolean;
+    onClick: () => void;
+}
+
+type AppProps = TenantConfig & {
+    importPage: (pagesPath: string) => Promise<{ default: React.ComponentType }>;
+    importTheme?: () => Promise<{ default: { theme: object } }>;
+    LayoutDefault?: React.ComponentType;
+    menuConfig: MenuConfig;
+};
+
+let tenants: TenantItem[] = [];
 let config: Config | null = null;
-let menu = {};
+let menu: Record<string, MenuItem[]> = {};
 
 function App({
                  importPage,
-                 importTheme        = null,
-                 LayoutDefault      = null,
+                 importTheme        = undefined,
+                 LayoutDefault      = undefined,
                  firebaseConfig,
                  oAuth2,
-                 serviceAccount     = null,
-                 dropBoxConfig      = null,
-                 aiConfig           = null,
-                 tenantsURI         = null,
-                 proxyURI           = null,
+                 serviceAccount     = undefined,
+                 dropBoxConfig      = undefined,
+                 aiConfig           = undefined,
+                 tenantsURI         = undefined,
+                 proxyURI           = undefined,
                  menuConfig         = {},
 }: AppProps) {
-    initTenant(firebaseConfig, oAuth2, serviceAccount, dropBoxConfig, aiConfig, tenantsURI, proxyURI);
+    initTenant({firebaseConfig, oAuth2, serviceAccount, dropBoxConfig, aiConfig, tenantsURI, proxyURI});
     initMenu(menuConfig);
     initIntegration(config);
 
-    const LayoutEmpty = ({ children }) => <>{children}</>;
+    const LayoutEmpty = ({ children }: { children: React.ReactNode }) => <>{children}</>;
 
-    function getRoute(key, item, index) {
+    function getRoute(key: string, item: MenuItem, index: number): React.ReactElement {
         const pageSource = item.path === "/" ? "Home" : convert.toCamel(item.path);
         const PageComponent = item.page || React.lazy(() =>
             importPage(pageSource).catch(() =>
@@ -137,7 +162,7 @@ function App({
         );
     }
 
-    const renderRoutes = (menuObject) =>
+    const renderRoutes = (menuObject: MenuConfig): React.ReactNode[] =>
         Object.keys(menuObject).flatMap(key =>
             menuObject[key].flatMap((item, index) => [
                 item.path && getRoute(key, item, index),
@@ -168,37 +193,56 @@ function App({
     );
 }
 
-const initTenant = (firebaseConfig, oAuth2, serviceAccount, dropBoxConfig, aiConfig, tenantsURI, proxyURI) => {
-    const setTenant = () => {
-        const tenant = {firebaseConfig, oAuth2, serviceAccount, dropBoxConfig, aiConfig, tenantsURI, proxyURI};
+const initTenant = ({
+                        firebaseConfig,
+                        oAuth2,
+                        serviceAccount,
+                        dropBoxConfig,
+                        aiConfig,
+                        tenantsURI,
+                        proxyURI,
+}: TenantConfig) => {
+    const setTenant = (): Config => {
+        const tenant: Config = {
+            firebase: firebaseConfig,
+            google: { oAuth2, serviceAccount },
+            dropbox: dropBoxConfig,
+            ai: aiConfig,
+            tenantsURI,
+            proxyURI,
+        };
         localStorage.setItem("tenant", JSON.stringify(tenant));
         return tenant;
-    }
+    };
 
-    config = JSON.parse(localStorage.getItem("tenant")) || setTenant();
+    const saved = localStorage.getItem("tenant");
+    config = saved ? JSON.parse(saved) : setTenant();
 }
-const initMenu = (menuConfig) => {
+
+export const initMenu = (menuConfig: MenuConfig): void => {
     menu = menuConfig;
 }
 
-export const useTenants = (setTenants) => {
-    const clickTenant = (tenant, index = null) => {
-        //todo probabilmente sbagliato. da gestire il cambio del config eccS
+export const useTenants = (setTenants: (tenants: TenantItem[]) => void): void => {
+    const clickTenant = (tenant: Config, index: number) => {
         initIntegration(tenant);
 
-        if (tenants && index !== null) {
-            setTenants(tenants.map((tenant, i) => {
-                tenant.active = (i === index + 1);
-                return tenant;
-            }));
+        if (tenants) {
+            setTenants(
+                tenants.map((t, i) => ({
+                    ...t,
+                    active: i === index, //todo capire perche era index + 1
+                }))
+            );
         }
+
         console.log("change project", tenant);
-    }
+    };
 
     if(!config?.tenantsURI) return;
 
-    if(!tenants) {
-        fetchJson(config.tenantsURI).then(response => {
+    if(tenants.length === 0) {
+        fetchJson(config.tenantsURI).then((response: Tenant[]) => {
             tenants = response
                 .filter(tenant => tenant.title)
                 .map((tenant, index) => ({
@@ -219,22 +263,19 @@ export const useTenants = (setTenants) => {
     }
 }
 
-export const useMenu = (type) => {
+export const useMenu = (type: string): UseMenuItem[] => {
     const menuInfo = menu[type] || [];
     const location = useLocation();
-    const [activeId, setActiveId] = useState(() => {
-        for (let i = 0; i < menuInfo.length; i++) {
-            if (location.pathname === menuInfo[i]?.path
-                || (menuInfo[i]?.path !== "/" && location.pathname.startsWith(menuInfo[i]?.path))
-            ) {
-                return i;
-            }
-        }
-        return -1;
-    });
+    const [activeId, setActiveId] = useState(() =>
+        menuInfo.findIndex(item =>
+            location.pathname === item?.path ||
+            (item?.path && item.path !== "/" && location.pathname.startsWith(item.path))
+        )
+    );
 
 
-    return menuInfo.filter(item => item.title)
+    return menuInfo
+        .filter(item => item.title)
         .map((item, index) => ({
             ...item,
             active: index === activeId,

@@ -1,183 +1,270 @@
-import React, { useRef, useEffect, useCallback } from 'react';
+import React, {useRef, useEffect, useCallback, useState} from 'react';
 import TuiImageEditor from 'tui-image-editor';
 import 'tui-image-editor/dist/tui-image-editor.css';
 import Modal from "./Modal";
 import {useTheme} from "../Theme";
 import {LoadingButton} from "./Buttons";
 
+type ImageEditorProps = {
+    imageUrl: string;
+    title?: string;
+    width?: number;
+    height?: number;
+    modal?: boolean;
+    onImageLoad?: () => void;
+    onClose?: () => void;
+    onSave?: (dataUrl: string) => void;
+};
+
+type DrawingMode =
+    | 'ZOOMIN'
+    | 'ZOOMOUT'
+    | 'UNDO'
+    | 'REDO'
+    | 'CROPPER'
+    | 'FLIPX'
+    | 'FLIPY'
+    | 'ROTATE'
+    | 'FREE_DRAWING'
+    | 'LINE_DRAWING'
+    | 'TEXT'
+    | 'circle'
+    | 'rect'
+    | 'triangle';
+
+type LineDrawingOptions = {
+    width?: number;
+    color?: string;
+    arrowType?: {
+        tail?: string;
+        head?: string;
+    };
+};
+
 const ImageEditor = ({
-                         title = null,
                          imageUrl,
-                         width = 700,
-                         height = 500,
-                         modal = false,
-                         onImageLoad,
-                         onClose =  () => {},
-                         onSave = () => {}
-                     }: {
-    imageUrl: string,
-    width?: number,
-    height?: number,
-    modal?: boolean,
-    onImageLoad?: () => void,
-    onClose?: () => void,
-    onSave?: (dataUrl: string) => void,
-}) => {
+                         title          = undefined,
+                         width          = 700,
+                         height         = 500,
+                         modal          = false,
+                         onImageLoad    = undefined,
+                         onClose        = undefined,
+                         onSave         = undefined
+}: ImageEditorProps) => {
     const theme = useTheme("editor");
-    const rootEl = useRef(null);
-    const imageEditorInst = useRef(null);
+    const rootEl = useRef<HTMLDivElement | null>(null);
+    const imageEditorInst = useRef<InstanceType<typeof TuiImageEditor> | null>(null);
     const objStyle = {
         width: 10,
         color: 'rgba(255,0,0,0.5)',
         fill: 'transparent'
     }
 
+    const [zoom, setZoom] = useState(1);
+    const [position, setPosition] = useState({ x: 0, y: 0 });
+    const [isDragging, setIsDragging] = useState(false);
+    const dragStart = useRef({ x: 0, y: 0 });
+
+
     useEffect(() => {
-        imageEditorInst.current = new TuiImageEditor(rootEl.current, {
-            width,
-            height,
+        if (!rootEl.current) return;
+
+        const editor = new TuiImageEditor(rootEl.current, {
+            cssMaxWidth: width,
+            cssMaxHeight: height,
             selectionStyle: {
                 cornerSize: 10,
                 rotatingPointOffset: 70,
                 cornerColor: 'white',
                 cornerStrokeColor: 'red',
-                borderColor: 'red'
-            }
+                borderColor: 'red',
+            },
         });
 
-        imageEditorInst.current.on('objectAdded', (obj) => {
+        imageEditorInst.current = editor;
+
+        editor.on('objectAdded', (obj) => {
             console.log('objectAdded', obj);
-            imageEditorInst.current.stopDrawingMode();
+            editor.stopDrawingMode();
         });
-        imageEditorInst.current.on('addText', (pos) => {
-            imageEditorInst.current.stopDrawingMode();
-            imageEditorInst.current.addText('init text', {
+
+        editor.on('addText', (pos) => {
+            editor.stopDrawingMode();
+            editor.addText('init text', {
                 styles: {
                     fill: '#FF0000',
                     fontSize: 30,
-                    fontWeight: 'bold'
+                    fontWeight: 'bold',
                 },
                 position: {
                     x: pos.originPosition.x,
-                    y: pos.originPosition.y
-                }
+                    y: pos.originPosition.y,
+                },
             });
         });
 
         return () => {
-            if (imageEditorInst.current) {
-                imageEditorInst.current.destroy();
-                imageEditorInst.current = null;
-            }
+            editor.destroy();
+            imageEditorInst.current = null;
         };
     }, [width, height]);
 
+
     const loadImage = useCallback(() => {
-        if (imageUrl && imageEditorInst.current) {
-            imageEditorInst.current.loadImageFromURL(imageUrl, 'Sample Image')
-                .then(() => {
-                    if (onImageLoad) {
-                        onImageLoad();
-                    }
-                    imageEditorInst.current.clearUndoStack();
-                    imageEditorInst.current.clearRedoStack();
-                })
-                .catch((err) => {
-                    console.error('Error loading image:', err);
-                });
-        }
+        const editor = imageEditorInst.current;
+        if (!imageUrl || !editor) return;
+
+        editor.loadImageFromURL(imageUrl, 'Sample Image')
+            .then(() => {
+                onImageLoad?.();
+                editor.clearUndoStack();
+                editor.clearRedoStack();
+            })
+            .catch((err) => {
+                console.error('Error loading image:', err);
+            });
     }, [imageUrl, onImageLoad]);
 
     useEffect(() => {
         loadImage();
     }, [loadImage]);
 
-    const handleStartDrawingMode = (e, mode) => {
+
+    const handleMouseDown = (e: React.MouseEvent) => {
+        setIsDragging(true);
+        dragStart.current = {
+            x: e.clientX - position.x,
+            y: e.clientY - position.y,
+        };
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+        if (!isDragging) return;
+        setPosition({
+            x: e.clientX - dragStart.current.x,
+            y: e.clientY - dragStart.current.y,
+        });
+    };
+
+    const handleMouseUp = () => {
+        setIsDragging(false);
+    };
+
+    useEffect(() => {
+        if (isDragging) {
+            window.addEventListener('mousemove', handleMouseMove);
+            window.addEventListener('mouseup', handleMouseUp);
+        } else {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        }
+
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [isDragging]);
+
+
+    const handleStartDrawingMode = (e: React.MouseEvent<HTMLButtonElement>, mode: DrawingMode) => {
         e.preventDefault();
 
-        if (imageEditorInst.current) {
-            switch (mode) {
-                case 'ZOOMIN':
-                    const currentZoomIn = imageEditorInst.current.getZoom();
-                    const maxZoom = 3; // Ad esempio, massimo 3x zoom
+        const editor = imageEditorInst.current;
+        if (!editor) return;
 
-                    if (currentZoomIn < maxZoom) {
-                        imageEditorInst.current.zoom(currentZoomIn * 1.2); // Aumenta il livello di zoom
-                    }
-                    break;
-                case 'ZOOMOUT':
-                    const currentZoomOut = imageEditorInst.current.getZoom();
-                    const minZoom = 0.1; // Ad esempio, minimo 0.1x zoom
+        const maxZoom = 3;
+        const minZoom = 1;
 
-                    if (currentZoomOut > minZoom) {
-                        imageEditorInst.current.zoom(currentZoomOut * 0.8); // Riduci il livello di zoom
-                    }
-                    break;
-                case 'UNDO':
-                    if (!imageEditorInst.current.isEmptyUndoStack()) {
-                        imageEditorInst.current.undo();
-                    }
-                    break;
-                case 'REDO':
-                    if (!imageEditorInst.current.isEmptyRedoStack()) {
-                        imageEditorInst.current.redo();
-                    }
-                    break;
-                case 'CROPPER':
-                    imageEditorInst.current.startDrawingMode(mode);
-                    break;
-                case 'FLIPX':
-                    imageEditorInst.current.flipX()
-                    break;
-                case 'FLIPY':
-                    imageEditorInst.current.flipY();
-                    break;
-                case 'ROTATE':
-                    imageEditorInst.current.rotate(90);
-                    break;
-                case 'FREE_DRAWING':
-                    imageEditorInst.current.startDrawingMode(mode, {
-                        width: objStyle.width,
-                        color: objStyle.color
-                    });
-                    break;
-                case 'LINE_DRAWING':
-                    imageEditorInst.current.startDrawingMode(mode, {
-                        width: objStyle.width,
-                        color: objStyle.color,
-                        arrowType: {
-                            tail: 'chevron' // triangle
-                        }
-                    });
-                    break;
-                case 'TEXT':
-                    imageEditorInst.current.startDrawingMode(mode);
-                    break;
-                case 'circle':
-                case 'rect':
-                case 'triangle':
-                    imageEditorInst.current.setDrawingShape(mode, {
-                        fill: objStyle.fill,
-                        stroke: objStyle.color,
-                        strokeWidth: 3,
-                    });
-                    imageEditorInst.current.startDrawingMode('SHAPE');
-                    break;
-                default:
-                    break;
-            }
+        switch (mode) {
+            // 🔍 Zoom controls
+            case 'ZOOMIN':
+                if (zoom < maxZoom) setZoom((prev) => prev * 1.2);
+                break;
 
+            case 'ZOOMOUT':
+                if (zoom > minZoom) setZoom((prev) => Math.max(prev * 0.8, minZoom));
+                break;
+
+            // 🔁 History controls
+            case 'UNDO':
+                if (!editor.isEmptyUndoStack()) editor.undo();
+                break;
+            case 'REDO':
+                if (!editor.isEmptyRedoStack()) editor.redo();
+                break;
+
+            // 🔄 Transform controls
+            case 'FLIPX':
+                editor.flipX();
+                break;
+            case 'FLIPY':
+                editor.flipY();
+                break;
+            case 'ROTATE':
+                editor.rotate(90);
+                break;
+
+            // ✂️ Crop
+            case 'CROPPER':
+                editor.startDrawingMode(mode);
+                break;
+
+            // ✏️ Free drawing
+            case 'FREE_DRAWING':
+                editor.startDrawingMode(mode, {
+                    width: objStyle.width,
+                    color: objStyle.color,
+                });
+                break;
+
+            // ➖ Line drawing
+            case 'LINE_DRAWING':
+                editor.startDrawingMode(mode, {
+                    width: objStyle.width,
+                    color: objStyle.color,
+                    arrowType: {
+                        tail: 'chevron',
+                    },
+                } as LineDrawingOptions);
+                break;
+
+            // 🔤 Text
+            case 'TEXT':
+                editor.startDrawingMode(mode);
+                break;
+
+            // 🟠🟦🔺 Shapes
+            case 'circle':
+            case 'rect':
+            case 'triangle':
+                editor.setDrawingShape(mode, {
+                    fill: objStyle.fill,
+                    stroke: objStyle.color,
+                    strokeWidth: 3,
+                });
+                editor.startDrawingMode('SHAPE');
+                break;
+
+            default:
+                break;
         }
     };
+
     const handleSave = async () => {
-        onSave && await onSave(imageEditorInst.current.toDataURL());
-        window.document.body.style = '';
+        const editor = imageEditorInst.current;
+        if (!editor) return;
+
+        await onSave?.(editor.toDataURL());
+
+        document.body.style.overflow = '';
     };
+
     const handleClose = () => {
-        window.document.body.style = '';
-        onClose && onClose();
+        document.body.style.overflow = '';
+        onClose?.();
     }
-    window.document.body.style = 'overflow: hidden';
+
+    window.document.body.style.overflow = 'hidden';
     const Controls = <div className={"d-flex border-bottom"}>
         <div className={"border-end"}>
             <button className={"btn"} title="Undo" onClick={(e) => handleStartDrawingMode(e, 'UNDO')}>
@@ -231,8 +318,20 @@ const ImageEditor = ({
             <LoadingButton className={"btn-primary"} onClick={handleSave} icon={"floppy-disk"} label={"Save"} />
         </div>}
     </div>;
-    const Editor = <div ref={rootEl} className={"d-flex align-items-center justify-content-center"}
-                        style={{width: '100%', height: height + 'px'}}/>;
+
+    const Editor = <div
+        onMouseDown={handleMouseDown}
+        style={{
+            cursor: isDragging ? 'grabbing' : 'grab',
+            transform: `translate(${position.x}px, ${position.y}px) scale(${zoom})`,
+            transformOrigin: 'top left',
+            display: 'inline-block',
+            userSelect: 'none',
+        }}
+    >
+        <div ref={rootEl} className={"d-flex align-items-center justify-content-center"}
+             style={{width: '100%', height: height + 'px'}}/>
+    </div>;
 
 
     return (modal
@@ -246,7 +345,7 @@ const ImageEditor = ({
             >
                 {Editor}
             </Modal>
-            : Controls + Editor
+            : <>{Controls}{Editor}</>
     );
 };
 

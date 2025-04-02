@@ -9,6 +9,55 @@ import {authConfig} from "./auth";
 
 const imgNoAvatar = "/assets/images/noavatar.svg";
 
+declare global {
+    interface Window {
+        google: {
+            accounts: {
+                id: {
+                    initialize: (options: any) => void;
+                    prompt: (callback?: () => void) => void;
+                    renderButton: (element: HTMLElement, options: any) => void;
+                    disableAutoSelect: () => void;
+                    revoke: (hint: string, callback?: () => void) => void;
+                };
+                oauth2: {
+                    initTokenClient: (config: {
+                        client_id: string;
+                        scope: string;
+                        callback: (response: TokenResponse) => void;
+                    }) => {
+                        requestAccessToken: () => void;
+                    };
+                    hasGrantedAllScopes?: (
+                        response: TokenResponse,
+                        ...scopes: string[]
+                    ) => boolean;
+                };
+            };
+        };
+        handleGoogleSignIn: (response: { credential: string }) => void;
+    }
+}
+
+
+interface ProfileItemProps {
+    label?: string;
+    icon?: string;
+    pre?: React.ReactNode;
+    post?: React.ReactNode;
+}
+
+interface GoogleAuthProps {
+    scope: string;
+    iconLogout: string;
+}
+
+interface TokenResponse {
+    access_token: string;
+    expires_in: number;
+    scope: string;
+    token_type: string;
+}
 
 const loadScript = () => {
     loadScripts([
@@ -16,7 +65,12 @@ const loadScript = () => {
     ]);
 }
 
-const ProfileItem = ({ label, icon = null, pre= null, post= null }: {label?: string, icon?: string, pre?: string, post?: string}) => {
+const ProfileItem = ({
+                         label,
+                         icon   = undefined,
+                         pre    = undefined,
+                         post   = undefined
+}: ProfileItemProps) => {
     const theme = useTheme("button");
 
     return (
@@ -31,7 +85,10 @@ const ProfileItem = ({ label, icon = null, pre= null, post= null }: {label?: str
 
 
 
-const GoogleAuth = ({scope, iconLogout}: {scope: string, iconLogout: string}) => {
+const GoogleAuth = ({
+                        scope,
+                        iconLogout
+}: GoogleAuthProps) => {
     const [tenants, setTenants] = useState([]);
     const menuAuth = useMenu("profile");
     const [ user, setUser, removeUser ] = useGlobalVars("user");
@@ -41,7 +98,7 @@ const GoogleAuth = ({scope, iconLogout}: {scope: string, iconLogout: string}) =>
 
     useTenants(setTenants);
 
-    const firebaseSignInWithGoogleCredential = async(credentialToken: string) => {
+    const firebaseSignInWithGoogleCredential = async(credentialToken: string): Promise<void> => {
         try {
             const credential = GoogleAuthProvider.credential(credentialToken);
             const userCredential = await signInWithCredential(getAuth(), credential);
@@ -49,14 +106,16 @@ const GoogleAuth = ({scope, iconLogout}: {scope: string, iconLogout: string}) =>
 
             setUser({
                 ...userCredential.user,
-                profile: additionalUserInfo.profile
+                profile: additionalUserInfo?.profile
             });
         } catch (error) {
             console.error(error);
         }
     }
-    const handleGoogleSignOut = async () => {
-        window.google.accounts.id.revoke(user.profile.sub);
+    const handleGoogleSignOut = async (): Promise<void> => {
+        if (user?.profile?.sub) {
+            window.google.accounts.id.revoke(user.profile.sub);
+        }
         localStorage.removeItem("googleCredentialToken");
 
         removeUser();
@@ -67,7 +126,7 @@ const GoogleAuth = ({scope, iconLogout}: {scope: string, iconLogout: string}) =>
 
         loadScript();
     }
-    window.handleGoogleSignIn = ({credential}: {credential: string}) => {
+    window.handleGoogleSignIn = ({credential}: {credential: string}): void => {
         const credentialDecoded = decodeJWT(credential);
 
         console.log(credential, credentialDecoded)
@@ -78,11 +137,11 @@ const GoogleAuth = ({scope, iconLogout}: {scope: string, iconLogout: string}) =>
         const gclient = window.google.accounts.oauth2.initTokenClient({
             client_id: config.clientId,
             scope: scope,
-            callback: (tokenResponse) => {
+            callback: (tokenResponse: TokenResponse) => {
                 console.log(tokenResponse);
 
                 localStorage.setItem('googleAccessToken', tokenResponse.access_token);
-                localStorage.setItem('googleExpiresAt', new Date(new Date().getTime() + tokenResponse.expires_in * 1000));
+                localStorage.setItem('googleExpiresAt', new Date(new Date().getTime() + tokenResponse.expires_in * 1000).toISOString());
 
                 /*if (tokenResponse && tokenResponse.access_token) {
                     if (window.google.accounts.oauth2.hasGrantedAllScopes(tokenResponse,
@@ -94,8 +153,12 @@ const GoogleAuth = ({scope, iconLogout}: {scope: string, iconLogout: string}) =>
                 }*/
             },
         });
+        function isGoogleTokenExpired(): boolean {
+            const expiresAt = localStorage.getItem('googleExpiresAt');
+            return !expiresAt || new Date(expiresAt).getTime() < Date.now();
+        }
 
-        if (!localStorage.getItem('googleAccessToken') || new Date(localStorage.getItem('googleExpiresAt')) < new Date()) {
+        if (!localStorage.getItem('googleAccessToken') || isGoogleTokenExpired()) {
             // get access token
              //gclient.requestAccessToken();
         }

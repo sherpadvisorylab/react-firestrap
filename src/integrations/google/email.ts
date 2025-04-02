@@ -1,8 +1,22 @@
 import { Buffer } from 'buffer';
 import { googleGetAccessToken } from './GoogleAuth';
 
+
+type SendEmailParams = {
+    to: string[];                    // Email destinatari principali
+    bcc?: string[];                  // Copia nascosta opzionale
+    subject: string;                // Oggetto dell'email
+    message: string;                // Contenuto HTML dell'email
+};
+
+type GmailSendResponse = {
+    id: string;
+    threadId: string;
+    labelIds?: string[];
+};
+
 // Funzione per inviare email tramite l'API di Gmail
-export async function sendEmail({ to, bcc, subject, message }) {
+export async function sendEmail({ to, bcc, subject, message }: SendEmailParams): Promise<GmailSendResponse>  {
     const accessToken = await googleGetAccessToken();
 
     const recipients = [

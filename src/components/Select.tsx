@@ -4,14 +4,14 @@ import {Label} from "./Input";
 import {Wrapper} from "./GridSystem"
 import {useTheme} from "../Theme";
 import {arrayUnique, isEmpty} from "../libs/utils";
-import {DatabaseOptions, RecordArray} from "../integrations/google/firedatabase";
+import {DatabaseOptions, RecordArray, RecordProps} from "../integrations/google/firedatabase";
 
-interface Option {
+interface Option extends RecordProps {
     label: string;
-    value: any;
+    value: string;
 }
 
-interface DBConfig extends DatabaseOptions {
+interface DBConfig<T extends RecordProps = RecordProps> extends DatabaseOptions<T> {
     srcPath: string;
 }
 
@@ -33,7 +33,7 @@ interface BaseProps {
     post?: string;
     feedback?: string;
     options?: Option[] | string[] | number[];
-    db?: DBConfig;
+    db?: DBConfig<Option>;
     order?: OrderConfig;
     wrapClass?: string;
     className?: string;
@@ -84,12 +84,12 @@ const normalizeOption = (
 
 const getOptions = (
     options: Array<string | number | Option>,
-    lookup: RecordArray,
+    lookup: Option[],
     order?: OrderConfig
 ) : Option[] => {
     return [
         ...options.map(normalizeOption),
-        ...lookup as Option[] //TODO: da togliere
+        ...lookup
     ].sort((a, b) => order?.dir === "desc"
         ? b[order?.field || "label"].localeCompare(a[order?.field || "label"])
         : a[order?.field || "label"].localeCompare(b[order?.field || "label"])
@@ -125,14 +125,18 @@ export const Select = ({
         setSelectedValue(value);
     }, [value]);
 
-    const [lookup, setLookup] = useState<RecordArray>([]);
-    database.useListener(db?.srcPath, setLookup, {fieldMap : normalizeOption(db?.fieldMap), where: db?.where, onLoad:db?.onLoad});
+    const [lookup, setLookup] = useState<Option[]>([]);
+    database.useListener(db?.srcPath, setLookup, {
+        fieldMap : normalizeOption(db?.fieldMap),
+        where: db?.where,
+        onLoad:db?.onLoad
+    });
 
     const opts = useMemo(() => {
         const combinedOptions = getOptions(options, lookup, order);
         // Add the value to the options if it is not already present
         if (selectedValue && !combinedOptions.length) {
-            combinedOptions.push({label: "🔄 Caricamento...", value: selectedValue});
+            combinedOptions.push({label: "🔄 Caricamento...", value: selectedValue.toString()});
         }
 
         return arrayUnique(combinedOptions, 'value');
@@ -201,7 +205,7 @@ export const Autocomplete = ({
         setSelectedItems(valueToArray(value));
     }, [value]);
 
-    const [lookup, setLookup] = useState<RecordArray>([]);
+    const [lookup, setLookup] = useState<Option[]>([]);
     database.useListener(db?.srcPath, setLookup, {fieldMap : normalizeOption(db?.fieldMap), where: db?.where, onLoad:db?.onLoad});
 
     const opts = useMemo(() => {
@@ -308,7 +312,7 @@ export const Checklist = ({
         setSelectedItems(valueToArray(value));
     }, [value]);
 
-    const [lookup, setLookup] = useState<RecordArray>([]);
+    const [lookup, setLookup] = useState<Option[]>([]);
     database.useListener(db?.srcPath, setLookup, {fieldMap : normalizeOption(db?.fieldMap), where: db?.where, onLoad:db?.onLoad});
 
     const opts = useMemo(() => {
