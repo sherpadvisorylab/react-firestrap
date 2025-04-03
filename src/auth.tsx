@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import {fetchJson, fetchRest} from "./libs/fetch";
+import {fetchRest} from "./libs/fetch";
 import {ActionButton} from "./components/Buttons";
 import {IButton} from "./components/Buttons";
 import {getGlobalVars, setGlobalVars, useGlobalVars} from "./Global";
@@ -19,18 +19,24 @@ interface IAuthResponse {
     uid: string
 }
 
+interface AuthChallenge {
+    authServer: string;
+    clientID: string;
+    codeVerifier: string;
+}
+
 export const AUTH_REDIRECT_URI = '/__/authorize';
 const _AUTHS = "auths";
 
 // Funzione per generare il code verifier
-function generateCodeVerifier() {
+function generateCodeVerifier(): string {
     const array = new Uint32Array(56 / 2);
     window.crypto.getRandomValues(array);
     return Array.from(array, dec => ('0' + dec.toString(16)).substr(-2)).join('');
 }
 
 // Funzione per generare il code challenge
-async function generateCodeChallenge(codeVerifier) {
+async function generateCodeChallenge(codeVerifier: string): Promise<string> {
     const encoder = new TextEncoder();
     const data = encoder.encode(codeVerifier);
     const digest = await window.crypto.subtle.digest('SHA-256', data);
@@ -51,12 +57,12 @@ const openAuthWindow = (authUrl: string, windowName: string, width: number) => {
 function redirectToAuthPage({
                                 authServer,
                                 clientID,
-                                scopes = null,
+                                scopes = undefined,
                                 refreshParamName = "access_type"
 }: {
     authServer: string,
     clientID: string,
-    scopes?: string[] | null,
+    scopes?: string[],
     refreshParamName?: string
 }) {
     const codeVerifier = generateCodeVerifier();
@@ -95,30 +101,37 @@ const Authorize = () => {
         const query = new URLSearchParams(location);
 
         const code = query.get('code');
-        const authChallenge = JSON.parse(localStorage.getItem('authChallenge'));
-        const { authServer, clientID, codeVerifier } = authChallenge || {};
+        const getJsonFromStorage = <T = any>(key: string, fallback?: T): T | undefined => {
+            try {
+                return JSON.parse(localStorage.getItem(key) || '') || fallback;
+            } catch {
+                return fallback;
+            }
+        };
 
-        if (code && codeVerifier) {
-            fetchRest(`https://${authServer}/token`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: {
-                    grant_type: 'authorization_code',
-                    client_id: clientID,
-                    code: code,
-                    redirect_uri: `${window.location.origin}${AUTH_REDIRECT_URI}`,
-                    code_verifier: codeVerifier
-                }
+        const authChallenge = getJsonFromStorage<AuthChallenge>('authChallenge');
+        if (!code || !authChallenge) return;
+
+        const { authServer, clientID, codeVerifier } = authChallenge;
+        fetchRest(`https://${authServer}/token`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: {
+                grant_type: 'authorization_code',
+                client_id: clientID,
+                code: code,
+                redirect_uri: `${window.location.origin}${AUTH_REDIRECT_URI}`,
+                code_verifier: codeVerifier
+            }
+        })
+            .then((authResponse: IAuthResponse) => {
+                setAuths(authServer, clientID, authResponse);
+                localStorage.removeItem('authChallenge');
+                window.close();
             })
-                .then((authResponse: IAuthResponse) => {
-                    setAuths(authServer, clientID, authResponse);
-                    localStorage.removeItem('authChallenge');
-                    window.close();
-                })
-                .catch(error => console.error('Error:', error));
-        }
+            .catch(error => console.error('Error:', error));
     }, [location]);
 
     return <div>Loading...</div>;
@@ -151,13 +164,13 @@ const refreshAccessToken = (authServer: string, clientID: string, refresh_token:
 export const AuthButton = ({
                                authServer,
                                clientID,
-                               scopes,
-                               refreshParamName,
+                               scopes = undefined,
+                               refreshParamName = undefined,
                                options = {}
                            }: {
     authServer: string;
     clientID: string;
-    scopes?: string[] | null;
+    scopes?: string[];
     refreshParamName?: string;
     options?: IButton;
 }) => {

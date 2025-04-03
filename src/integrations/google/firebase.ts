@@ -2,6 +2,7 @@ import firebase from "firebase/compat/app";
 import 'firebase/compat/database';
 import { getAdditionalUserInfo, getAuth, signInWithCredential, onAuthStateChanged, Auth, User } from "firebase/auth";
 import { getGoogleCredential } from "./auth";
+import {Config, FirebaseConfig, onConfigChange} from "../../Config";
 
 interface TokenInfo {
     accessToken?: string;
@@ -9,6 +10,10 @@ interface TokenInfo {
     expirationTime?: number;
     isExpired: boolean;
 }
+
+onConfigChange((newConfig: Config) => {
+    init(newConfig.firebase);
+});
 
 const getUser = (auth: Auth): Promise<User | null> => {
     return new Promise((resolve, reject) => {
@@ -89,7 +94,7 @@ const getFirebaseAuthorization = async (): Promise<boolean> => {
     return true;
 };
 
-const init = async (config: Object): Promise<firebase.app.App> => {
+const init = async (config: FirebaseConfig): Promise<firebase.app.App> => {
     if (firebase.apps.length) {
         await firebase.app().delete();
     }
@@ -99,5 +104,3 @@ const init = async (config: Object): Promise<firebase.app.App> => {
 
     return firebase.app();
 };
-
-export default init;

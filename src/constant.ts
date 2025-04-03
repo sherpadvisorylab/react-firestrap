@@ -10,7 +10,7 @@ export const DOT = '.';
 
 export const DEFAULT_LANG = 'it';
 
-export const consoleLog = (...args) => {
+export const consoleLog = (...args: any[]): void => {
     if (0 && process.env.NODE_ENV === 'development') {
         console.log(...args);
     }

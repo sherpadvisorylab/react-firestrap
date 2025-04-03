@@ -1,15 +1,17 @@
 import {decodeJWT} from "../../libs/utils";
 import {GoogleAuthProvider} from "firebase/auth";
+import {Config, GoogleConfig, onConfigChange} from "../../Config";
 
-let config = null;
+let config: GoogleConfig | undefined = undefined;
+onConfigChange((newConfig: Config) => {
+    config = newConfig.google;
+});
 
-const init = (oAuth2, serviceAccount) => {
-    config = { oAuth2, serviceAccount };
-}
-
-export const authConfig = (type: "oAuth2" | "serviceAccount") => {
-    return config?.[type] || {};
-}
+export const authConfig = <K extends keyof GoogleConfig>(
+    key: K
+): GoogleConfig[K] | undefined => {
+    return config?.[key];
+};
 
 export const getGoogleCredential = () => {
     const googleCredentialToken = localStorage.getItem("googleCredentialToken");
@@ -31,9 +33,6 @@ export const getGoogleCredential = () => {
 
     return null;
 }
-
-export default init;
-
 
 
 

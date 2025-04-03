@@ -4,18 +4,86 @@ import {sleep} from "../libs/utils";
 import {AuthButton, getAccessToken, useAccessToken} from "../auth";
 import type {IButton} from "../components/Buttons";
 import pathInfo from "../libs/path";
+import {Config, DropboxConfig, onConfigChange} from "../Config";
 
 const DROPBOX_CHECK_DELAY = 5000;
 const DROPBPX_URL = "https://www.dropbox.com/home";
-export const DROPBOX_AUTH_SERVER = 'www.dropbox.com/oauth2';
 
-let config = null;
-
-const init = (dropBoxConfig) => {
-    config = dropBoxConfig;
+interface AsyncJobResponse {
+    async_job_id?: string;
+    [key: string]: any;
 }
 
-const fetchDropboxBlob = async (url, body, headers = {}) => {
+interface CheckResponse {
+    [key: string]: any;
+    entries?: any[];
+}
+
+type DropboxListFolderResponse = {
+    entries: any[];
+    cursor: string;
+    has_more: boolean;
+};
+
+interface ListFoldersParams {
+    path?: string;
+    recursive?: boolean;
+}
+
+type PathEntry = {
+    from: string;
+    to: string;
+};
+
+type CopyJobStatus = {
+    [key: string]: any;
+    '.tag': 'in_progress' | 'complete' | 'failed' | 'async_job_id';
+    async_job_id?: string;
+    entries?: any[];
+    failure?: any;
+};
+
+
+type ThumbnailEntry = {
+    path: string;
+    [key: string]: any;
+};
+
+type ThumbnailRequestOptions = {
+    thumbnailsRequest: ThumbnailEntry[];
+    size?: 'w32h32' | 'w64h64' | 'w128h128' | 'w256h256' | 'w480h320' | 'w640h480' | 'w960h640' | 'w1024h768' | 'w2048h1536';
+    format?: 'jpg' | 'jpeg' | 'png' | 'tiff' | 'tif' | 'gif' | 'webp' | 'ppm' | 'bmp';
+    mode?: 'strict' | 'bestfit' | 'fitone_bestfit' | 'original';
+};
+
+type ThumbnailResult = {
+    [path: string]: {
+        path: string;
+        thumbnail: string;
+        mimetype: string;
+        width: number;
+        height: number;
+        [key: string]: any;
+    };
+};
+
+export const DROPBOX_AUTH_SERVER = 'www.dropbox.com/oauth2';
+
+let config: DropboxConfig | undefined = undefined;
+onConfigChange((newConfig: Config) => {
+    config = newConfig.dropbox;
+});
+
+const fetchDropboxBlob = async (
+    url: string,
+    body: Blob | ArrayBuffer | Uint8Array,
+    headers: Record<string, string> = {}
+): Promise<Response | null> => {
+    if (!config) {
+        console.error('DropBox: Config not found');
+        return null;
+    }
+
     const ACCESS_TOKEN= await getAccessToken(config.clientId);
     if(!ACCESS_TOKEN) {
         throw new Error('DropBox: Access token not found');
@@ -37,11 +105,19 @@ const fetchDropboxBlob = async (url, body, headers = {}) => {
     })
 }
 
-const fetchDropbox = async (url, body, headers = {}) => {
+const fetchDropbox = async (
+    url: string,
+    body: any,
+    headers: Record<string, string> = {}
+): Promise<any> => {
+    if (!config) {
+        console.error('DropBox: Config not found');
+        return;
+    }
     const ACCESS_TOKEN= await getAccessToken(config.clientId);
     if(!ACCESS_TOKEN) {
         console.error('DropBox: Access token not found');
-        return null;
+        return;
     }
 
     return await fetchWithRetry(url, {
@@ -58,23 +134,28 @@ const fetchDropbox = async (url, body, headers = {}) => {
             if (!json.error_summary || !json.error_summary.includes("not_found")) {
                 console.error('DropBox: Fetch operation failed:', json);
             }
-            return null;
+            return;
         }
         return response;
     }).catch((error) => {
         console.error('There was a problem with the fetch operation:', error);
-        return null;
+        return;
     }).finally(() => {
         console.log('DropBox: Fetch operation completed', url);
     })
 }
 
-export const resolvePath = (path, includeHost = false) => {
-    return (includeHost ? DROPBPX_URL : "") + (path.startsWith(config.rootPath) ? path : config.rootPath + path);
+export const resolvePath = (path: string, includeHost = false): string => {
+    const rootPath = config?.rootPath || "";
+    return (includeHost ? DROPBPX_URL : "") + (path.startsWith(rootPath) ? path : rootPath + path);
 }
 
-const search = async (jobPath, startPath = null, removeExtension = false) => {
-    const paths = {};
+const search = async (
+    jobPath: string,
+    startPath: string           = "",
+    removeExtension: boolean    = false
+): Promise<Record<string, string>> => {
+    const paths: Record<string, string> = {}
     const dropBoxPaths = await dropBox.listFolders({
         path: `${jobPath + startPath}`,
         recursive: true
@@ -87,12 +168,15 @@ const search = async (jobPath, startPath = null, removeExtension = false) => {
     return paths;
 }
 
-const onCompleted = async (response, path) => {
+const onCompleted = async (
+    response: AsyncJobResponse,
+    path: string
+): Promise<any[] | undefined> => {
     if (!response.async_job_id) {
         return Promise.reject(response);
     }
 
-    let check;
+    let check: CheckResponse | undefined = undefined;
     let inProgress = true;
     while (inProgress) {
         await sleep(100);
@@ -114,7 +198,7 @@ const onCompleted = async (response, path) => {
 };
 
 
-const createFolders = async (paths, basePath = "") => {
+const createFolders = async (paths: string[], basePath = ""): Promise<any> => {
     const apiPath = "files/create_folder_batch";
     const response = await fetchDropbox(`https://api.dropboxapi.com/2/${apiPath}`, {
         "autorename": false,
@@ -122,26 +206,26 @@ const createFolders = async (paths, basePath = "") => {
         "paths": paths.map(path => resolvePath(basePath + path)),
     });
 
-    return onCompleted(response, apiPath);
+    return response ? onCompleted(response, apiPath) : undefined;
 }
 
-const deleteBulk = async (paths, basePath = "") => {
+const deleteBulk = async (paths: string[], basePath = ""): Promise<any> => {
     const apiPath = "files/create_folder_batch";
     const response = fetchDropbox(`https://api.dropboxapi.com/2/${apiPath}`, {
         entries: paths.map(path => ({ path: resolvePath(basePath + path) })),
     });
 
-    return onCompleted(response, apiPath);
+    return response ? onCompleted(response, apiPath) : undefined;
 }
 
-const addTag = async (path, tag) => {
+const addTag = async (path: string, tag: string): Promise<any> => {
     return fetchDropbox("https://api.dropboxapi.com/2/files/tags/add", {
         "path": path,
         "tag_text": tag.toLowerCase().replaceAll(/[^a-z0-9]/g, ""),
     });
 }
 
-const addTags = async (paths, basePath = "") => {
+const addTags = async (paths: Record<string, string[]>, basePath = ""): Promise<void> => {
     for (const path in paths) {
         for (const tag of paths[path]) {
             await addTag(resolvePath(basePath + path), tag);
@@ -149,9 +233,17 @@ const addTags = async (paths, basePath = "") => {
     }
 }
 
-const listFolders = async ({path = "", recursive = false} = {}) => {
+export const listFolders = async ({ path = "", recursive = false }: ListFoldersParams = {}): Promise<any[]> => {
     const entries = [];
-    const fetchFolders = async ({path, cursor, recursive}) => {
+    const fetchFolders = async ({
+                                    path,
+                                    cursor,
+                                    recursive
+                                }: {
+        path?: string;
+        cursor?: string;
+        recursive: boolean;
+    }): Promise<DropboxListFolderResponse | undefined> => {
         return (
             path
             ? await fetchDropbox("https://api.dropboxapi.com/2/files/list_folder", {
@@ -169,7 +261,7 @@ const listFolders = async ({path = "", recursive = false} = {}) => {
         );
     }
 
-    let folders = {has_more: true, cursor: null};
+    let folders: DropboxListFolderResponse | undefined = { has_more: true, cursor: "", entries: [] };
     while (folders?.has_more) {
         folders = await fetchFolders(folders.cursor
             ? {cursor: folders.cursor, recursive}
@@ -181,8 +273,8 @@ const listFolders = async ({path = "", recursive = false} = {}) => {
     return entries;
 }
 
-const copy_ = async (paths) => {
-    const startCopy = async (entry) => {
+const copy_ = async (paths: PathEntry[]): Promise<void> => {
+    const startCopy = async (entry: { from_path: string; to_path: string }) => {
         return await fetchDropbox("https://api.dropboxapi.com/2/files/copy_v2", {
             ...entry,
             autorename: false
@@ -198,16 +290,16 @@ const copy_ = async (paths) => {
 
 };
 
-const copy = async (paths) => {
+const copy = async (paths: PathEntry[]): Promise<any[]> => {
     const STEP = 900;
 
-    const startCopy = async (entries) => {
+    const startCopy = async (entries: { from_path: string; to_path: string }[]) => {
         return await fetchDropbox("https://api.dropboxapi.com/2/files/copy_batch_v2", {
             entries: entries,
             autorename: false
         });
     };
-    const checkJobStatus = async (asyncJobId) => {
+    const checkJobStatus = async (asyncJobId: string): Promise<CopyJobStatus | undefined> => {
         return await fetchDropbox("https://api.dropboxapi.com/2/files/copy_batch/check_v2", {
             async_job_id: asyncJobId
         });
@@ -248,8 +340,8 @@ const copy = async (paths) => {
         .map(entry => entry.failure);
 };
 
-const move = async (paths) => {
-    const startMove = async (entry) => {
+const move = async (paths: PathEntry[]): Promise<void> => {
+    const startMove = async (entry: { from_path: string; to_path: string }) => {
         return await fetchDropbox("https://api.dropboxapi.com/2/files/move_v2", {
             ...entry,
             autorename: true
@@ -264,46 +356,46 @@ const move = async (paths) => {
     }
 };
 
-const getThumbnails = async ({
-                                 thumbnailsRequest = [],
-                                 size = "w64h64",
-                                 format = "jpeg",
-                                 mode = "strict"
-}: {
-    thumbnailsRequest: {path: string, [key]: string}[],
-    size?: 'w32h32' | 'w64h64' | 'w128h128' | 'w256h256' | 'w480h320' | 'w640h480' | 'w960h640' | 'w1024h768' | 'w2048h1536',
-    format?: 'jpg' | 'jpeg' | 'png' | 'tiff' | 'tif' | 'gif' | 'webp' | 'ppm' | 'bmp',
-    mode?: 'strict' | 'bestfit' | 'fitone_bestfit' | 'original'
-}, setThumbnails?: (thumbnails: {[path: string]: {path: string, thumbnail: string, mimetype:string, width: number, height: number, [key]: string}}) => void): Promise<any> => {
+
+const getThumbnails = async (
+    {
+        thumbnailsRequest = [],
+        size = "w64h64",
+        format = "jpeg",
+        mode = "strict",
+    }: ThumbnailRequestOptions,
+    setThumbnails?: (thumbs: ThumbnailResult) => void
+): Promise<ThumbnailResult> => {
     const STEP = 25;
     const PLACEHOLDER_THUMBNAIL= "data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAgAAAAwAAAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==";
 
-    const setEntry = (path) => {
-        return {
-            "path": resolvePath(path),
-            "format": format,
-            "size": size,
-            "mode": mode
-        }
-    }
     let results = {};
     const fetchPromise = [];
     for (let i = 0; i < thumbnailsRequest.length; i += STEP) {
         const batch = thumbnailsRequest.slice(i, i + STEP);
-        const entries = batch.map(request => setEntry(request.path));
+        const entries = batch.map(req => ({
+            path: resolvePath(req.path),
+            format,
+            size,
+            mode,
+        }));
+
         await sleep(100);
+
         fetchPromise.push(fetchDropbox("https://content.dropboxapi.com/2/files/get_thumbnail_batch", { entries })
             .then((thumbnails) => {
                 if(!thumbnails) return;
 
-                const entries = thumbnails.entries.reduce((acc, entry, index) => {
+                const entries = thumbnails.entries.reduce((acc: ThumbnailResult, entry: any, index: number) => {
                     const path = batch[index].path;
+                    const [w, h] = size.replace("w", "").split("h").map(Number);
+
                     acc[path] = {
                         ...batch[index],
                         thumbnail: entry?.[".tag"] === "success" ? entry.thumbnail : PLACEHOLDER_THUMBNAIL,
                         mimetype: "data:image/jpeg;base64,",
-                        width: size.split("h")[0].split("w")[1],
-                        height: size.split("h")[1],
+                        width: w,
+                        height: h,
                     };
                     return acc;
                 }, {});
@@ -317,7 +409,7 @@ const getThumbnails = async ({
     });
 }
 
-const b64toBlob = (b64Data, contentType = '', sliceSize = 512) => {
+const b64toBlob = (b64Data: string, contentType = 'application/octet-stream', sliceSize = 512): Blob => {
     const byteCharacters = atob(b64Data);
     const byteArrays = [];
 
@@ -336,7 +428,7 @@ const b64toBlob = (b64Data, contentType = '', sliceSize = 512) => {
     return new Blob(byteArrays, { type: contentType });
 };
 
-const upload = async (path, fileBase64) => {
+const upload = async (path: string, fileBase64: string): Promise<void> => {
     try {
         // Rimuovi il prefisso "data:image/png;base64," se presente
         const base64Data = fileBase64.split(',')[1];
@@ -359,11 +451,14 @@ const upload = async (path, fileBase64) => {
     }
 }
 
-export const useDropBoxConnect = (renew = false) => {
+export const useDropBoxConnect = (renew = false): boolean => {
+    if(!config) return false;
     return useAccessToken(config.clientId, renew);
 }
 
-export const DropBoxConnectButton = (options: IButton = {}) => {
+export const DropBoxConnectButton = (options: IButton = {}): React.ReactElement => {
+    if(!config) return <div title="DropBox: Config not found" className="text-danger">DropBox: Config not found</div>;
+
     const isAuth = useDropBoxConnect(true);
 
     return(<AuthButton
@@ -372,7 +467,7 @@ export const DropBoxConnectButton = (options: IButton = {}) => {
             refreshParamName={"token_access_type"}
             options={{
                 ...options,
-                buttonClass: options?.buttonClass + (isAuth ? " text-success": " text-danger"),
+                className: options?.className + (isAuth ? " text-success": " text-danger"),
                 icon : isAuth ? "link" : "link-break",
                 title : isAuth ? "DropBox Connected" : "DropBox Disconnected",
             }}
@@ -381,8 +476,8 @@ export const DropBoxConnectButton = (options: IButton = {}) => {
 }
 
 export const dropBox = {
-    setRootPath: (path) => {
-        config.rootPath = path;
+    setRootPath: (path: string) => {
+        if (config) config.rootPath = path;
     },
     resolvePath: resolvePath,
     createFolders: createFolders,
@@ -395,7 +490,3 @@ export const dropBox = {
     copy: copy,
     move: move,
 }
-
-
-
-export default init;

@@ -339,7 +339,7 @@ export const getPromptStyles = () => {
   return PROMPT_STYLES;
 }
 
-export const getPrompt = (strategy) => {
+export const getPrompt = (strategy: string) => {
   return PROMPTS[strategy] ?? "";
 }
 
@@ -347,6 +347,6 @@ export const getPromptOutline = () => {
   return PROMPTS["GENERATE_BLOG_POST_OUTLINE"] ?? "";
 }
 
-export const getPromptRole = (strategy) => {
+export const getPromptRole = (strategy: string) => {
   return PROMPTS_ROLE[strategy] ?? "";
 }

@@ -11,46 +11,17 @@ import {converter as convert} from "./libs/converter";
 import {ThemeProvider} from "./Theme";
 import Users from "./pages/Users";
 import {GlobalProvider} from "./Global";
-import initIntegration from "./integrations/init";
-import {fetchJson} from "./libs/fetch";
 import Alert from "./components/Alert";
+import {
+    AIConfig,
+    ConfigProvider,
+    DropboxConfig,
+    FirebaseConfig,
+    GoogleOAuth2,
+    GoogleServiceAccount
+} from "./Config";
 
-type FirebaseConfig = {
-    apiKey: string;
-    authDomain: string;
-    projectId: string;
-    storageBucket: string;
-    messagingSenderId: string;
-    appId: string;
-    measurementId: string;
-};
 
-type GoogleOAuth2 = {
-    client_id: string;
-};
-
-type GoogleServiceAccount = {
-    type: string;
-    project_id: string;
-    private_key_id: string;
-    private_key: string;
-    client_email: string;
-    client_id: string;
-    auth_uri: string;
-    token_uri: string;
-    auth_provider_x509_cert_url: string;
-    client_x509_cert_url: string;
-};
-
-type DropboxConfig = {
-    clientId: string;
-    rootPath: string;
-};
-
-type AIConfig = {
-    geminiApiKey?: string;
-    chatGptApiKey?: string;
-};
 
 interface MenuItem {
     path: string;
@@ -71,19 +42,7 @@ type MenuConfig = {
     })[];
 };
 
-type Config = {
-    firebase: FirebaseConfig;
-    google: {
-        oAuth2: GoogleOAuth2;
-        serviceAccount?: GoogleServiceAccount;
-    };
-    dropbox?: DropboxConfig;
-    ai?: AIConfig;
-    tenantsURI?: string;
-    proxyURI?: string;
-};
-
-type TenantConfig = {
+type AppProps = {
     firebaseConfig: FirebaseConfig;
     oAuth2: GoogleOAuth2;
     serviceAccount?: GoogleServiceAccount;
@@ -91,38 +50,26 @@ type TenantConfig = {
     aiConfig?: AIConfig;
     tenantsURI?: string;
     proxyURI?: string;
-};
-
-interface Tenant {
-    name: string;
-    appId: string;
-    [key: string]: any;
-}
-
-interface TenantItem {
-    title: string;
-    icon: string;
-    active: boolean;
-    onClick: () => void;
-}
-
-type AppProps = TenantConfig & {
     importPage: (pagesPath: string) => Promise<{ default: React.ComponentType }>;
     importTheme?: () => Promise<{ default: { theme: object } }>;
     LayoutDefault?: React.ComponentType;
     menuConfig: MenuConfig;
 };
 
-let tenants: TenantItem[] = [];
-let config: Config | null = null;
-let menu: Record<string, MenuItem[]> = {};
+let menu: MenuConfig = {};
+export const setStaticMenu = (config: MenuConfig) => {
+    menu = config;
+};
+export const getStaticMenu = (type: string): MenuItem[] => {
+    return menu[type] || [];
+};
 
 function App({
                  importPage,
-                 importTheme        = undefined,
-                 LayoutDefault      = undefined,
                  firebaseConfig,
                  oAuth2,
+                 importTheme        = undefined,
+                 LayoutDefault      = undefined,
                  serviceAccount     = undefined,
                  dropBoxConfig      = undefined,
                  aiConfig           = undefined,
@@ -130,9 +77,7 @@ function App({
                  proxyURI           = undefined,
                  menuConfig         = {},
 }: AppProps) {
-    initTenant({firebaseConfig, oAuth2, serviceAccount, dropBoxConfig, aiConfig, tenantsURI, proxyURI});
-    initMenu(menuConfig);
-    initIntegration(config);
+    setStaticMenu(menuConfig);
 
     const LayoutEmpty = ({ children }: { children: React.ReactNode }) => <>{children}</>;
 
@@ -172,119 +117,56 @@ function App({
 
     return (
         <BrowserRouter>
-            <GlobalProvider>
-                <ThemeProvider importTheme={importTheme}>
-                    <Routes>
-                        <Route path={AUTH_REDIRECT_URI} element={<Authorize />}></Route>
-                        <>
-                        {renderRoutes({default: [{ path: "/" }], ...{
-                            ...menu,
-                            _auth: [{
-                                path: "/users",
-                                page: Users,
-                                layout: LayoutDefault
-                            }]
-                        }})}
-                        </>
-                    </Routes>
-                </ThemeProvider>
-            </GlobalProvider>
+            <ConfigProvider defaultConfig={{
+                title       : "Default",
+                firebase    : firebaseConfig,
+                google      : { oAuth2, serviceAccount },
+                dropbox     : dropBoxConfig,
+                ai          : aiConfig,
+                proxyURI    : proxyURI
+            }} tenantsURI={tenantsURI}>
+                <GlobalProvider>
+                    <ThemeProvider importTheme={importTheme}>
+                        <Routes>
+                            <Route path={AUTH_REDIRECT_URI} element={<Authorize />}></Route>
+                            <>
+                            {renderRoutes({default: [{ path: "/" }], ...{
+                                ...menu,
+                                _auth: [{
+                                    path: "/users",
+                                    page: Users,
+                                    layout: LayoutDefault
+                                }]
+                            }})}
+                            </>
+                        </Routes>
+                    </ThemeProvider>
+                </GlobalProvider>
+            </ConfigProvider>
         </BrowserRouter>
     );
 }
 
-const initTenant = ({
-                        firebaseConfig,
-                        oAuth2,
-                        serviceAccount,
-                        dropBoxConfig,
-                        aiConfig,
-                        tenantsURI,
-                        proxyURI,
-}: TenantConfig) => {
-    const setTenant = (): Config => {
-        const tenant: Config = {
-            firebase: firebaseConfig,
-            google: { oAuth2, serviceAccount },
-            dropbox: dropBoxConfig,
-            ai: aiConfig,
-            tenantsURI,
-            proxyURI,
-        };
-        localStorage.setItem("tenant", JSON.stringify(tenant));
-        return tenant;
-    };
 
-    const saved = localStorage.getItem("tenant");
-    config = saved ? JSON.parse(saved) : setTenant();
-}
-
-export const initMenu = (menuConfig: MenuConfig): void => {
-    menu = menuConfig;
-}
-
-export const useTenants = (setTenants: (tenants: TenantItem[]) => void): void => {
-    const clickTenant = (tenant: Config, index: number) => {
-        initIntegration(tenant);
-
-        if (tenants) {
-            setTenants(
-                tenants.map((t, i) => ({
-                    ...t,
-                    active: i === index, //todo capire perche era index + 1
-                }))
-            );
-        }
-
-        console.log("change project", tenant);
-    };
-
-    if(!config?.tenantsURI) return;
-
-    if(tenants.length === 0) {
-        fetchJson(config.tenantsURI).then((response: Tenant[]) => {
-            tenants = response
-                .filter(tenant => tenant.title)
-                .map((tenant, index) => ({
-                        title: tenant.name,
-                        icon: "folder",
-                        active: (tenant.appId === config?.firebase?.appId),
-                        onClick: () => clickTenant(tenant, index)
-                    })
-                );
-        }).catch(error => {
-            console.error('Error: Tenants not found ' + config?.tenantsURI, error);
-            tenants = [];
-        }).finally(() => {
-            setTenants(tenants);
-        });
-    } else {
-        setTenants(tenants);
-    }
-}
 
 export const useMenu = (type: string): UseMenuItem[] => {
-    const menuInfo = menu[type] || [];
+    const menuItems = getStaticMenu(type);
     const location = useLocation();
     const [activeId, setActiveId] = useState(() =>
-        menuInfo.findIndex(item =>
+        menuItems.findIndex(item =>
             location.pathname === item?.path ||
             (item?.path && item.path !== "/" && location.pathname.startsWith(item.path))
         )
     );
 
 
-    return menuInfo
+    return menuItems
         .filter(item => item.title)
         .map((item, index) => ({
             ...item,
             active: index === activeId,
             onClick: () => setActiveId(index)
         }));
-}
-
-export const configProvider = () => {
-    return config;
 }
 
 export default App;

@@ -2,6 +2,7 @@
 import {getPromptLang, getPromptStyle, getPromptVoice, PROMPTS, PROMPTS_ROLE} from "../conf/Prompt";
 import {fetchRest} from "../libs/fetch";
 import {consoleLog} from "../constant";
+import {AIConfig, Config, onConfigChange} from "../Config";
 
 const TYPE_CHATGPT = "chatgpt";
 const TYPE_GEMINI = "gemini";
@@ -25,11 +26,11 @@ const CHATGPT_FRAMEWORKS = [
 const GEMINI_COMPLETION_URL = 'https://api.gemini.com/v1/predict';
 const GEMINI_MODEL = 'your-gemini-model-default'; // Replace with your actual model name
 
-let config = null;
 
-const init = (aiConfig) => {
-    config = aiConfig;
-}
+let config: AIConfig | undefined = undefined;
+onConfigChange((newConfig: Config) => {
+    config = newConfig.ai;
+});
 
 const promptAssign = (prompt, options = {}) => {
     Object.keys(options).forEach(key => {
@@ -188,5 +189,3 @@ export function fetchAI(type = TYPE_CHATGPT) {
             return fetchChatGPTApi;
     }
 }
-
-export default init;

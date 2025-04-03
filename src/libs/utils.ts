@@ -1,5 +1,5 @@
 import {converter} from "./converter";
-import {configProvider} from "../App";
+import {getConfig} from "../Config";
 
 export const decodeJWT = (token: string): any => {
     try {
@@ -100,7 +100,7 @@ export async function sleep(ms: number): Promise<void> {
 }
 
 export function proxy(url: string, format: string = 'json'): string {
-    const config = configProvider();
+    const config = getConfig();
     return (
         config?.proxyURI
             ? config.proxyURI + encodeURIComponent(url) + "&f=" + format

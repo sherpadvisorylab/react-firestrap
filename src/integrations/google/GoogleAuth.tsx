@@ -1,11 +1,12 @@
 import React, {useEffect, useState} from "react";
 import {getAuth, GoogleAuthProvider, signInWithCredential, getAdditionalUserInfo, signOut} from 'firebase/auth';
 import {Dropdown, DropdownButton, DropdownLink} from "../../components/Dropdown";
-import {useTenants, useMenu} from "../../App";
+import {useMenu} from "../../App";
 import {decodeJWT, loadScripts} from "../../libs/utils";
 import {useTheme} from "../../Theme";
 import {useGlobalVars} from "../../Global";
 import {authConfig} from "./auth";
+import TenantMenu from "../../Config";
 
 const imgNoAvatar = "/assets/images/noavatar.svg";
 
@@ -83,20 +84,53 @@ const ProfileItem = ({
     );
 };
 
+const GoogleAuthFallback = () => (
+    <div className="menu-item dropdown dropdown-mobile-full" title="⚠️ Google OAuth2 config missing">
+        <DropdownButton>
+            <div className="menu-img offline">
+                <img
+                    src="/assets/images/noavatar.svg"
+                    alt="No Config"
+                    height="36"
+                    className="avatar rounded-circle ms-2"
+                />
+            </div>
+        </DropdownButton>
+        <Dropdown className="me-lg-3">
+            <div className="text-danger p-2 small" style={{ maxWidth: 300, whiteSpace: "normal" }}>
+                ⚠️ Google Single Sign-On is not configured.<br />
+                Please make sure the <code>oAuth2.clientId</code> value is correctly set in your tenant configuration.
+                <hr className="my-2" />
+                <strong>To retrieve your <code>clientId</code>:</strong>
+                <ol className="ps-3 mb-1">
+                    <li>Go to <a href="https://console.cloud.google.com/" target="_blank" rel="noopener noreferrer">Google Cloud Console</a></li>
+                    <li>Select your project or create one</li>
+                    <li>Navigate to <code>APIs & Services &gt; Credentials</code></li>
+                    <li>Click <strong>“Create Credentials”</strong> &gt; <strong>OAuth client ID</strong></li>
+                    <li>Select <strong>Web application</strong> as the type</li>
+                    <li>Add your redirect URI (e.g. <code>https://yourdomain.com/auth/callback</code>)</li>
+                    <li>Click <strong>Create</strong> and copy the <code>Client ID</code></li>
+                </ol>
+                Use that value in your config under <code>google.oAuth2.clientId</code>.
+            </div>
+        </Dropdown>
+    </div>
+);
 
 
 const GoogleAuth = ({
                         scope,
                         iconLogout
 }: GoogleAuthProps) => {
-    const [tenants, setTenants] = useState([]);
     const menuAuth = useMenu("profile");
     const [ user, setUser, removeUser ] = useGlobalVars("user");
     const userProfile = user?.profile || {};
 
     const config = authConfig("oAuth2");
-
-    useTenants(setTenants);
+    if (!config) {
+        console.warn("GoogleAuth: Missing oAuth2.clientId in configuration");
+        return GoogleAuthFallback();
+    }
 
     const firebaseSignInWithGoogleCredential = async(credentialToken: string): Promise<void> => {
         try {
@@ -164,13 +198,13 @@ const GoogleAuth = ({
         }
     };
 
-    if(config.clientId && !window.google) {
+    if(!window.google) {
         loadScript();
     }
 
     return (
         <>
-            {!user && config.clientId && <div id="g_id_onload"
+            {!user && <div id="g_id_onload"
                                  data-client_id={config.clientId}
                                  data-context="signin"
                                  data-ux_mode="popup"
@@ -208,17 +242,7 @@ const GoogleAuth = ({
                         </DropdownLink>
                         <div className="dropdown-divider"/>
                     </div>}
-                    {tenants.length > 0 && <>
-                        <div className="dropdown-header">Projects</div>
-                        {tenants.map((item) => {
-                            return (
-                                <DropdownLink key={item.title} url={item.path}>
-                                    <ProfileItem label={item.title} icon={item.icon} />
-                                </DropdownLink>
-                            );
-                        })}
-                        <div className="dropdown-divider" />
-                    </>}
+                    <TenantMenu />
                     {menuAuth.map((item) => {
                         return (item.path
                                 ? <DropdownLink key={item.title} url={item.path}>
@@ -246,6 +270,10 @@ const GoogleAuth = ({
 
 export const googleGetAccessToken = () => {
     const config = authConfig("oAuth2");
+    if (!config) {
+        console.warn("GoogleAuth: Missing oAuth2.clientId in configuration");
+        return Promise.reject("Google client ID not found");
+    }
 
     return new Promise((resolve, reject) => {
         // Recupera il token e la data di scadenza da localStorage
