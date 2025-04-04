@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React from "react";
 import {getAuth, GoogleAuthProvider, signInWithCredential, getAdditionalUserInfo, signOut} from 'firebase/auth';
 import {Dropdown, DropdownButton, DropdownLink} from "../../components/Dropdown";
 import {useMenu} from "../../App";
@@ -268,32 +268,37 @@ const GoogleAuth = ({
 }
 
 
-export const googleGetAccessToken = () => {
+export const googleGetAccessToken = (scopes: string[]): Promise<string> => {
     const config = authConfig("oAuth2");
     if (!config) {
         console.warn("GoogleAuth: Missing oAuth2.clientId in configuration");
         return Promise.reject("Google client ID not found");
     }
 
+    const scope = scopes.join(' ');
+    const tokenKey = `googleAccessToken::${scope}`;
+    const expiresKey = `googleExpiresAt::${scope}`;
+
     return new Promise((resolve, reject) => {
         // Recupera il token e la data di scadenza da localStorage
-        const accessToken = localStorage.getItem('googleAccessToken');
-        const expiresAt = localStorage.getItem('googleExpiresAt');
+        const accessToken = localStorage.getItem(tokenKey);
+        const expiresAt = localStorage.getItem(expiresKey);
+        const isExpired = !expiresAt || new Date(expiresAt).getTime() < Date.now();
 
         // Verifica se il token è ancora valido
-        if (accessToken && expiresAt && new Date(expiresAt) > new Date()) {
+        if (accessToken && !isExpired) {
             // Token esistente e valido, restituiscilo
             resolve(accessToken);
         } else {
             // Inizializza il client OAuth
             const gclient = window.google.accounts.oauth2.initTokenClient({
                 client_id: config.clientId,
-                scope: 'https://www.googleapis.com/auth/gmail.send',  // Inserisci gli scope necessari
+                scope,
                 callback: (tokenResponse) => {
                     if (tokenResponse.access_token) {
                         // Salva il nuovo access token e la data di scadenza in localStorage
-                        localStorage.setItem('googleAccessToken', tokenResponse.access_token);
-                        localStorage.setItem('googleExpiresAt', new Date(new Date().getTime() + tokenResponse.expires_in * 1000).toISOString());
+                        localStorage.setItem(tokenKey, tokenResponse.access_token);
+                        localStorage.setItem(expiresKey, new Date(Date.now() + tokenResponse.expires_in * 1000).toISOString());
 
                         // Restituisci il nuovo access token
                         resolve(tokenResponse.access_token);

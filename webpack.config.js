@@ -4,7 +4,7 @@ const webpack = require('webpack');
 
 module.exports = {
     entry: {
-        index: './src/index.js'
+        index: './src/index.ts'
     },
     output: {
         path: path.resolve(__dirname, 'dist'),
@@ -15,7 +15,15 @@ module.exports = {
     },
     mode: 'development',
     devtool: 'source-map', // Attiva la generazione dei sourcemaps
-    externals: [nodeExternals()], // Esclude le dipendenze dal bundle di output
+    externals: [
+        nodeExternals(),
+        {
+            react: 'react',
+            'react-dom': 'react-dom',
+            'react-router-dom': 'react-router-dom',
+            firebase: 'firebase'
+        }
+    ],
     module: {
         rules: [
             {

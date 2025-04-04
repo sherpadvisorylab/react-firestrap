@@ -296,3 +296,10 @@ export function safeClone<T>(obj: T): T {
 }
 
 
+export function base64Encode(input: string | Buffer): string {
+    return Buffer.from(input)
+        .toString('base64')
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=+$/, '');
+}

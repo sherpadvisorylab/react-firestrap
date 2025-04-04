@@ -1,8 +1,14 @@
 import { google } from 'googleapis';
-import { Buffer } from 'buffer';
+import {base64Encode} from "../../../libs/utils";
+
+interface SendEmailOptions {
+    to: string;
+    subject: string;
+    message: string;
+}
 
 // Funzione per inviare email tramite l'API di Gmail usando un Service Account
-export async function sendEmail({ to, subject, message }) {
+export async function sendEmail({ to, subject, message }: SendEmailOptions) {
     const auth = new google.auth.GoogleAuth({
         keyFile: process.env.REACT_APP_GOOGLE_SERVICE_ACCOUNT_PATH,
         scopes: ['https://www.googleapis.com/auth/gmail.send'],
@@ -21,16 +27,10 @@ export async function sendEmail({ to, subject, message }) {
         message,
     ].join('\n');
 
-    const base64EncodedEmail = Buffer.from(email)
-        .toString('base64')
-        .replace(/\+/g, '-')
-        .replace(/\//g, '_')
-        .replace(/=+$/, '');
-
     const res = await gmail.users.messages.send({
         userId: 'me',
         requestBody: {
-            raw: base64EncodedEmail,
+            raw: base64Encode(email),
         },
     });
 

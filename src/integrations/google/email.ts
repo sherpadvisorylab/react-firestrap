@@ -17,7 +17,7 @@ type GmailSendResponse = {
 
 // Funzione per inviare email tramite l'API di Gmail
 export async function sendEmail({ to, bcc, subject, message }: SendEmailParams): Promise<GmailSendResponse>  {
-    const accessToken = await googleGetAccessToken();
+    const accessToken = await googleGetAccessToken(['https://www.googleapis.com/auth/gmail.send']);
 
     const recipients = [
         `To: ${to.join(', ')}`,

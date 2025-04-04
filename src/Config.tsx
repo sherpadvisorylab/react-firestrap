@@ -32,6 +32,7 @@ export type GoogleServiceAccount = {
 export type GoogleConfig = {
     oAuth2: GoogleOAuth2;
     serviceAccount?: GoogleServiceAccount;
+    developerToken?: string;
 }
 
 export type DropboxConfig = {

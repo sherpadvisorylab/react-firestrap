@@ -5,6 +5,7 @@ import {AuthButton, getAccessToken, useAccessToken} from "../auth";
 import type {IButton} from "../components/Buttons";
 import pathInfo from "../libs/path";
 import {Config, DropboxConfig, onConfigChange} from "../Config";
+import {useTheme} from "../Theme";
 
 const DROPBOX_CHECK_DELAY = 5000;
 const DROPBPX_URL = "https://www.dropbox.com/home";
@@ -400,7 +401,7 @@ const getThumbnails = async (
                     return acc;
                 }, {});
                 console.log("DropBox: setThumbnails", entries);
-                setThumbnails && setThumbnails(entries);
+                setThumbnails?.(entries);
                 results = {...results, ...entries};
             }));
     }
@@ -455,10 +456,21 @@ export const useDropBoxConnect = (renew = false): boolean => {
     if(!config) return false;
     return useAccessToken(config.clientId, renew);
 }
-
+//todo: migliorare il fallback se non ce la configurazione
 export const DropBoxConnectButton = (options: IButton = {}): React.ReactElement => {
-    if(!config) return <div title="DropBox: Config not found" className="text-danger">DropBox: Config not found</div>;
+    const theme = useTheme("dropbox");
 
+    if (!config) {
+        return (
+            <div
+                title={`DropBox: configurazione mancante. Recupera il "Client ID" accedendo a https://www.dropbox.com/developers, vai su "App Console", seleziona un'app esistente o chiedi il Client ID a chi ha configurato il sistema.`}
+                className="text-danger d-flex align-items-center gap-2"
+            >
+                <i className={theme.getIcon("warning")} />
+                <span>Dropbox non configurato</span>
+            </div>
+        );
+    }
     const isAuth = useDropBoxConnect(true);
 
     return(<AuthButton

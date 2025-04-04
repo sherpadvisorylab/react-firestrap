@@ -309,14 +309,18 @@ const PROMPT_STYLES = [
 ];
 
 export const getPromptCountry = (code: boolean = false) => {
+  const country = localStorage.getItem("promptCountry") || PROMPT_COUNTRY_DEFAULT;
+
   return code
-    ? PROMPT_COUNTRIES[localStorage.getItem("promptCountry") || PROMPT_COUNTRY_DEFAULT]
-    : localStorage.getItem("promptCountry") || PROMPT_COUNTRY_DEFAULT
+    ? PROMPT_COUNTRIES[country as keyof typeof PROMPT_COUNTRIES]
+    : country
 }
 export const getPromptLang = (code : boolean = false) => {
+  const lang = localStorage.getItem("promptLang") || PROMPT_LANG_DEFAULT;
+
   return code
-    ? PROMPT_LANGS[localStorage.getItem("promptLang") || PROMPT_LANG_DEFAULT]
-    : localStorage.getItem("promptLang") || PROMPT_LANG_DEFAULT
+    ? PROMPT_LANGS[lang as keyof typeof PROMPT_LANGS]
+    : lang
 }
 export const getPromptVoice = () => {
   return localStorage.getItem("promptVoice") || PROMPT_VOICE_DEFAULT
@@ -339,7 +343,7 @@ export const getPromptStyles = () => {
   return PROMPT_STYLES;
 }
 
-export const getPrompt = (strategy: string) => {
+export const getPrompt = (strategy: keyof typeof PROMPTS): string => {
   return PROMPTS[strategy] ?? "";
 }
 
@@ -347,6 +351,6 @@ export const getPromptOutline = () => {
   return PROMPTS["GENERATE_BLOG_POST_OUTLINE"] ?? "";
 }
 
-export const getPromptRole = (strategy: string) => {
-  return PROMPTS_ROLE[strategy] ?? "";
-}
+export const getPromptRole = (strategy: keyof typeof PROMPTS_ROLE): string[] => {
+  return PROMPTS_ROLE[strategy] ?? [];
+};

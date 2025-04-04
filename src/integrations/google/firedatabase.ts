@@ -72,7 +72,7 @@ const query = (
 };
 
 const db = {
-    read: async (
+    read: async <T = any>(
         path: string,
         {
             where       = undefined,
@@ -85,7 +85,7 @@ const db = {
             shallow?: boolean;
             exception?: boolean;
         } = {}
-    ) => {
+    ): Promise<T | T[] | string[] | undefined> => {
         const dbRef = query(getDatabase().ref(path), where);
         try {
             const snapshot = await dbRef.get();
@@ -107,7 +107,7 @@ const db = {
             handleError(`lettura dei dati in Firebase per ${path}`, error, exception);
         }
     },
-    set: async (path: string, data: any, exception: boolean = false) => {
+    set: async (path: string, data: any, exception: boolean = false): Promise<void> => {
         const dbRef = getDatabase().ref(path);
         try {
             await dbRef.set(data);
@@ -116,7 +116,7 @@ const db = {
             handleError(`aggiornamento dei dati in Firebase per ${path}`, error, exception);
         }
     },
-    remove: async (path: string, exception: boolean = false) => {
+    remove: async (path: string, exception: boolean = false): Promise<void> => {
         const dbRef = getDatabase().ref(path);
         try {
             await dbRef.remove();
@@ -129,9 +129,9 @@ const db = {
         path: string | undefined,
         setRecords: RecordFN<T>,
         {
-            where = undefined,
-            fieldMap = undefined,
-            onLoad = undefined
+            where       = undefined,
+            fieldMap    = undefined,
+            onLoad      = undefined
         }: DatabaseOptions<T> = {}
     ) => {
         const auth = useMemo(() => getAuth(), []); // Ottieni l'oggetto auth una sola volta

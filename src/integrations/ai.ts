@@ -26,15 +26,33 @@ const CHATGPT_FRAMEWORKS = [
 const GEMINI_COMPLETION_URL = 'https://api.gemini.com/v1/predict';
 const GEMINI_MODEL = 'your-gemini-model-default'; // Replace with your actual model name
 
+type PromptPlaceholders = {
+    [key: string]: string | number | boolean | undefined;
+};
+
+type FetchAIOptions  = {
+    limit?: number;
+    keywords?: string[];
+    model?: string;
+    framework?: string;
+    temperature?: number;
+    voice?: string;
+    style?: string;
+};
+
+type Message = {
+    role: 'user' | 'system' | 'assistant';
+    content: string;
+};
 
 let config: AIConfig | undefined = undefined;
 onConfigChange((newConfig: Config) => {
     config = newConfig.ai;
 });
 
-const promptAssign = (prompt, options = {}) => {
+const promptAssign = (prompt: string, options: PromptPlaceholders): string => {
     Object.keys(options).forEach(key => {
-        options[key] && (prompt = prompt.replaceAll(`{${key}}`, options[key]));
+        options[key] && (prompt = prompt.replaceAll(`{${key}}`, String(options[key])));
     });
     return prompt
         .replaceAll('{output}', OUTPUT)
@@ -45,7 +63,7 @@ const promptAssign = (prompt, options = {}) => {
         .replace(/{[^{}]+}/g, '');
 }
 
-const parseContent = (str) => {
+const parseContent = (str: string): any => {
     try {
         return (str.startsWith("{") || str.startsWith("[")
                 ? JSON.parse(str)
@@ -53,25 +71,51 @@ const parseContent = (str) => {
         )
     } catch (error) {
         console.error('Errore di sintassi JSON');
-        return null;
+        return;
     }
 }
 
-const apiLog = (aiType, strategy, response) => {
+const apiLog = (aiType: string, strategy: string, response: any) => {
     consoleLog(aiType + "->response::", strategy, response);
     return response;
 }
 
-const chatGPTApiContinue = async (content, prevMessages, countRetry = 0) => {
+const chatGPTApiContinue = async (
+    content: string,
+    prevMessages: any[],
+    countRetry = 0
+): Promise<any> => {
+    if(!config?.chatGptApiKey) {
+        console.error(`
+❌ OpenAI API Key not configured.
+
+To use ChatGPT, you must configure a valid OpenAI API key.
+
+🛠 How to get your API key:
+1. Go to https://platform.openai.com/
+2. Log in or create a free account
+3. From your dashboard, click on your profile (top right) > "View API keys"
+4. Click "Create new secret key"
+5. Copy the key and store it securely
+
+📌 Add it to your tenant configuration under:
+  config.ai.chatGptApiKey = "<your-api-key>"
+
+⚠️ Without this key, ChatGPT features will not work.
+`);
+        return;
+    }
+
+    countRetry++;
+    if (countRetry > 3) {
+        return;
+    }
+
     const messages = [
         ...prevMessages,
         //{ role: 'user', content: 'Please continue from the previous response and include the complete content in the new response.'}
         { role: 'user', content: 'Please continue: ' + content}
     ];
-    countRetry++;
-    if (countRetry > 3) {
-        return null;
-    }
 
     console.log("Retry: " + countRetry, '<------------------------------------------------------------------------------------');
     return fetchRest(CHATGPT_URL, {
@@ -100,25 +144,51 @@ const chatGPTApiContinue = async (content, prevMessages, countRetry = 0) => {
 
 
 const fetchChatGPTApi = async (
-    search,
-    strategy,
+    search: string,
+    strategy: keyof typeof PROMPTS,
     {
-        limit       = 10,
-        keywords    = [],
-        model       = null,
-        framework   = null,
-        temperature = null,
-        voice       = null,
-        style       = null
-    }) => {
+        limit           = 10,
+        keywords        = [],
+        model           = undefined,
+        framework       = undefined,
+        temperature     = undefined,
+        voice           = undefined,
+        style           = undefined,
+    }: FetchAIOptions
+): Promise<any> => {
+    if(!config?.chatGptApiKey) {
+        console.error(`
+❌ OpenAI API Key not configured.
 
-    const promptOptions = { keywords, search, limit, voice, style, framework: framework || CHATGPT_FRAMEWORK };
+To use ChatGPT, you must configure a valid OpenAI API key.
 
-    let roles = [];
+🛠 How to get your API key:
+1. Go to https://platform.openai.com/
+2. Log in or create a free account
+3. From your dashboard, click on your profile (top right) > "View API keys"
+4. Click "Create new secret key"
+5. Copy the key and store it securely
 
-    for (const promptRole of PROMPTS_ROLE[strategy]) {
-        roles.push({ role: 'system', content: promptAssign(promptRole, promptOptions)});
+📌 Add it to your tenant configuration under:
+  config.ai.chatGptApiKey = "<your-api-key>"
+
+⚠️ Without this key, ChatGPT features will not work.
+`);
+        return;
     }
+    const promptOptions: PromptPlaceholders = {
+        keywords: keywords.join(', '), // 👈 qui convertiamo in stringa
+        search,
+        limit,
+        voice,
+        style,
+        framework: framework || CHATGPT_FRAMEWORK,
+    };
+    const roles: Message[] = (PROMPTS_ROLE[strategy] || []).map(role => ({
+        role: 'system',
+        content: promptAssign(role, promptOptions),
+    }));
+
     const prompt = promptAssign(PROMPTS[strategy], promptOptions);
     const body = {
         model: model || CHATGPT_MODEL,
@@ -147,10 +217,48 @@ const fetchChatGPTApi = async (
         });
 }
 
-const fetchGeminiApi = async (search, strategy, {limit = 10, keywords = [], model = null, framework = null, temperature = null, voice = null, style = null}) => {
-    const promptOptions = { keywords, search, limit, voice, style };
+const fetchGeminiApi = async (
+    search: string,
+    strategy: keyof typeof PROMPTS,
+    {
+        limit           = 10,
+        keywords        = [],
+        model           = undefined,
+        framework       = undefined,
+        temperature     = undefined,
+        voice           = undefined,
+        style           = undefined,
+    }: FetchAIOptions
+): Promise<any> => {
+    if (!config?.geminiApiKey) {
+        console.error(`
+❌ Gemini API Key not configured.
 
-    const promptRole = (question) => {
+To use Google Gemini (formerly Bard), you must configure a valid API key.
+
+🛠 How to get your Gemini API key:
+1. Go to https://makersuite.google.com/app/apikey
+2. Sign in with your Google account
+3. Click on "Create API Key"
+4. Copy the key provided
+
+📌 Add it to your tenant configuration under:
+  config.ai.geminiApiKey = "<your-api-key>"
+
+⚠️ Without this key, Gemini-related features will not function.
+`);
+        return;
+    }
+
+    const promptOptions: PromptPlaceholders = {
+        keywords: keywords.join(', '), // ✅ convertito per compatibilità
+        search,
+        limit,
+        voice,
+        style,
+    };
+
+    const promptRole = (question: string): string => {
         const role =  'Assistant'; //todo: da schematizzare estraendo da PROMPTS_ROLE[strategy]
         const specialization = 'Generalist'; //todo: da schematizzare estraendo da PROMPTS_ROLE[strategy]
 
@@ -174,13 +282,13 @@ const fetchGeminiApi = async (search, strategy, {limit = 10, keywords = [], mode
         .then(response => apiLog(TYPE_GEMINI, strategy, response))
         .then(response => {
             if (response?.predictions) {
-                return null;
+                return;
             }
             return parseContent(response.predictions[0].text)
         });
 }
 
-export function fetchAI(type = TYPE_CHATGPT) {
+export default function fetchAI(type = TYPE_CHATGPT) {
     switch (type) {
         case TYPE_GEMINI:
             return fetchGeminiApi;

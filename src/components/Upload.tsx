@@ -47,7 +47,15 @@ const Upload = ({
             const reader = new FileReader();
             reader.onload = async () => {
                 const base64Image = reader.result;
+                if (typeof base64Image !== "string") {
+                    console.error("Invalid file format");
+                    return;
+                }
                 const downloadURL = await storage.upload(base64Image, `images/${file.name}`); // Usa upload da storageFunctions
+                if(!downloadURL) {
+                    console.error("Failed to upload file");
+                    return;
+                }
                 setImageURL(downloadURL); // Aggiorna l'URL dell'immagine locale
                 onChange?.({target: {name: name, value: downloadURL}});
             };

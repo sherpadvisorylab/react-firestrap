@@ -19,6 +19,7 @@
   ],
   "exclude": [                                // Exclude these folders
     "node_modules",
-    "dist"
+    "dist",
+    "src/integrations/google"
   ]
 }
