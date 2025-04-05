@@ -2,7 +2,7 @@ import firebase from "firebase/compat/app";
 import 'firebase/compat/database';
 import { getAdditionalUserInfo, getAuth, signInWithCredential, onAuthStateChanged, Auth, User } from "firebase/auth";
 import { getGoogleCredential } from "./auth";
-import {Config, FirebaseConfig, onConfigChange} from "../../Config";
+import {FirebaseConfig} from "../../Config";
 
 interface TokenInfo {
     accessToken?: string;
@@ -10,10 +10,6 @@ interface TokenInfo {
     expirationTime?: number;
     isExpired: boolean;
 }
-
-onConfigChange((newConfig: Config) => {
-    init(newConfig.firebase);
-});
 
 const getUser = (auth: Auth): Promise<User | null> => {
     return new Promise((resolve, reject) => {
@@ -95,8 +91,14 @@ const getFirebaseAuthorization = async (): Promise<boolean> => {
 };
 
 const init = async (config: FirebaseConfig): Promise<firebase.app.App> => {
-    if (firebase.apps.length) {
-        await firebase.app().delete();
+    const firebaseApp = firebase.apps.length ? firebase.app() : undefined;
+
+    if (firebaseApp) {
+        if ((firebaseApp.options as Partial<FirebaseConfig>)?.appId === config.appId) {
+            console.log("[firebase] Already initialized with same appId, skipping re-init");
+            return firebaseApp;
+        }
+        await firebaseApp.delete();
     }
 
     firebase.initializeApp(config);
@@ -104,3 +106,5 @@ const init = async (config: FirebaseConfig): Promise<firebase.app.App> => {
 
     return firebase.app();
 };
+
+export default init;

@@ -296,8 +296,14 @@ export function safeClone<T>(obj: T): T {
 }
 
 
-export function base64Encode(input: string | Buffer): string {
-    return Buffer.from(input)
+export function base64Encode(input: string | Buffer | ArrayBuffer): string {
+    const buffer = typeof input === 'string'
+        ? Buffer.from(input, 'utf8')
+        : input instanceof ArrayBuffer
+            ? Buffer.from(new Uint8Array(input))
+            : Buffer.from(input);
+
+    return buffer
         .toString('base64')
         .replace(/\+/g, '-')
         .replace(/\//g, '_')

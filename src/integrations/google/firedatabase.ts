@@ -4,6 +4,17 @@ import 'firebase/compat/database';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { converter } from "../../libs/converter";
 import {consoleLog} from "../../constant";
+import {Config, onConfigChange} from "../../Config";
+import init from "./firebase";
+
+type FirebasePrimitive = string | number | boolean | null;
+type FirebaseAny = FirebasePrimitive | object | any[];
+type FirebaseValue<T> =
+    | T                     // es: quando toArray = false
+    | T[]                   // es: array omogeneo di T
+    | (FirebaseAny | T)[]   // es: array eterogeneo
+    | string[]              // es: quando shallow = true
+    | undefined;            // es: nessun valore
 
 type Operator = "eq" | "lt" | "lte" | "gt" | "gte";
 type Condition = {
@@ -26,6 +37,9 @@ export interface DatabaseOptions<T extends RecordProps = RecordProps> {
 }
 
 let databaseInstance: firebase.database.Database;
+onConfigChange((newConfig: Config) => {
+    init(newConfig.firebase);
+});
 
 const handleError = (action: string, error: any, exception: boolean) => {
     const message = `Errore durante ${action}: ${error}`;
@@ -85,7 +99,7 @@ const db = {
             shallow?: boolean;
             exception?: boolean;
         } = {}
-    ): Promise<T | T[] | string[] | undefined> => {
+    ): Promise<FirebaseValue<T>> => {
         const dbRef = query(getDatabase().ref(path), where);
         try {
             const snapshot = await dbRef.get();

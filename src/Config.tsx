@@ -73,6 +73,7 @@ const ConfigContext = createContext<Config | null>(null);
 const ConfigUpdateContext = createContext<(cfg: Config) => void>(() => {});
 
 const configChangeHandlers: Set<ConfigChangeHandler> = new Set();
+
 export const onConfigChange = (fn: ConfigChangeHandler) => {
     configChangeHandlers.add(fn);
     if (currentConfig) fn(currentConfig, null);

@@ -11,6 +11,9 @@
     "prepublishOnly": "npm run build",
     "updateReadme": "node scripts/updateReadme.js"
   },
+  "bin": {
+    "react-firestrap": "./bin/cli.js"
+  },
   "files": [
     "dist",
     "dist/**/*.map"
@@ -50,9 +53,9 @@
   "homepage": "https://github.com/sherpadvisorylab/react-quicksuite#readme",
   "peerDependencies": {
     "firebase": "^10.14.0",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
-    "react-router-dom": "^6.0.0"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.22.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.7",
@@ -61,8 +64,8 @@
     "@babel/preset-env": "^7.25.7",
     "@babel/preset-react": "^7.25.7",
     "@babel/preset-typescript": "^7.25.7",
-    "@types/react": "^18.3.11",
-    "@types/react-dom": "^18.3.1",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
     "babel-loader": "^9.2.1",
     "ts-loader": "^9.5.1",
     "typescript": "^5.6.2",

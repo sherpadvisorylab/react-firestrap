@@ -1,8 +1,12 @@
 import firebase from "firebase/compat/app";
 import "firebase/compat/storage";
+import {Config, onConfigChange} from "../../Config";
+import init from "./firebase";
 
 let storageInstance: firebase.storage.Storage | undefined;
-
+onConfigChange((newConfig: Config) => {
+    init(newConfig.firebase);
+});
 const getStorage = (): firebase.storage.Storage | undefined => {
     if (!storageInstance && firebase.apps.length) {
         storageInstance = firebase.app().storage();

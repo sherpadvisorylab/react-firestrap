@@ -36,6 +36,8 @@ module.exports = {
 }
 
 function run() {
+    console.log("🔧 Esecuzione dello scaffolder di React FireStrap...");
+
     installDependencies();
     createWebpackConfig();
 }
