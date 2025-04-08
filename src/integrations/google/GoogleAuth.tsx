@@ -7,8 +7,7 @@ import {useTheme} from "../../Theme";
 import {useGlobalVars} from "../../Global";
 import {authConfig} from "./auth";
 import TenantMenu from "../../Config";
-
-const imgNoAvatar = "/assets/images/noavatar.svg";
+import ImageAvatar, {NOAVATAR_SRC} from "../../components/ImageAvatar";
 
 declare global {
     interface Window {
@@ -89,7 +88,7 @@ const GoogleAuthFallback = () => (
         <DropdownButton>
             <div className="menu-img offline">
                 <img
-                    src="/assets/images/noavatar.svg"
+                    src={NOAVATAR_SRC}
                     alt="No Config"
                     height="36"
                     className="avatar rounded-circle ms-2"
@@ -218,14 +217,11 @@ const GoogleAuth = ({
             { <div className="menu-item dropdown dropdown-mobile-full">
                 <DropdownButton>
                     <div className="menu-img online">
-                        <img
-                            key={userProfile.picture || imgNoAvatar}
-                            src={userProfile.picture || imgNoAvatar}
-                            alt="Profile"
-                            height="36"
-                            className="avatar rounded-circle ms-2"
-                            title={userProfile.name || ""}
-                        />
+                        <ImageAvatar
+                            src={userProfile.picture}
+                            title={userProfile.name}
+                            height={36}
+                            className={"avatar rounded-circle ms-2"} />
                     </div>
                 </DropdownButton>
                 <Dropdown className="me-lg-3">

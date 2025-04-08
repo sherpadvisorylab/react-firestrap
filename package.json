@@ -8,6 +8,7 @@
     "build": "webpack --mode production",
     "build:dev": "webpack --mode development",
     "watch:dev": "webpack --watch --mode development",
+    "build:local": "node scripts/build-local.js",
     "prepublishOnly": "npm run build",
     "updateReadme": "node scripts/updateReadme.js"
   },
@@ -66,7 +67,9 @@
     "@babel/preset-typescript": "^7.25.7",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
+    "@types/react-router-dom": "^5.3.3",
     "babel-loader": "^9.2.1",
+    "react-router-dom": "^6.22.0",
     "ts-loader": "^9.5.1",
     "typescript": "^5.6.2",
     "webpack": "^5.95.0",

@@ -74,12 +74,6 @@ const Gallery = ({
         return <p className={"p-4"}>Nessun dato trovato</p>;
     }
 
-    const renderedBody = useMemo(() =>
-            groupBy
-                ? getGroups(body, groupBy)
-                : body.map((item) => getImage(item))
-        , [body, groupBy]);
-
     const handleClick = (record: GalleryRecord, e: React.MouseEvent<HTMLElement>) => {
         if (selectedClass) {
             let currentElement = e.target as HTMLElement;
@@ -166,6 +160,11 @@ const Gallery = ({
         return result;
     };
 
+    const renderedBody = useMemo(() =>
+            groupBy
+                ? getGroups(body, groupBy)
+                : body.map((item) => getImage(item))
+        , [body, groupBy]);
 
     return (
         <Wrapper className={wrapClass || theme.Gallery.wrapClass}>

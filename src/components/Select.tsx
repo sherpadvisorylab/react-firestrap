@@ -1,10 +1,10 @@
-import React, {OptionalPostfixToken, useEffect, useMemo, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import database from "../libs/database";
 import {Label} from "./Input";
 import {Wrapper} from "./GridSystem"
 import {useTheme} from "../Theme";
-import {arrayUnique, isEmpty} from "../libs/utils";
-import {DatabaseOptions, RecordArray, RecordProps} from "../integrations/google/firedatabase";
+import {arraysEqual, arrayUnique, isEmpty, sanitizeKey} from "../libs/utils";
+import {DatabaseOptions, RecordProps} from "../integrations/google/firedatabase";
 
 interface Option extends RecordProps {
     label: string;
@@ -77,10 +77,21 @@ const normalizeOption = (
     }
 
     return {
-        label: fieldMap?.label || '',
-        value: fieldMap?.value || ''
+        label: fieldMap?.label.toString() || '',
+        value: fieldMap?.value.toString() || ''
     };
 };
+
+function getOptionsDB(
+    db?: DBConfig<Option>
+): DatabaseOptions<Option> {
+    return {
+        fieldMap: normalizeOption(db?.fieldMap),
+        where: db?.where,
+        onLoad: db?.onLoad,
+    };
+}
+
 
 const getOptions = (
     options: Array<string | number | Option>,
@@ -122,25 +133,26 @@ export const Select = ({
 
     const [selectedValue, setSelectedValue] = useState(value);
     useEffect(() => {
-        setSelectedValue(value);
+        if (value !== selectedValue) {
+            setSelectedValue(value);
+        }
     }, [value]);
 
+    const dbOptions = useMemo(() => getOptionsDB(db), [db?.fieldMap, db?.where, db?.onLoad]);
     const [lookup, setLookup] = useState<Option[]>([]);
-    database.useListener(db?.srcPath, setLookup, {
-        fieldMap : normalizeOption(db?.fieldMap),
-        where: db?.where,
-        onLoad:db?.onLoad
-    });
+    database.useListener(db?.srcPath, setLookup, dbOptions);
 
     const opts = useMemo(() => {
         const combinedOptions = getOptions(options, lookup, order);
-        // Add the value to the options if it is not already present
-        if (selectedValue && !combinedOptions.length) {
-            combinedOptions.push({label: "🔄 Caricamento...", value: selectedValue.toString()});
-        }
 
-        return arrayUnique(combinedOptions, 'value');
-    }, [options, lookup]);
+        return arrayUnique(
+            selectedValue && !combinedOptions.length
+                ? [...combinedOptions, {label: "🔄 Caricamento...", value: selectedValue.toString()}]
+                : combinedOptions,
+            'value'
+        );
+
+    }, [options, lookup, selectedValue, order]);
 
     console.log("SELECT", selectedValue, opts);
 
@@ -164,8 +176,9 @@ export const Select = ({
                 >
                     {optionEmpty && <option value={optionEmpty.value}>{optionEmpty.label}</option>}
                     {opts.map((op) => {
+                        const key = sanitizeKey(`sl-${name}-${op.value}`);
                         return (
-                            <option value={op.value} key={op.value}>
+                            <option value={op.value} key={key}>
                                 {op.label}
                             </option>
                         );
@@ -200,13 +213,17 @@ export const Autocomplete = ({
 } : AutocompleteProps) => {
     const theme = useTheme("select");
 
-    const [selectedItems, setSelectedItems] = useState<any[]>(() => valueToArray(value));
+    const valueArray = useMemo(() => valueToArray(value), [value]);
+    const [selectedItems, setSelectedItems] = useState(() => valueArray);
     useEffect(() => {
-        setSelectedItems(valueToArray(value));
-    }, [value]);
+        if (!arraysEqual(valueArray, selectedItems)) {
+            setSelectedItems(valueArray);
+        }
+    }, [valueArray]);
 
+    const dbOptions = useMemo(() => getOptionsDB(db), [db?.fieldMap, db?.where, db?.onLoad]);
     const [lookup, setLookup] = useState<Option[]>([]);
-    database.useListener(db?.srcPath, setLookup, {fieldMap : normalizeOption(db?.fieldMap), where: db?.where, onLoad:db?.onLoad});
+    database.useListener(db?.srcPath, setLookup, dbOptions);
 
     const opts = useMemo(() => {
         const combinedOptions = getOptions(options, lookup, order);
@@ -275,8 +292,9 @@ console.log("AUTOCOMPLETE", selectedItems, opts);
                 </div>
                 <datalist id={name}>
                     {opts.map((op) => {
+                        const key = sanitizeKey(`dl-${name}-${op.value}`);
                         return (
-                            <option value={op.value} key={genKey()}>
+                            <option value={op.value} key={key}>
                                 {op.label}
                             </option>
                         );
@@ -307,13 +325,17 @@ export const Checklist = ({
                                 wrapClass   = undefined,
                                 checkClass  = undefined,
 } : ChecklistProps) => {
-    const [selectedItems, setSelectedItems] = useState(() => valueToArray(value));
+    const valueArray = useMemo(() => valueToArray(value), [value]);
+    const [selectedItems, setSelectedItems] = useState(() => valueArray);
     useEffect(() => {
-        setSelectedItems(valueToArray(value));
-    }, [value]);
+        if (!arraysEqual(valueArray, selectedItems)) {
+            setSelectedItems(valueArray);
+        }
+    }, [valueArray]);
 
+    const dbOptions = useMemo(() => getOptionsDB(db), [db?.fieldMap, db?.where, db?.onLoad]);
     const [lookup, setLookup] = useState<Option[]>([]);
-    database.useListener(db?.srcPath, setLookup, {fieldMap : normalizeOption(db?.fieldMap), where: db?.where, onLoad:db?.onLoad});
+    database.useListener(db?.srcPath, setLookup, dbOptions);
 
     const opts = useMemo(() => {
         const combinedOptions = getOptions(options, lookup, order);
@@ -367,9 +389,9 @@ export const Checklist = ({
             <Wrapper className={pre || post ? "input-group" : ""}>
                 {pre && <span className="input-group-text">{pre}</span>}
                 {opts.map((op) => {
-                    const key = genKey();
+                    const key = sanitizeKey(`cl-${name}-${op.value}`);
                     return (
-                        <div key={op.value} className={checkClass}>
+                        <div key={key} className={checkClass}>
                             <input
                                 className={"form-check-input"}
                                 type={"checkbox"}

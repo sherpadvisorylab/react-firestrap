@@ -11,6 +11,7 @@ export { default as Grid } from './Grid';
 export * from './GridSystem';
 export { default as Image } from './Image';
 export { default as ImageEditor } from './ImageEditor';
+export { default as ImageAvatar } from './ImageAvatar';
 export * from './Input';
 export { default as Loader } from './Loader';
 export { default as Modal } from './Modal';

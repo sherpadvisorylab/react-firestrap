@@ -14,7 +14,7 @@ module.exports = {
         sourceMapFilename: '[file].map',
     },
     mode: 'development',
-    devtool: 'source-map', // Attiva la generazione dei sourcemaps
+    devtool: process.env.NODE_ENV === 'production' ? false : 'source-map',
     externals: [
         nodeExternals(),
         {

@@ -29,7 +29,7 @@ const applyOnChangeRecursive = ({
 
             if (typeof child.type !== 'string' && (child.type as any).enhance) {
                 return React.cloneElement(child as any, {
-                    value: record?.[child.props.name],
+                    value: record?.[child.props.name] ?? '',
                     onChange: onChange
                 });
             }
@@ -54,7 +54,7 @@ const applyOnChangeRecursive = ({
                     })
                     : React.cloneElement(child as any, {
                         wrapClass: "mb-3" + (child.props?.wrapClass ? ' ' + child.props.wrapClass : ''),
-                        value: record?.[child.props.name] || '',
+                        value: record?.[child.props.name] ?? '',
                         onChange: onChange
                     }));
             }

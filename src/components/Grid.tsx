@@ -38,7 +38,10 @@ type GridProps = {
     setModalHeader?: (record?: RecordProps) => string;
     setPrimaryKey?: (record: RecordProps) => string;
     onLoadRecord?: (record: RecordProps, index: number) => RecordProps | boolean;
-    onDisplayBefore?: (records: RecordArray, setRecords: React.Dispatch<React.SetStateAction<RecordArray | undefined>>, setLoader: React.Dispatch<React.SetStateAction<boolean>>) => void;
+    onDisplayBefore?: (records: RecordArray,
+                       setRecords: React.Dispatch<React.SetStateAction<RecordArray | undefined>>,
+                       setLoader?: React.Dispatch<React.SetStateAction<boolean>>
+    ) => Promise<void> | void;
     onInsertRecord?: (record: RecordProps) => Promise<RecordProps>;
     onUpdateRecord?: (record: RecordProps, key: string) => Promise<RecordProps>;
     onDeleteRecord?: (record: RecordProps, key: string) => Promise<boolean>;
@@ -122,7 +125,6 @@ const GridArray = ({
     const theme = useTheme("grid");
 
     const [loader, setLoader] = useState(false);
-    const [records, setRecords] = useState<RecordArray | undefined>(undefined);
     const [record, setRecord] = useState<RecordForm | undefined>(undefined);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const refDomElem = useRef<Record<string, HTMLElement | null>>({});
@@ -131,28 +133,23 @@ const GridArray = ({
     //const dbStoragePath = dataStoragePath || (dataStoragePath === false ? null : trimSlash(location.pathname));
     const dbStoragePath = dataStoragePath || trimSlash(location.pathname);
 
-    //@todo: da capire chi valorizza a []
-    console.warn(records, dataArray);
-    if(!records && Array.isArray(dataArray) && dataArray.length === 0) {
-        console.error("Revert records => dataArray");
-        //dataArray = records;
-    }
-
+    const [beforeRecords, setBeforeRecords] = useState<RecordArray | undefined>(undefined);
     useEffect(() => {
-        if (!dataArray) return;
+        if (!dataArray || !onDisplayBefore) return;
 
-        const cloned = safeClone(dataArray);
-
-        if (onDisplayBefore) {
-            onDisplayBefore(cloned, setRecords, setLoader);
-        } else {
-            setRecords(cloned);
-        }
+        onDisplayBefore(safeClone(dataArray), setBeforeRecords, setLoader);
     }, [dataArray, onDisplayBefore]);
+
+    const records = useMemo(() => {
+        if (!dataArray) return undefined;
+        if (onDisplayBefore) return beforeRecords;
+
+        return safeClone(dataArray);
+    }, [dataArray, onDisplayBefore, beforeRecords]);
 
 
     // 1. Calcolo colonne
-    const computedColumns: Column[] = useMemo(() => {
+    const header: Column[] = useMemo(() => {
         if (columns) return columns;
         if (!records) return [];
 
@@ -183,7 +180,7 @@ const GridArray = ({
 
     // 2. Funzioni di formattazione colonne
     const columnsFunc: ColumnMap = useMemo(() => {
-        return (computedColumns || []).reduce((acc: ColumnMap, column: Column) => {
+        return (header).reduce((acc: ColumnMap, column: Column) => {
             const key = column.key;
             const formatKey = format?.[column.key];
 
@@ -200,7 +197,7 @@ const GridArray = ({
             }
             return acc;
         }, {});
-    }, [computedColumns, format]);
+    }, [header, format]);
 
     // 3. Applicazione columnsFunc e onLoadRecord
     const body: RecordArray | undefined = useMemo(() => {
@@ -224,11 +221,6 @@ const GridArray = ({
         }, []);
     }, [records, onLoadRecord, columnsFunc]);
 
-    //@todo: da capire chi valorizza a []
-    if(Array.isArray(dataArray) && dataArray.length === 0) {
-        console.log(records, dataArray, body);
-        console.trace();
-    }
     //@todo: da capire chi valorizza a []
     console.log("BOOODUUUUUUU", dataArray, dbStoragePath, body, records);
 
@@ -274,7 +266,7 @@ const GridArray = ({
             return checked ? value : null;
         }
 
-        return value.trim();
+        return typeof value === 'string' ? value.trim() : value;
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -357,6 +349,7 @@ const GridArray = ({
     }}>Aggiungi</button>
 
     const canEdit = Form && (!allowedActions || allowedActions.includes("edit"));
+
     const handleClick = (record: RecordProps) => {
         onClick?.(record);
 
@@ -400,7 +393,7 @@ const GridArray = ({
             case "table":
             default:
                 return <Table
-                    header={columns || []}
+                    header={header}
                     body={body}
                     onClick={(onClick || canEdit) ? handleClick : undefined}
                     wrapClass={theme.Grid.Table.wrapperClass}

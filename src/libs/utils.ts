@@ -309,3 +309,16 @@ export function base64Encode(input: string | Buffer | ArrayBuffer): string {
         .replace(/\//g, '_')
         .replace(/=+$/, '');
 }
+
+export function arraysEqual(a: any[], b: any[]): boolean {
+    if (a === b) return true;
+    if (a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) {
+        if (a[i] !== b[i]) return false;
+    }
+    return true;
+}
+
+export function sanitizeKey(str: string) : string {
+    return str.replace(/[^a-zA-Z0-9-_:.]/g, "_");
+}

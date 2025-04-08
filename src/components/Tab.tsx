@@ -108,7 +108,7 @@ const Tab = ({
                     onChange({target: {name, value: newRecords}});
                 }, 0);
             }
-            console.log("change", records, newRecords);
+            console.log("TAB CHANGE", records, newRecords);
             return newRecords;
         });
     };
