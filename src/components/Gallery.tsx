@@ -30,7 +30,7 @@ type GalleryProps = {
     itemBottomRight?: string | React.ReactNode;
     itemMiddleLeft?: string | React.ReactNode;
     itemMiddleRight?: string | React.ReactNode;
-    onClick?: (record: RecordProps) => void;
+    onClick?: (index: number) => void;
     gutterSize?: 0 | 1 | 2 | 3 | 4 | 5;
     rowCols?: 1 | 2 | 3 | 4 | 6;
     groupBy?: string | string[];
@@ -63,19 +63,13 @@ const Gallery = ({
                    footerClass      = undefined,
                    selectedClass    = undefined
 }: GalleryProps) => {
-    const theme     = useTheme("gallery");
-    selectedClass   = selectedClass || theme.Gallery.selectedClass;
-    gutterSize      = gutterSize || theme.Gallery.gutterSize;
-    rowCols         = rowCols || theme.Gallery.rowCols;
+    const theme    = useTheme("gallery");
+    const activeClass   = selectedClass || theme.Gallery.selectedClass;
+    const paddingSize   = gutterSize || theme.Gallery.gutterSize;
+    const numCols       = rowCols || theme.Gallery.rowCols;
 
-    if (!Array.isArray(body)) {
-        return <p className={"p-4"}><i className={"spinner-border spinner-border-sm"}></i> Caricamento in corso...</p>;
-    } else if (body.length === 0) {
-        return <p className={"p-4"}>Nessun dato trovato</p>;
-    }
-
-    const handleClick = (record: GalleryRecord, e: React.MouseEvent<HTMLElement>) => {
-        if (selectedClass) {
+    const handleClick = (e: React.MouseEvent<HTMLElement>, index: number) => {
+        if (activeClass) {
             let currentElement = e.target as HTMLElement;
 
             while (currentElement && !currentElement.classList.contains("item")) {
@@ -85,20 +79,21 @@ const Gallery = ({
                 currentElement = currentElement.parentNode as HTMLElement;
             }
 
-            if (!currentElement.classList.contains(selectedClass)) {
+            if (!currentElement.classList.contains(activeClass)) {
                 Array.from(currentElement.parentNode?.children || []).forEach(row => {
-                    row.classList.remove(selectedClass as string);
+                    row.classList.remove(activeClass as string);
                 });
 
-                currentElement.classList.add(selectedClass);
+                currentElement.classList.add(activeClass);
             }
         }
 
-        onClick?.(record);
+        onClick?.(index);
     }
 
-    const getImage = (item: GalleryRecord): ImageProps => {
+    const getImage = (item: GalleryRecord, index: number): ImageProps => {
         const imgElement = item.img;
+
         if (imgElement && React.isValidElement(imgElement)) {
             return React.cloneElement(imgElement, {
                 className: "img-fluid",
@@ -107,7 +102,7 @@ const Gallery = ({
                     cursor: onClick ? "pointer" : "default",
                 },
                 onClick: (e: React.MouseEvent<HTMLImageElement>) => {
-                    handleClick(item, e);
+                    handleClick(e, index);
                     imgElement.props.onClick?.(e);
                 },
             }) as ImageProps;
@@ -115,7 +110,6 @@ const Gallery = ({
 
         return (
             <img
-                key={item.key}
                 className="img-fluid"
                 src={
                     item.thumbnail
@@ -126,7 +120,7 @@ const Gallery = ({
                 width={item.width}
                 height={item.height}
                 style={{ cursor: onClick ? "pointer" : "default" }}
-                onClick={(e: React.MouseEvent<HTMLImageElement>) => handleClick(item, e)}
+                onClick={(e: React.MouseEvent<HTMLImageElement>) => handleClick(e, index)}
             />
         );
     };
@@ -134,9 +128,9 @@ const Gallery = ({
     const getGroups = (body: GalleryRecord[], seps: string | string[]): React.ReactElement[] => {
         const groupMap: Record<string, ImageProps[]> = {};
         const result: React.ReactElement[] = [];
-
+        let index = 0;
         for (const item of body) {
-            const imgElement = getImage(item);
+            const imgElement = getImage(item, index++);
             const alt = imgElement.props.alt || "";
             const src = imgElement.props.src || "";
             if (!alt || !src) continue;
@@ -160,36 +154,44 @@ const Gallery = ({
         return result;
     };
 
-    const renderedBody = useMemo(() =>
-            groupBy
-                ? getGroups(body, groupBy)
-                : body.map((item) => getImage(item))
-        , [body, groupBy]);
+    const renderedBody = useMemo(() => {
+        if (!Array.isArray(body)) return undefined;
+
+        return groupBy
+            ? getGroups(body, groupBy)
+            : body.map((item, index) => getImage(item, index));
+    }, [body, groupBy]);
+
+    if (renderedBody === undefined) {
+        return <p className={"p-4"}><i className={"spinner-border spinner-border-sm"}></i> Caricamento in corso...</p>;
+    } else if (renderedBody.length === 0) {
+        return <p className={"p-4"}>Nessun dato trovato</p>;
+    }
 
     return (
         <Wrapper className={wrapClass || theme.Gallery.wrapClass}>
             {Header && <div className={headerClass || theme.Gallery.headerClass}>{Header}</div>}
             <Wrapper className={scrollClass || theme.Gallery.scrollClass}>
-                <div className={"d-flex flex-wrap text-center align-items-center g-2 row-cols-" + rowCols + " " + (bodyClass || theme.Gallery.bodyClass)}>
+                <div className={"d-flex flex-wrap text-center align-items-center g-2 row-cols-" + numCols + " " + (bodyClass || theme.Gallery.bodyClass)}>
                     {renderedBody.map((Component, index) => (
-                        <div key={index} className={"item position-relative p-" + gutterSize}>
+                        <div key={index} className={"item position-relative p-" + paddingSize}>
                             {Component}
-                            {itemTopLeft && <div className={"position-absolute start-0 top-0 p-" + gutterSize}>
+                            {itemTopLeft && <div className={"position-absolute start-0 top-0 p-" + paddingSize}>
                                 {itemTopLeft}
                             </div>}
-                            {itemTopRight && <div className={"position-absolute end-0 top-0 p-" + gutterSize}>
+                            {itemTopRight && <div className={"position-absolute end-0 top-0 p-" + paddingSize}>
                                 {itemTopRight}
                             </div>}
-                            {itemBottomLeft && <div className={"position-absolute start-0 bottom-0 p-" + gutterSize}>
+                            {itemBottomLeft && <div className={"position-absolute start-0 bottom-0 p-" + paddingSize}>
                                 {itemBottomLeft}
                             </div>}
-                            {itemBottomRight && <div className={"position-absolute end-0 bottom-0 p-" + gutterSize}>
+                            {itemBottomRight && <div className={"position-absolute end-0 bottom-0 p-" + paddingSize}>
                                 {itemBottomRight}
                             </div>}
-                            {itemMiddleLeft && <div className={"position-absolute top-50 start-0 translate-middle-y p-" + gutterSize}>
+                            {itemMiddleLeft && <div className={"position-absolute top-50 start-0 translate-middle-y p-" + paddingSize}>
                                 {itemMiddleLeft}
                             </div>}
-                            {itemMiddleRight && <div className={"position-absolute top-50 end-0 translate-middle-y p-" + gutterSize}>
+                            {itemMiddleRight && <div className={"position-absolute top-50 end-0 translate-middle-y p-" + paddingSize}>
                                 {itemMiddleRight}
                             </div>}
 

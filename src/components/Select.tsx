@@ -54,9 +54,6 @@ export interface ChecklistProps extends BaseProps {
     checkClass?: string;
 }
 
-let ids= 0;
-const genKey = () => (ids++).toString();
-
 const valueToArray = (value: string | number | any[] | undefined): any[] => {
     if(!value) return []
 
@@ -197,9 +194,9 @@ export const Autocomplete = ({
                                 min             = undefined,
                                 max             = undefined,
                                 onChange        = undefined,
-                                required        = undefined,
-                                updatable       = undefined,
-                                disabled        = undefined,
+                                required        = false,
+                                updatable       = true,
+                                disabled        = false,
                                 label           = undefined,
                                 placeholder     = undefined,
                                 pre             = undefined,

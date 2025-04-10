@@ -79,19 +79,21 @@ interface OpenModalParams {
 
 
 const Grid = (props: GridProps) => {
-    return props.dataArray
-        ? <GridArray {...props} />
-        : <GridDatabase {...props} />;
+    return props.dataArray === undefined
+        ? <GridDatabase {...props} />
+        : <GridArray {...props} />;
 }
 
-const GridDatabase = ({ dataStoragePath, ...props }: Omit<GridProps, 'dataArray'>) => {
-    const [records, setRecords] = useState<RecordArray | undefined>(undefined);
+const GridDatabase = (props: Omit<GridProps, 'dataArray'>) => {
+    const { dataStoragePath, ...rest } = props;
     const location = useLocation();
+
     const dbStoragePath = dataStoragePath || trimSlash(location.pathname);
+    const [records, setRecords] = useState<RecordArray | undefined>(undefined);
 
     db.useListener(dbStoragePath, setRecords);
 
-    return <GridArray {...props} dataArray={records} />;
+    return <GridArray {...rest} dataArray={records} dataStoragePath={dbStoragePath} />;
 };
 
 const GridArray = ({
@@ -128,15 +130,11 @@ const GridArray = ({
     const [record, setRecord] = useState<RecordForm | undefined>(undefined);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const refDomElem = useRef<Record<string, HTMLElement | null>>({});
-    const location = useLocation();
-    //@todo: da valutare se serve o meno
-    //const dbStoragePath = dataStoragePath || (dataStoragePath === false ? null : trimSlash(location.pathname));
-    const dbStoragePath = dataStoragePath || trimSlash(location.pathname);
 
     const [beforeRecords, setBeforeRecords] = useState<RecordArray | undefined>(undefined);
     useEffect(() => {
         if (!dataArray || !onDisplayBefore) return;
-
+        console.log("GRID: onDisplayBefore", dataArray);
         onDisplayBefore(safeClone(dataArray), setBeforeRecords, setLoader);
     }, [dataArray, onDisplayBefore]);
 
@@ -205,24 +203,26 @@ const GridArray = ({
 
         return records.reduce((acc: RecordArray, item: RecordProps, index: number) => {
             const transformed = onLoadRecord ? onLoadRecord(item, index) : item;
+            //@todo trovare un modo per non distruggere gli indici
             if (!transformed) return acc;
 
             const result = (transformed === true ? item : transformed);
+            //@todo secondo me non serve
+            const displayRow = {...result};
             for (const key of Object.keys(columnsFunc)) {
-                result[key] = columnsFunc[key]({
+                displayRow[key] = columnsFunc[key]({
                     value: result[key],
                     record: result,
-                    key: result?._key
+                    key: item?._key
                 });
             }
 
-            acc.push(result);
+            acc.push(displayRow);
             return acc;
         }, []);
     }, [records, onLoadRecord, columnsFunc]);
 
-    //@todo: da capire chi valorizza a []
-    console.log("BOOODUUUUUUU", dataArray, dbStoragePath, body, records);
+    console.log("GRID", dataArray, dataStoragePath, body, records);
 
     const closeModal = () => {
         setIsModalOpen(false);
@@ -299,7 +299,7 @@ const GridArray = ({
             console.error("Save Failed: Key not generated correctly.");
             return;
         }
-        dbStoragePath && db.set(`${dbStoragePath}/${key}${record.savePath}`, data)
+        dataStoragePath && db.set(`${dataStoragePath}/${key}${record.savePath}`, data)
             .then(() => {
                 if (!record.key && key && refDomElem.current[key]) {
                     refDomElem.current[key]?.click();
@@ -313,7 +313,7 @@ const GridArray = ({
                 closeModal();
 
                 const action = record.key ? "update" : "create";
-                log && setLog(dbStoragePath, action, record.data, key);
+                log && setLog(dataStoragePath, action, record.data, key);
                 return record.onFinally && await record.onFinally(action, record.data, key);
             });
     };
@@ -326,7 +326,7 @@ const GridArray = ({
             return;
         }
 
-        dbStoragePath && db.remove(`${dbStoragePath}/${key}`)
+        dataStoragePath && db.remove(`${dataStoragePath}/${key}`)
             .then(() => {
                 console.log('Element deleted successfully from Firebase');
             })
@@ -336,7 +336,7 @@ const GridArray = ({
             .finally(async() => {
                 closeModal();
 
-                log && setLog(dbStoragePath, "delete", record.data, key);
+                log && setLog(dataStoragePath, "delete", record.data, key);
                 return record.onFinally && await record.onFinally("delete", record.data, key);
 
             });
@@ -350,30 +350,25 @@ const GridArray = ({
 
     const canEdit = Form && (!allowedActions || allowedActions.includes("edit"));
 
-    const handleClick = (record: RecordProps) => {
-        onClick?.(record);
+    const handleClick = (index: number) => {
+        const data = dataArray?.[index];
 
-        const index = record._index;
-        if (typeof index !== "number") {
-            console.error("handleClick: _index non valido o assente nel record", record);
-            return;
-        }
-
-        const data = safeClone(dataArray?.[index]);
         if (!data) {
             console.error(`handleClick: Nessun dato trovato in dataArray all'indice ${index}`);
             return;
         }
+        const record = safeClone(data);
 
-        if (canEdit && data?._key) {
+        onClick?.(record);
+
+        if (canEdit && record?._key) {
             openModal({
                 title: setModalHeader?.(record),
-                data: data,
-                key: data._key
+                data: record,
+                key: record._key
             });
         }
     }
-
     const getComponent = () => {
         switch (type) {
             case "gallery":

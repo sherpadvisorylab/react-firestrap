@@ -61,10 +61,6 @@ const ImageEditor = ({
     }
 
     const [zoom, setZoom] = useState(1);
-    const [position, setPosition] = useState({ x: 0, y: 0 });
-    const [isDragging, setIsDragging] = useState(false);
-    const dragStart = useRef({ x: 0, y: 0 });
-
 
     useEffect(() => {
         if (!rootEl.current) return;
@@ -128,42 +124,6 @@ const ImageEditor = ({
     useEffect(() => {
         loadImage();
     }, [loadImage]);
-
-
-    const handleMouseDown = (e: React.MouseEvent) => {
-        setIsDragging(true);
-        dragStart.current = {
-            x: e.clientX - position.x,
-            y: e.clientY - position.y,
-        };
-    };
-
-    const handleMouseMove = (e: MouseEvent) => {
-        if (!isDragging) return;
-        setPosition({
-            x: e.clientX - dragStart.current.x,
-            y: e.clientY - dragStart.current.y,
-        });
-    };
-
-    const handleMouseUp = () => {
-        setIsDragging(false);
-    };
-
-    useEffect(() => {
-        if (isDragging) {
-            window.addEventListener('mousemove', handleMouseMove);
-            window.addEventListener('mouseup', handleMouseUp);
-        } else {
-            window.removeEventListener('mousemove', handleMouseMove);
-            window.removeEventListener('mouseup', handleMouseUp);
-        }
-
-        return () => {
-            window.removeEventListener('mousemove', handleMouseMove);
-            window.removeEventListener('mouseup', handleMouseUp);
-        };
-    }, [isDragging]);
 
 
     const handleStartDrawingMode = (e: React.MouseEvent<HTMLButtonElement>, mode: DrawingMode) => {
@@ -273,10 +233,10 @@ const ImageEditor = ({
             <button className={"btn"} title="Redo" onClick={(e) => handleStartDrawingMode(e, 'REDO')}>
                 <i className={theme.getIcon("arrow-arc-right")}></i>
             </button>
-            <button className={"btn"} title="Zoom In" onClick={(e) => handleStartDrawingMode(e, 'ZOOMIN')}>
+            <button className={"btn"} title="Zoom In" onClick={(e) => handleStartDrawingMode(e, 'ZOOMOUT')}>
                 <i className={theme.getIcon("magnifying-glass-minus")}></i>
             </button>
-            <button className={"btn"} title="Zoom Out" onClick={(e) => handleStartDrawingMode(e, 'ZOOMOUT')}>
+            <button className={"btn"} title="Zoom Out" onClick={(e) => handleStartDrawingMode(e, 'ZOOMIN')}>
                 <i className={theme.getIcon("magnifying-glass-plus")}></i>
             </button>
         </div>
@@ -319,19 +279,17 @@ const ImageEditor = ({
         </div>}
     </div>;
 
-    const Editor = <div
-        onMouseDown={handleMouseDown}
-        style={{
-            cursor: isDragging ? 'grabbing' : 'grab',
-            transform: `translate(${position.x}px, ${position.y}px) scale(${zoom})`,
-            transformOrigin: 'top left',
-            display: 'inline-block',
-            userSelect: 'none',
-        }}
-    >
-        <div ref={rootEl} className={"d-flex align-items-center justify-content-center"}
-             style={{width: '100%', height: height + 'px'}}/>
-    </div>;
+    const Editor =
+        <div ref={rootEl}
+             className={"d-flex justify-content-center"}
+             style={{
+                 transform: `scale(${zoom})`,
+                 transformOrigin: 'top center',
+                 display: 'inline-block',
+                 userSelect: 'none',
+                 width: '100%',
+                 height: (height * zoom) + 'px'
+             }}/>;
 
 
     return (modal
@@ -340,6 +298,7 @@ const ImageEditor = ({
                 title={title || "Image Editor"}
                 header={Controls}
                 modalClass={"bg-secondary"}
+                bodyClass={"overflow-hidden"}
                 onClose={handleClose}
                 footer={false}
             >

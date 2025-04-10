@@ -29,7 +29,7 @@ const Carousel = ({
                     autoPlay        = undefined,
                     startSlide      = 0,
                     onParseCaption  = undefined,
-                    onClick         = undefined
+                    onClick         = undefined,
 } : CarouselProps) => {
     const theme = useTheme("carousel");
     showIndicators = showIndicators || theme.Carousel.showIndicators;
@@ -82,7 +82,7 @@ const Carousel = ({
                     return (
                         <div key={index} className={`carousel-item${index === startSlide ? " active" : ""}`}>
                             {image}
-                            {(showIndicators || showControls || showCaption) && isHover && <div className={"position-absolute top-0 bottom-0 start-0 end-0 opacity-25 " + bgOverlay}></div>}
+                            {(showIndicators || showControls || showCaption) && isHover && <div className={"pe-none position-absolute top-0 bottom-0 start-0 end-0 opacity-25 " + bgOverlay}></div>}
                             {isHover && Caption(image)}
                         </div>
                     );

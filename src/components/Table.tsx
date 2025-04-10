@@ -14,7 +14,7 @@ type TableProps = {
     header: TableHeaderProp[],
     body?: RecordArray,
     Footer?: string | React.ReactNode,
-    onClick?: (record: RecordProps) => void;
+    onClick?: (index: number) => void;
     wrapClass?: string,
     scrollClass?: string,
     tableClass?: string,
@@ -38,17 +38,9 @@ function Table({
                    selectedClass    = undefined
 } : TableProps) {
     const theme = useTheme("table");
-    selectedClass = selectedClass || theme.Table.selectedClass;
+    const activeClass = selectedClass || theme.Table.selectedClass;
 
-    if (!Array.isArray(body)) {
-        return <p className={"p-4"}><i className={"spinner-border spinner-border-sm"}></i> Caricamento in corso...</p>;
-    } else if(body.length === 0) {
-        return <p className={"p-4"}>Nessun dato trovato</p>;
-    }
-
-    // Estrai le chiavi dal primo oggetto nell'array per creare le intestazioni della tabella
-    const headers = (header || Object.keys(body[0]).map(key => ({ key, label: key })));
-    const handleClick = (record: RecordProps, e: React.MouseEvent<HTMLElement>) => {
+    const handleClick = (e: React.MouseEvent<HTMLElement>, index: number) => {
         let currentElement = e.target as HTMLElement;
 
         while (currentElement && currentElement.tagName !== 'TR') {
@@ -58,15 +50,15 @@ function Table({
             currentElement = currentElement.parentNode as HTMLElement;
         }
 
-        if (selectedClass && !currentElement.classList.contains(selectedClass)) {
+        if (activeClass && !currentElement.classList.contains(activeClass)) {
             Array.from(currentElement.parentNode?.children || []).forEach(row => {
-                row.classList.remove(selectedClass);
+                row.classList.remove(activeClass);
             });
 
-            currentElement.classList.add(selectedClass);
+            currentElement.classList.add(activeClass);
         }
 
-        onClick?.(record);
+        onClick?.(index);
     }
 
     const getField = (item: RecordProps, key: string) => {
@@ -76,6 +68,15 @@ function Table({
 
         return item[key];
     }
+
+    if (!Array.isArray(body)) {
+        return <p className={"p-4"}><i className={"spinner-border spinner-border-sm"}></i> Caricamento in corso...</p>;
+    } else if(body.length === 0) {
+        return <p className={"p-4"}>Nessun dato trovato</p>;
+    }
+
+    // Estrai le chiavi dal primo oggetto nell'array per creare le intestazioni della tabella
+    const headers = (header || Object.keys(body[0]).map(key => ({ key, label: key })));
 
     return (
         <div className={"table-responsive " + (wrapClass || theme.Table.wrapClass)}>
@@ -105,7 +106,7 @@ function Table({
                                     key={index}
                                     style={{ cursor: onClick ? "pointer": "cursor" }}
                                     onClick={(e) => {
-                                        onClick && handleClick(record, e);
+                                        onClick && handleClick(e, index);
                                     }}
                                 >
                                     {headers.map((hdr) => (
