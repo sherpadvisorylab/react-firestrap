@@ -133,16 +133,16 @@ const fetchDropbox = async (
         if (response.status === 409) {
             const json = await response.json();
             if (!json.error_summary || !json.error_summary.includes("not_found")) {
-                console.error('DropBox: Fetch operation failed:', json);
+                console.error('DropBox: Fetch operation failed:', json, url, body);
             }
             return;
         }
         return response;
     }).catch((error) => {
-        console.error('There was a problem with the fetch operation:', error);
+        console.error('There was a problem with the fetch operation:', error, url, body);
         return;
     }).finally(() => {
-        console.log('DropBox: Fetch operation completed', url);
+        console.log('DropBox: Fetch operation completed', url, body);
     })
 }
 

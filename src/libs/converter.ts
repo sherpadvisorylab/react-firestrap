@@ -177,11 +177,12 @@ export const converter: Converter = <Converter>{
         return str.toLowerCase();
     },
     splitLast: (str, seps, regException = undefined) => {
-        const splitter = (sep: string): [string, string] => {
+        const splitter = (sep: string): [string, string] | null => {
             const split = str.split(sep);
+            if (split.length <= 1) return null;
 
             let last = split.pop() || '';
-            while (regException && regException.test(split[split.length - 1])) {
+            while (split.length && regException?.test(split[split.length - 1])) {
                 last = split.pop() + sep + last;
             }
 
@@ -197,10 +198,12 @@ export const converter: Converter = <Converter>{
         return [str, ''];
     },
     splitFirst: (str, seps, regException = undefined) => {
-        const splitter = (sep: string): [string, string] => {
+        const splitter = (sep: string): [string, string] | null => {
             const split = str.split(sep);
+            if (split.length <= 1) return null;
+
             let first = split.shift() || '';
-            while (regException && regException.test(split[0])) {
+            while (split.length && regException?.test(split[0])) {
                 first += sep + split.shift();
             }
 
