@@ -6,6 +6,7 @@
 
 
 
+
 ## Componenti Disponibili
 
 Ecco un elenco dei componenti disponibili in questo progetto, insieme alle loro props:
@@ -66,7 +67,15 @@ Questo componente non ha props definite.
 
 Questo componente non ha props definite.
 
+### ImageAvatar
+
+Questo componente non ha props definite.
+
 ### ImageEditor
+
+Questo componente non ha props definite.
+
+### index
 
 Questo componente non ha props definite.
 

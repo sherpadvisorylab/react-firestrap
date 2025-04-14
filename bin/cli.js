@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 
+const path = require('path');
 const [,, cmd] = process.argv;
 
 switch (cmd) {
     case 'setup':
-        require('../scripts/setup');
+        require(path.join(__dirname, '../scripts/setup.js'));
         break;
 
     case 'help':
@@ -18,6 +19,6 @@ Comandi disponibili:
   help      - Mostra questo messaggio
 
 Usa: npx react-firestrap <comando>
-    `);
+        `);
         break;
 }
