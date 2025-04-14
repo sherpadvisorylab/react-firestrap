@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const root = path.resolve(__dirname, '..');
+const root = process.cwd();
 
 function ensureFile(filePath, content) {
     if (!fs.existsSync(filePath)) {
@@ -32,7 +32,7 @@ function setupDevTools() {
     "declarationDir": "./dist/types"
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "src/integrations/google"]
+  "exclude": ["node_modules", "dist"]
 }
     `);
 

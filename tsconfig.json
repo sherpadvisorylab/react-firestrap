@@ -20,6 +20,6 @@
   "exclude": [                                // Exclude these folders
     "node_modules",
     "dist",
-    "src/integrations/google"
+    "src/integrations/google"                 //da mettere a posto quando viene implementato gli account di servizio google
   ]
 }
