@@ -1,11 +1,14 @@
 #!/usr/bin/env node
 
-const path = require('path');
 const [,, cmd] = process.argv;
 
 switch (cmd) {
-    case 'setup':
-        require(path.join(__dirname, '../scripts/setup.js'));
+    case 'create':
+        require('../scripts/scaffold-project').scaffoldProject();
+        break;
+
+    case 'devtools':
+        require('../scripts/setup-devtools').setupDevTools();
         break;
 
     case 'help':
@@ -15,10 +18,13 @@ switch (cmd) {
 
 Comandi disponibili:
 
-  setup     - Crea una configurazione base (React + Webpack)
-  help      - Mostra questo messaggio
+  create     - Genera l'intera struttura del progetto (src/, public/, .env ecc.)
+  devtools   - Crea solo tsconfig, webpack.config.js, .babelrc
+  help       - Mostra questo messaggio
 
-Usa: npx react-firestrap <comando>
-        `);
+Esempi:
+  npx react-firestrap create
+  npx react-firestrap devtools
+`);
         break;
 }
