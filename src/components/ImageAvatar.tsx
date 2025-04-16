@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import path from "../libs/path";
-
-export const NOAVATAR_SRC = "/assets/images/noavatar.svg";
+import {PLACEHOLDER_USER} from "../Theme";
 
 interface ImageAvatarProps {
     src: string;
-    height?: number | string;
+    width?: number;
+    height?: number;
     className?: string;
     title?: string;
     alt?: string;
@@ -14,16 +14,17 @@ interface ImageAvatarProps {
 
 const ImageAvatar: React.FC<ImageAvatarProps> = ({
                                                      src,
-                                                     height,
-                                                     className,
-                                                     title,
-                                                     alt
+                                                     width      = undefined,
+                                                     height     = undefined,
+                                                     className  = undefined,
+                                                     title      = undefined,
+                                                     alt        = undefined
                                                  }) => {
-    const [imgSrc, setImgSrc] = useState(NOAVATAR_SRC);
+    const [imgSrc, setImgSrc] = useState(PLACEHOLDER_USER);
 
     const storageKey = `avatar::${src}`;
 
-    const resolvedAlt = alt || title || path.filename(src || NOAVATAR_SRC);
+    const resolvedAlt = alt || title || path.filename(src || PLACEHOLDER_USER);
 
     useEffect(() => {
         const cached = localStorage.getItem(storageKey);
@@ -50,7 +51,7 @@ const ImageAvatar: React.FC<ImageAvatarProps> = ({
             })
             .catch(err => {
                 console.warn("ImageAvatar error:", err.message);
-                setImgSrc(NOAVATAR_SRC);
+                setImgSrc(PLACEHOLDER_USER);
             });
     }, [src, storageKey]);
 
@@ -59,10 +60,11 @@ const ImageAvatar: React.FC<ImageAvatarProps> = ({
             key={imgSrc}
             src={imgSrc}
             alt={resolvedAlt}
+            width={width}
             height={height}
             className={className}
             title={title}
-            onError={() => setImgSrc(NOAVATAR_SRC)}
+            onError={() => setImgSrc(PLACEHOLDER_USER)}
         />
     );
 };

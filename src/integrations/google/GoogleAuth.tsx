@@ -3,11 +3,11 @@ import {getAuth, GoogleAuthProvider, signInWithCredential, getAdditionalUserInfo
 import {Dropdown, DropdownButton, DropdownLink} from "../../components/Dropdown";
 import {useMenu} from "../../App";
 import {decodeJWT, loadScripts} from "../../libs/utils";
-import {useTheme} from "../../Theme";
+import {PLACEHOLDER_USER, useTheme} from "../../Theme";
 import {useGlobalVars} from "../../Global";
 import {authConfig} from "./auth";
 import TenantMenu from "../../Config";
-import ImageAvatar, {NOAVATAR_SRC} from "../../components/ImageAvatar";
+import ImageAvatar from "../../components/ImageAvatar";
 
 declare global {
     interface Window {
@@ -88,7 +88,7 @@ const GoogleAuthFallback = () => (
         <DropdownButton>
             <div className="menu-img offline">
                 <img
-                    src={NOAVATAR_SRC}
+                    src={PLACEHOLDER_USER}
                     alt="No Config"
                     height="36"
                     className="avatar rounded-circle ms-2"

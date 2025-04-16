@@ -1,4 +1,5 @@
 export { default as Alert } from './Alert';
+export { default as Brand } from './Brand';
 export { default as Badge } from './Badge';
 export { default as Breadcrumbs } from './Breadcrumbs';
 export * from './Buttons';

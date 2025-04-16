@@ -1,6 +1,7 @@
 import React, {useRef, useState} from "react";
 import storage  from "../libs/storage";
 import Image from "./Image";
+import {PLACEHOLDER_IMAGE} from "../Theme";
 
 
 interface UploadProps {
@@ -28,7 +29,7 @@ const Upload = ({
     required = false,
     updatable = true,
     disabled = false,
-    placeholder = "/assets/images/noimg.svg",
+    placeholder = PLACEHOLDER_IMAGE,
     label = undefined,
     title = undefined,
     pre = undefined,

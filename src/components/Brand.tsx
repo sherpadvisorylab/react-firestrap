@@ -1,33 +1,39 @@
 import React from 'react';
 import {Link} from "react-router-dom";
-import {useTheme} from "../Theme";
+import {PLACEHOLDER_BRAND} from "../Theme";
+import Image from "./Image";
 
 type BrandProps = {
-    url: string;
-    txt?: string;
-    icon?: string;
+    url?: string;
+    label?: string;
+    src?: string;
+    width?: number;
+    height?: number;
+    className?: string;
 };
 
 const Brand = ({
-                   url,
-                   txt  = undefined,
-                   icon = undefined
+                   url          = undefined,
+                   label        = undefined,
+                   src          = undefined,
+                   width        = undefined,
+                   height       = 36,
+                   className    = undefined
 }: BrandProps) => {
-    const theme = useTheme("brand");
+    const Logo = <>
+        <Image src={src || PLACEHOLDER_BRAND}
+               width={width}
+               height={height}
+        />
+        {label && <span className="brand-text">{label}</span>}
+    </>
 
-    return (
-        <div className="brand">
-            <Link to={url} className="brand-logo">
-                <span className="brand-img">
-                    {icon && <span className="brand-img-text text-theme">
-                      <i className={`${theme.getIcon(icon)}`}/>
-                    </span>}
-                </span>
-                {txt && <span className="brand-text">{txt}</span>}
-            </Link>
-        </div>
-
-    );
+    return (<>
+            {url
+                ? <Link to={url} className={className}>{Logo}</Link>
+                : <span className={className}>{Logo}</span>
+            }
+    </>);
 }
 
 export default Brand;

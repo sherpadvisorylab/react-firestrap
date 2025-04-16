@@ -19,7 +19,8 @@
     "dist",
     "dist/**/*.map",
     "bin",
-    "scripts/cli"
+    "scripts/cli",
+    "themes"
   ],
   "repository": {
     "type": "git",
