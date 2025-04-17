@@ -1,129 +1,196 @@
-# React Fire(base) (boot)Strap
+# 🚀 React FireStrap
 
+**React FireStrap** is a Firebase-first UI & logic toolkit for quickly building data-driven web apps using React and Firebase Realtime Database.
 
+---
 
+## 🔧 Initial Setup Guide
 
+To fully use React FireStrap, you need to configure a Firebase project with **Realtime Database** and **Google Authentication**. Additional integrations like ChatGPT, SerpApi, Dropbox, etc., are supported but optional.
 
+---
 
+## 🟢 Required Setup
 
+### 1. Create a Firebase Project
 
-## Componenti Disponibili
+1. Go to [https://console.firebase.google.com/](https://console.firebase.google.com/)
+2. Click "Add project" and follow the steps
+3. Go to **Project Settings → Add App → Web**
+4. Copy the Firebase config values and add them to your `.env` file:
 
-Ecco un elenco dei componenti disponibili in questo progetto, insieme alle loro props:
+```env
+REACT_APP_FIREBASE_APIKEY=XXXXXXXXXXXXXXXXXXXXXXXX
+REACT_APP_FIREBASE_AUTH_DOMAIN=XXXX.firebaseapp.com
+REACT_APP_FIREBASE_PROJECT_ID=XXXX
+REACT_APP_FIREBASE_MESSAGING_SENDER_ID=000000000000
+REACT_APP_FIREBASE_APP_ID=1:XXXXXXXXXXXX:web:XXXXXXXX
+REACT_APP_FIREBASE_MEASUREMENT_ID=G-XXXXXXXXXX
+```
 
-### Alert
+---
 
-Questo componente non ha props definite.
+### 2. Enable Realtime Database
 
-### Badge
+1. In the Firebase Console, go to **Build → Realtime Database**
+2. Click **Create Database** and choose a location (e.g., *Europe - West*)
+3. Add the following line to your `.env` file:
 
-Questo componente non ha props definite.
+```env
+REACT_APP_FIREBASE_DATABASE_URL=https://[PROJECT_ID]-default-rtdb.[REGION].firebasedatabase.app
+```
 
-### Brand
+---
 
-Questo componente non ha props definite.
+### 3. Enable Google Authentication
 
-### Breadcrumbs
+1. Go to **Build → Authentication → Sign-in method**
+2. Enable **Google** as a provider
+3. Copy the **Web Client ID** and add it to your `.env` file:
 
-Questo componente non ha props definite.
+```env
+REACT_APP_GOOGLE_CLIENT_ID=000000000000-XXXXXXXXXXXX.apps.googleusercontent.com
+```
 
-### Buttons
 
-Questo componente non ha props definite.
+---
 
-### Card
+### 4. Configure OAuth Client in Google Cloud Console (Required)
 
-Questo componente non ha props definite.
+To make Google Sign-In work in development and production:
 
-### Carousel
+1. Go to [https://console.cloud.google.com/apis/credentials](https://console.cloud.google.com/apis/credentials)
+2. Select the Firebase project you created
+3. Navigate to **OAuth 2.0 Client IDs**
+4. Add the following redirect URIs:
 
-Questo componente non ha props definite.
+#### Development Redirect URIs
+```
+https://localhost
+https://localhost:3000
+```
 
-### ComponentEnhancer
+#### Production Redirect URIs
+```
+https://[PROJECT_ID].web.app
+https://[PROJECT_ID].firebaseapp.com
+```
 
-Questo componente non ha props definite.
 
-### Dropdown
+---
 
-Questo componente non ha props definite.
+## 🟡 Optional Integrations
 
-### Form
+React FireStrap supports these optional services if your app requires advanced capabilities:
 
-Questo componente non ha props definite.
+---
 
-### Gallery
+### 🔹 Firebase Hosting *(optional)*
 
-Questo componente non ha props definite.
+For deploying your app to Firebase Hosting:
 
-### Grid
+```bash
+npm install -g firebase-tools
+firebase login
+firebase init
+firebase deploy
+```
 
-Questo componente non ha props definite.
+---
 
-### GridSystem
+### 🔹 Firebase Storage *(optional)*
 
-Questo componente non ha props definite.
+To upload and manage files:
 
-### Image
+1. Enable **Build → Storage**
+2. Add to `.env`:
 
-Questo componente non ha props definite.
+```env
+REACT_APP_FIREBASE_STORAGE_BUCKET=your-app.appspot.com
+```
 
-### ImageAvatar
+---
 
-Questo componente non ha props definite.
+### 🔹 OpenAI ChatGPT *(optional)*
 
-### ImageEditor
+1. Get your API key from [OpenAI](https://platform.openai.com/)
+2. Add to `.env`:
 
-Questo componente non ha props definite.
+```env
+REACT_APP_OPENAI_API_KEY=sk-XXXXXXXXXXXXXXXX
+```
 
-### index
+---
 
-Questo componente non ha props definite.
+### 🔹 SerpApi *(optional)*
 
-### Input
+1. Sign up and get your key from [SerpApi](https://serpapi.com/)
+2. Add to `.env`:
 
-Questo componente non ha props definite.
+```env
+REACT_APP_SERPAPI_API_KEY=XXXXXXXXXXXXXXXX
+```
 
-### Loader
+---
 
-Questo componente non ha props definite.
+### 🔹 Dropbox API *(optional)*
 
-### Modal
+1. Create an app on [Dropbox Developer Console](https://www.dropbox.com/developers/apps)
+2. Generate an access token
+3. Add to `.env`:
 
-Questo componente non ha props definite.
+```env
+REACT_APP_DROPBOX_ACCESS_TOKEN=sl.AAAAAAAAAAAA
+```
 
-### Notifications
+---
 
-Questo componente non ha props definite.
+### 🔹 DeepSeek API *(optional)*
 
-### Percentage
+1. Register at [DeepSeek](https://platform.deepseek.com/)
+2. Add to `.env`:
 
-Questo componente non ha props definite.
+```env
+REACT_APP_DEEPSEEK_API_KEY=sk-XXXXXXXXXXXXXXXX
+```
 
-### Repeat
+---
 
-Questo componente non ha props definite.
+### 🔹 Gemini API by Google *(optional)*
 
-### Search
+1. Visit [MakerSuite](https://makersuite.google.com/app) or [AI Studio](https://aistudio.google.com/app/apikey)
+2. Generate your API key and add to `.env`:
 
-Questo componente non ha props definite.
+```env
+REACT_APP_GEMINI_API_KEY=AIzaSyXXXXXXXXXXXX
+```
 
-### Select
+---
 
-Questo componente non ha props definite.
+## ✅ Final `.env` Example
 
-### Tab
+```env
+REACT_APP_FIREBASE_APIKEY=...
+REACT_APP_FIREBASE_AUTH_DOMAIN=...
+REACT_APP_FIREBASE_PROJECT_ID=...
+REACT_APP_FIREBASE_MESSAGING_SENDER_ID=...
+REACT_APP_FIREBASE_APP_ID=...
+REACT_APP_FIREBASE_DATABASE_URL=...
+REACT_APP_FIREBASE_STORAGE_BUCKET=...               # Optional
+REACT_APP_GOOGLE_CLIENT_ID=...
 
-Questo componente non ha props definite.
+REACT_APP_OPENAI_API_KEY=...                        # Optional
+REACT_APP_SERPAPI_API_KEY=...                       # Optional
+REACT_APP_DROPBOX_ACCESS_TOKEN=...                  # Optional
+REACT_APP_DEEPSEEK_API_KEY=...                      # Optional
+REACT_APP_GEMINI_API_KEY=...                        # Optional
+```
 
-### Tab2
+---
 
-Questo componente non ha props definite.
+## 📚 More Info
 
-### Table
+For a complete walkthrough of API integrations, see [`ai-project-setup-guide.md`](./ai-project-setup-guide.md)
 
-Questo componente non ha props definite.
-
-### Upload
-
-Questo componente non ha props definite.
+If you have questions or need help setting up, feel free to open an issue or contribute!
 

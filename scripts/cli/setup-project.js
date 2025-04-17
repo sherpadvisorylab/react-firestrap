@@ -24,13 +24,25 @@ function ensureFile(filePath, content) {
 }
 
 function resetProjectDirectory() {
-    console.log("🧹 Resetting project directory...");
-    const keepFiles = ['package.json', 'package-lock.json', 'node_modules'];
-    fs.readdirSync(root).forEach(entry => {
-        if (!keepFiles.includes(entry)) {
-            const entryPath = path.join(root, entry);
+    console.log("🧹 Resetting selected files and folders...");
+
+    const toDelete = [
+        'src',
+        'public',
+        '.env',
+        '.firebaserc',
+        'database.rules.js',
+        'firebase.json',
+        'storage.rules'
+    ];
+
+    toDelete.forEach(entry => {
+        const entryPath = path.join(root, entry);
+        if (fs.existsSync(entryPath)) {
             fs.rmSync(entryPath, { recursive: true, force: true });
             console.log(`❌ Removed: ${entryPath}`);
+        } else {
+            console.log(`⚠️  Skipped (not found): ${entryPath}`);
         }
     });
 }
@@ -120,23 +132,35 @@ function applyTheme(params) {
 
 function createEnvFile() {
     ensureFile(path.join(root, '.env'), `
-# 🔐 Firebase Config
+# 🔐 Firebase Config (required)
 REACT_APP_FIREBASE_APIKEY=
 REACT_APP_FIREBASE_AUTH_DOMAIN=
-REACT_APP_FIREBASE_DATABASE_URL=
 REACT_APP_FIREBASE_PROJECT_ID=
 REACT_APP_FIREBASE_STORAGE_BUCKET=
 REACT_APP_FIREBASE_MESSAGING_SENDER_ID=
 REACT_APP_FIREBASE_APP_ID=
 REACT_APP_FIREBASE_MEASUREMENT_ID=
 
-# 🧩 OAuth & Dropbox
+# 📦 Database (required)
+REACT_APP_FIREBASE_DATABASE_URL=
+
+# 📦 Storage (optional)
+REACT_APP_FIREBASE_STORAGE_BUCKET=
+
+# 🧩 OAuth (required)
 REACT_APP_GOOGLE_CLIENT_ID=
 REACT_APP_GOOGLE_SCOPE='https://www.googleapis.com/auth/doubleclicksearch https://www.googleapis.com/auth/analytics'
 
+# 🧩 Dropbox (optional)
 REACT_APP_DROPBOX_CLIENT_ID=
 REACT_APP_DROPBOX_CLIENT_SECRET=
 REACT_APP_DROPBOX_BASE_PATH=
+
+# 🧩 AI (optional)
+REACT_APP_OPENAI_API_KEY=
+REACT_APP_SERPAPI_API_KEY=
+REACT_APP_DEEPSEEK_API_KEY=
+REACT_APP_GEMINI_API_KEY=
   `);
 }
 
