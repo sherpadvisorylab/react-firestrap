@@ -55,6 +55,46 @@ function Sidebar({ id, label = '', position = 'start', background = 'light', opa
         : { minWidth: '20%', overflowY: 'auto' }
 
 
+    const renderMenu = (items: any[]) => {
+        return items.map((item, index) => {
+            if (!item.path && !item.children) {
+                return (
+                    <li className="nav-item" key={index}>
+                        {item.title === "---" ? <hr /> : <label>{item.title}</label>}
+                    </li>
+                );
+            }
+
+            const hasChildren = item.children && item.children.length > 0;
+
+            return (
+                <li key={index} className="nav-item">
+                    <Link
+                        to={item.path || "#"}
+                        className={`nav-link${hasChildren ? " d-flex": ""}${item.active ? " active" : ""}`}
+                        onClick={item.onClick}
+                        data-bs-toggle="collapse"
+                        data-bs-target={`#${"collapse" + index}`}
+                    >
+                        {item.icon && <i className={theme.getIcon(item.icon)}></i>}
+                        <span className={"flex-grow-1 ms-" + (item.icon ? "2" : "4")}>{item.title}</span>
+                        {hasChildren && <i className={theme.getIcon("caret-right")}></i>}
+                    </Link>
+
+                    {/* Sotto-menu */}
+                    {hasChildren && (
+                        <div className="collapse" id={"collapse" + index}>
+                            <ul className="nav flex-column ms-4">
+                                {renderMenu(item.children)}
+                            </ul>
+                        </div>
+                    )}
+                </li>
+            );
+        });
+    };
+
+
     return (
         <aside
             className={className}
@@ -71,27 +111,11 @@ function Sidebar({ id, label = '', position = 'start', background = 'light', opa
             </div>
 
             <div className="offcanvas-body">
-                {menu.length && <ul className={`navbar-nav navbar-${background} flex-column mb-auto`}>
-                    {menu.map((item, index) =>
-                        !item.path ? (
-                            <li className="nav-item" key={index}>
-                                {item.title === "true" ? <hr /> : <label>{item.title}</label>}
-                            </li>
-                        ) : (
-                            <li
-                                key={index}
-                                className={`nav-item`}
-                                onClick={item.onClick}
-                            >
-                                <Link to={item.path} className={`nav-link d-flex${item.active ? " active" : ""}`}>
-                                    <i className={theme.getIcon(item.icon)}></i>
-                                    <span className={"flex-grow-1 ms-" + (item.icon ? "2" : "4")}>{item.title}</span>
-                                    {item.children && <i className={theme.getIcon("caret-right")}></i>}
-                                </Link>
-                            </li>
-                        )
-                    )}
-                </ul>}
+                {menu.length > 0 && (
+                    <ul className={`navbar-nav navbar-${background} flex-column mb-auto`}>
+                        {renderMenu(menu)}
+                    </ul>
+                )}
             </div>
         </aside>
     );
