@@ -1,33 +1,30 @@
 export const menu = {
-    "sidebar" : [
-        {"title": "Dashboard", "icon": "camera", "path": "/"},
-        {"title": "Jobs", "icon": "camera", "path": "/jobs"},
-        {"title": "Photo Shooting", "icon": "camera", "path": "/photo_shooting"},
-        {"title": "Reviews", "icon": "camera", "path": "/reviews"},
-        {"title": "Delivery", "icon": "camera", "path": "/delivery", page: null, layout: null}
+    "sidebar": [
+        { "title": "Dashboard", "icon": "house", "path": "/" },
+        { "title": "---"},
+        { "title": "Apps"},
+        { "title": "Projects", "icon": "folder", "path": "/projects", children: [
+                { "title": "Project1", "icon": "bar-chart", "path": "/projects/project1" },
+                { "title": "Project2", "icon": "bar-chart", "path": "/projects/project2" },
+                { "title": "ProjectN", "icon": "bar-chart", "path": "/projects/projectN" },
+            ]},
+        { "title": "Reports", "icon": "bar-chart", "path": "/reports", children: [
+                { "title": "Report1", "icon": "bar-chart", "path": "/reports/report1" },
+                { "title": "Report2", "icon": "bar-chart", "path": "/reports/report2" },
+                { "title": "ReportN", "icon": "bar-chart", "path": "/reports/reportN" },
+            ]}
     ],
     "profile": [
-        {"title": "CUSTOMERS", "icon": "address-book", "path": "/customers"},
-        {"title": "CATEGORIES", "icon": "list-bullets", "path": "/categories"},
-        {"title": "SPECIAL", "icon": "list-bullets", "path": "/categories_special"},
-        {"title": "SEASONS", "icon": "calendar", "path": "/seasons"},
-        {"title": "JOBS TYPE", "icon": "calendar", "path": "/jobs_type"},
-        {"title": "ROLES", "icon": "calendar", "path": "/users_role"},
-        {"title":  "---"},
-        {"title": "COLLABORATORS", "icon": "users", "path": "/users"}
+        { "title": "Users", "icon": "people", "path": "/users" },
+        { "title": "Settings", "icon": "gear", "path": "/profile/settings" },
+        { "title": "Activity Log", "icon": "list-check", "path": "/profile/activity" }
     ],
     "header": [
-        {"title": "CUSTOMERS", "icon": "address-book", "path": "/customers"},
-        {"title": "CATEGORIES", "icon": "list-bullets", "path": "/categories"},
-        {"title": "SPECIAL", "icon": "list-bullets", "path": "/categories_special"},
-        {"title": "SEASONS", "icon": "calendar", "path": "/seasons"},
-        {"title": "JOBS TYPE", "icon": "calendar", "path": "/jobs_type"},
-        {"title": "ROLES", "icon": "calendar", "path": "/users_role"},
-        {"title":  "---"},
-        {"title": "COLLABORATORS", "icon": "users", "path": "/users"}
+        { "title": "Favorites", "icon": "star-fill", "path": "/favorites" },
     ],
-    "pages": [
-        {"title": "Review", "icon": "images-square", "path": "/reviews/new", layout: null},
+    "footer": [
+        { "title": "Help Center", "icon": "question-circle", "path": "/help" },
+        { "title": "Privacy Policy", "icon": "shield-lock", "path": "/privacy" },
+        { "title": "Terms", "icon": "file-earmark-text", "path": "/terms" }
     ]
 };
-  

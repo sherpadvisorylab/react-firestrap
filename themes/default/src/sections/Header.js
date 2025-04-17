@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from "react-router-dom";
-import { useMenu, Notifications, SignInButton, Brand } from "react-firestrap";
+import { useTheme, useMenu, Notifications, SignInButton, Brand } from "react-firestrap";
 import {HamburgerButton} from "./Sidebar.js";
 
 type HeaderProps = {
@@ -19,7 +19,8 @@ type HeaderProps = {
 };
 
 function Header({background = 'light', opacity = 100} : HeaderProps) {
-  const menuHeader = useMenu("header");
+    const theme = useTheme("header");
+    const menuHeader = useMenu("header");
 
     return (
         <nav className={`navbar navbar-expand-lg navbar-${background} text-bg-${background} bg-opacity-${opacity}`}>
@@ -28,7 +29,7 @@ function Header({background = 'light', opacity = 100} : HeaderProps) {
                 {/* Left: Hamburger + Brand */}
                 <div className="d-flex align-items-center me-auto">
                     <HamburgerButton target={"sidebar"}  />
-                    <Brand label="[projectname]" className={`navbar-brand`} />
+                    <Brand label="dindex" className={`navbar-brand`} />
                 </div>
 
 
@@ -39,6 +40,7 @@ function Header({background = 'light', opacity = 100} : HeaderProps) {
                             item.path ? (
                                 <li className="nav-item px-2" key={index}>
                                     <Link className={`nav-link${item.active ? " active" : ""}`} to={item.path}>
+                                        {item.icon && <i className={`me-1 ${theme.getIcon(item.icon)}`}></i>}
                                         {item.title}
                                     </Link>
                                 </li>

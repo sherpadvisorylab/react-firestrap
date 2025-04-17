@@ -149,7 +149,7 @@ const GridArray = ({
     // 1. Calcolo colonne
     const header: Column[] = useMemo(() => {
         if (columns) return columns;
-        if (!records) return [];
+        if (!records || records.length === 0) return [];
 
         return (
             Form && typeof Form !== 'function'

@@ -86,7 +86,7 @@ function Sidebar({ id, label = '', position = 'start', background = 'light', opa
                                 <Link to={item.path} className={`nav-link d-flex${item.active ? " active" : ""}`}>
                                     <i className={theme.getIcon(item.icon)}></i>
                                     <span className={"flex-grow-1 ms-" + (item.icon ? "2" : "4")}>{item.title}</span>
-                                    <i className={theme.getIcon("caret-right")}></i>
+                                    {item.children && <i className={theme.getIcon("caret-right")}></i>}
                                 </Link>
                             </li>
                         )
