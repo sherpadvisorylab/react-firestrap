@@ -74,13 +74,33 @@ async function askInteractive(callback) {
         const hostingInput = await question(`Do you want to use Firebase Hosting?\nLeave blank to use "${defaultName}" as hosting name, type 'n' to disable hosting, or provide a custom name: `);
         const hosting = hostingInput.trim();
 
+        const firebase = {};
+        
+        const firebaseApikeyInput = await question(`What is your Firebase Apikey: `);
+        firebase.apikey = firebaseApikeyInput.trim();
+        const firebaseAuthDomainInput = await question(`What is your Firebase Auth Domain: `);
+        firebase.authDomain = firebaseAuthDomainInput.trim();
+        const firebaseDBUrlInput = await question(`What is your Firebase Database Url: `);
+        firebase.dbUrl = firebaseDBUrlInput.trim();
+        const firebaseProjIdInput = await question(`What is your Firebase Project ID: `);
+        firebase.projId = firebaseProjIdInput.trim();
+        const firebaseMessSenderIdInput = await question(`What is your Firebase Messaging Sender ID: `);
+        firebase.messSenderId = firebaseMessSenderIdInput.trim();
+        const firebaseAppIdInput = await question(`What is your Firebase App ID: `);
+        firebase.appId = firebaseAppIdInput.trim();
+        const firebaseMeasurementIdInput = await question(`What is your Firebase Measurement ID: `);
+        firebase.measurementId = firebaseMeasurementIdInput.trim();
+        const firebaseGoogleClientIdInput = await question(`What is your Google Client ID: `);
+        firebase.googleClientId = firebaseGoogleClientIdInput.trim();
+
         rl.close();
 
         const params = {
             projectname,
             hosting,
             theme,
-            background
+            background,
+            firebase
         };
 
         callback(params);
@@ -130,25 +150,24 @@ function applyTheme(params) {
     });
 }
 
-function createEnvFile() {
+function createEnvFile(params) {
     ensureFile(path.join(root, '.env'), `
 # 🔐 Firebase Config (required)
-REACT_APP_FIREBASE_APIKEY=
-REACT_APP_FIREBASE_AUTH_DOMAIN=
-REACT_APP_FIREBASE_PROJECT_ID=
-REACT_APP_FIREBASE_STORAGE_BUCKET=
-REACT_APP_FIREBASE_MESSAGING_SENDER_ID=
-REACT_APP_FIREBASE_APP_ID=
-REACT_APP_FIREBASE_MEASUREMENT_ID=
+REACT_APP_FIREBASE_APIKEY='${params.firebase.apikey}'
+REACT_APP_FIREBASE_AUTH_DOMAIN='${params.firebase.authDomain}'
+REACT_APP_FIREBASE_PROJECT_ID='${params.firebase.projId}'
+REACT_APP_FIREBASE_MESSAGING_SENDER_ID='${params.firebase.messSenderId}'
+REACT_APP_FIREBASE_APP_ID='${params.firebase.appId}'
+REACT_APP_FIREBASE_MEASUREMENT_ID='${params.firebase.measurementId}'
 
 # 📦 Database (required)
-REACT_APP_FIREBASE_DATABASE_URL=
+REACT_APP_FIREBASE_DATABASE_URL='${params.firebase.dbUrl}'
 
 # 📦 Storage (optional)
 REACT_APP_FIREBASE_STORAGE_BUCKET=
 
 # 🧩 OAuth (required)
-REACT_APP_GOOGLE_CLIENT_ID=
+REACT_APP_GOOGLE_CLIENT_ID='${params.firebase.googleClientId}'
 REACT_APP_GOOGLE_SCOPE='https://www.googleapis.com/auth/doubleclicksearch https://www.googleapis.com/auth/analytics'
 
 # 🧩 Dropbox (optional)
@@ -227,7 +246,7 @@ function scaffoldProject() {
         }
         console.log(`\n🚧 Creating project structure for: ${params.projectname}`);
         applyTheme(params);
-        createEnvFile();
+        createEnvFile(params);
         createFirebaseConfig(params);
         console.log(`\n✅ Project "${params.projectname}" created successfully with theme "${params.theme}"!\n`);
     });
