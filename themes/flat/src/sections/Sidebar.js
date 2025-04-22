@@ -2,20 +2,73 @@ import React, { useEffect, useState } from 'react';
 import { Link } from "react-router-dom";
 import { useTheme, useMenu } from "react-firestrap";
 
+type HamburgerButtonProps = {
+    target: string;
+    className?: string;
+};
+type SidebarProps = {
+    id: string;
+    label?: string;
+    position?: 'start' | 'end';
+    opacity?: number;
+    background?:
+    | "primary"
+    | "secondary"
+    | "success"
+    | "danger"
+    | "warning"
+    | "info"
+    | "light"
+    | "dark"
+    | "white"
+    | "transparent";
+};
 
-const Sidebar = () => {
+export function HamburgerButton({ target, className = '' }: HamburgerButtonProps) {
+    const theme = useTheme("sidebar");
+
+    return (
+        <button
+            className={`navbar-toggler border-0 pc-head-link ms-0 btn ${className}`}
+            type="button"
+            data-bs-toggle="offcanvas"
+            data-bs-target={`#${target}`}
+            aria-controls={target}
+            aria-label="Toggle navigation"
+        >
+            <span className="navbar-toggler-icon">
+                <i className={theme.getIcon("list")} />
+            </span>
+        </button>
+    );
+}
+
+
+const Sidebar = ({id='sidebar', label = '', position = 'start', background = 'light', opacity = 75 }: SidebarProps) => {
     const theme = useTheme("sidebar");
     const menuSidebar = useMenu("sidebar");
 
+    const isMobile = window.innerWidth < 992;
+    const className = `offcanvas offcanvas-${position}`;
+
+    const style = isMobile
+        ? { width: "80%" }
+        : { minWidth: '20%', overflowY: 'auto' }
+
     return (
-        <nav className="pc-sidebar">
+        <nav className={`pc-sidebar ${className}`}
+            style={style}
+            tabIndex={-1}
+            id={id}
+            aria-label={label}>
             <div className="navbar-wrapper">
-                <div className="m-header">
+                <div className="m-header offcanvas-header">
+                    <HamburgerButton target={'sidebar'} />
                     <a href="/" className="b-brand text-primary position-relative">
                         <img src="/assets/images/logo-white.svg" alt="logo" className="logo-lg" />
                     </a>
                 </div>
-                <div className="navbar-content">
+                <div className="navbar-content offcanvas-body">
                     <ul className="pc-navbar">
                         {menuSidebar.map((item, index) => !item.path
                             ? <li className="pc-item pc-hasmenu" key={index}>
@@ -68,59 +121,13 @@ const Sidebar = () => {
     );
 };
 
-export const SidebarToggler = () => {
-    const theme = useTheme("sidebar");
-    const [isSidebarAvailable, setIsSidebarAvailable] = useState(false);
-    const [isSidebarHidden, setIsSidebarHidden] = useState(false);
-    const [isMobile, setIsMobile] = useState(false);
+export const SidebarToggler = () => (
+    <ul className="list-unstyled">
+        <li className="pc-h-item">
+            <HamburgerButton target="sidebar" />
+        </li>
+    </ul>
+);
 
-    // Funzione per alternare la visibilità della sidebar
-    const toggleSidebar = () => {
-        const isMobile = window.innerWidth <= 1024;
-        const sidebarElement = document.querySelector('.pc-sidebar');
-
-        setIsSidebarHidden(prev => !prev);
-        window.dispatchEvent(new Event('sidebar-toggle'));
-
-        if (isMobile && sidebarElement) {
-            sidebarElement.classList.toggle('mob-sidebar-active');
-        }
-    };
-
-
-    // Controlla se sidebar esiste
-    useEffect(() => {
-        const sidebarElement = document.querySelector('.pc-sidebar');
-        if (sidebarElement) {
-            setIsSidebarAvailable(true);
-
-            const handleSidebarToggle = () => {
-                sidebarElement.classList.toggle('pc-sidebar-hide', isSidebarHidden);
-            };
-
-            window.addEventListener('sidebar-toggle', handleSidebarToggle);
-
-            return () => {
-                window.removeEventListener('sidebar-toggle', handleSidebarToggle);
-            };
-        }
-    }, [isSidebarHidden]);
-
-    return (<>
-        {isSidebarAvailable && <ul className="list-unstyled">
-            <li className="pc-h-item pc-sidebar-collapse">
-                <button className="pc-head-link ms-0 btn" onClick={toggleSidebar}>
-                    <i className={`${theme.getIcon("list")}`}></i>
-                </button>
-            </li>
-            {/* Mobile */}
-            <li className="pc-h-item pc-sidebar-popup">
-                <button className="pc-head-link ms-0 btn" onClick={toggleSidebar}>
-                    <i className={`${theme.getIcon("list")}`}></i>
-                </button>
-            </li>
-        </ul>}
-    </>);
-};
 
 export default Sidebar;
