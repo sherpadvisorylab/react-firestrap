@@ -128,16 +128,26 @@ function copyAndReplace(fromPath, toPath, replacements = {}) {
             ensureDir(destFile);
             copyAndReplace(srcFile, destFile, replacements);
         } else {
-            let content = fs.readFileSync(srcFile, 'utf8');
-            for (const [key, value] of Object.entries(replacements)) {
-                content = content.replace(new RegExp(`\\[${key}\\]`, 'g'), value);
-            }
             ensureDir(path.dirname(destFile));
-            fs.writeFileSync(destFile, content);
+
+            const ext = path.extname(file).toLowerCase();
+            const isBinary = ['.woff', '.woff2', '.ttf', '.eot', '.otf'].includes(ext);
+
+            if (isBinary) {
+                fs.copyFileSync(srcFile, destFile);
+            } else {
+                let content = fs.readFileSync(srcFile, 'utf8');
+                for (const [key, value] of Object.entries(replacements)) {
+                    content = content.replace(new RegExp(`\\[${key}\\]`, 'g'), value);
+                }
+                fs.writeFileSync(destFile, content);
+            }
+
             console.log(`📄 Copied file: ${destFile}`);
         }
     });
 }
+
 
 function applyTheme(params) {
     const themesAvailable = getAvailableThemes();
