@@ -1,6 +1,6 @@
 import React from 'react';
 import { SidebarToggler } from "./Sidebar.js";
-import { useMenu, useTheme } from 'react-firestrap';
+import { Brand, useMenu, useTheme } from 'react-firestrap';
 import { Link } from 'react-router-dom';
 
 const Header = () => {
@@ -11,6 +11,9 @@ const Header = () => {
     <div id="header" className="app-header">
       <SidebarToggler device={"desktop"} toggle="collapsed" dismiss="toggled" />
       <SidebarToggler device={"mobile"} toggle="mobile-toggled" dismiss="" />
+      <div className='brand'>
+        <Brand label="Cyber" className="navbar-brand"/>
+      </div>
       <div className="menu">
         {
           menuHeader.map((item, index) => (

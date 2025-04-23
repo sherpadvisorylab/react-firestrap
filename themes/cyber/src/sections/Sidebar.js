@@ -1,15 +1,32 @@
-import React from 'react';
-import { useMenu, useTheme } from 'react-firestrap';
+import React, { useLayoutEffect, useRef } from 'react';
+import { Brand, useMenu, useTheme } from 'react-firestrap';
 import { Link } from "react-router-dom";
 
 const Sidebar = () => {
-    const theme = useTheme("sidebar")
+    const theme = useTheme("sidebar");
     const menuSidebar = useMenu("sidebar");
 
+    // Solo su desktop sidebar aperta di default
+    const sidebarRef = useRef(null);
+    useLayoutEffect(() => {
+        if (window.innerWidth >= 768 && sidebarRef.current) {
+            const sidebar = new window.bootstrap.Offcanvas(sidebarRef.current);
+            sidebar.show();
+        }
+    }, []);
+
     return (
-        <nav id="sidebar" className="app-sidebar offcanvas offcanvas-start" tabindex="-1" aria-labelledby="offcanvasExampleLabel">
+        <nav
+            id="sidebar"
+            ref={sidebarRef}
+            className="app-sidebar offcanvas offcanvas-start"
+            tabIndex="-1"
+            aria-labelledby="offcanvasExampleLabel"
+        >
             <div className="offcanvas-header">
-                Logo
+                <div className='brand'>
+                    <Brand label="Cyber" className="navbar-brand" />
+                </div>
                 <button
                     type="button"
                     className="btn-close text-reset"
@@ -19,45 +36,51 @@ const Sidebar = () => {
             </div>
             <div className="app-sidebar-content offcanvas-body">
                 <div className="menu">
-                    {menuSidebar.map((item, index) => !item.path
-                        ? <div className="menu-header" key={index}>
-                            {item.title === "true" ? <hr /> : <label>{item.title}</label>}
-                        </div>
-                        : (
-                            item.submenu ?
-                                <div class="menu-item has-sub">
-                                    <a class="menu-link" data-bs-toggle="collapse" href={`#collapse${index}`} role="button" aria-expanded="false" aria-controls="collapseExample">
-                                        <span className="menu-icon">
-                                            <i className={`${theme.getIcon(item.icon)}`} />
-                                        </span>
-                                        <span className="menu-text">{item.title}</span>
-                                        <span class="menu-caret"><b class="caret"></b></span>
-                                    </a>
-                                    <div class="collapse menu-submenu" id={`collapse${index}`}>
-                                        {item.submenu.map((subitem, i) => (
-                                            <div class="menu-item">
-                                                <a href="email_inbox.html" class="menu-link">
-                                                    <span class="menu-text">{subitem.title}</span>
-                                                </a>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                                : <div
-                                    key={index}
-                                    className={
-                                        "menu-item" + (item.active ? " active" : "")
-                                    }
-                                    onClick={item.onClick}
+                    {menuSidebar.map((item, index) =>
+                        !item.path ? (
+                            <div className="menu-header" key={index}>
+                                {item.title === "true" ? <hr /> : <label>{item.title}</label>}
+                            </div>
+                        ) : item.submenu ? (
+                            <div className="menu-item has-sub" key={index}>
+                                <a
+                                    className="menu-link"
+                                    data-bs-toggle="collapse"
+                                    href={`#collapse${index}`}
+                                    role="button"
+                                    aria-expanded="false"
+                                    aria-controls={`collapse${index}`}
                                 >
-                                    <Link to={item.path} className="menu-link">
-                                        <span className="menu-icon">
-                                            <i className={`${theme.getIcon(item.icon)}`} />
-                                        </span>
-                                        <span className="menu-text">{item.title}</span>
-                                        <span className="menu-arrow"></span>
-                                    </Link>
+                                    <span className="menu-icon">
+                                        <i className={`${theme.getIcon(item.icon)}`} />
+                                    </span>
+                                    <span className="menu-text">{item.title}</span>
+                                    <span className="menu-caret"><b className="caret"></b></span>
+                                </a>
+                                <div className="collapse menu-submenu" id={`collapse${index}`}>
+                                    {item.submenu.map((subitem, i) => (
+                                        <div className="menu-item" key={i}>
+                                            <a href="email_inbox.html" className="menu-link">
+                                                <span className="menu-text">{subitem.title}</span>
+                                            </a>
+                                        </div>
+                                    ))}
                                 </div>
+                            </div>
+                        ) : (
+                            <div
+                                key={index}
+                                className={"menu-item" + (item.active ? " active" : "")}
+                                onClick={item.onClick}
+                            >
+                                <Link to={item.path} className="menu-link">
+                                    <span className="menu-icon">
+                                        <i className={`${theme.getIcon(item.icon)}`} />
+                                    </span>
+                                    <span className="menu-text">{item.title}</span>
+                                    <span className="menu-arrow"></span>
+                                </Link>
+                            </div>
                         )
                     )}
                 </div>
@@ -65,6 +88,7 @@ const Sidebar = () => {
         </nav>
     );
 };
+
 
 export const SidebarToggler = ({ device, toggle, dismiss }) => {
     let dismissClass = "";
