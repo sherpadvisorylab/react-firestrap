@@ -5,6 +5,7 @@ export const menu = {
         { "title": "Profile", "icon": "person", "path": "/user" }
     ],
     "sidebar": [
+        { "title": "Navigation" },
         { "title": "Dashboard", "icon": "speedometer2", "path": "/" },
         { "title": "Builder" },
         { "title": "Dictionary", "icon": "collection", "path": "/dictionary" },
