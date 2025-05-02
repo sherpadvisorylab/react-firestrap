@@ -10,6 +10,7 @@ import Authorize, {AUTH_REDIRECT_URI} from "./auth";
 import {converter as convert} from "./libs/converter";
 import {ThemeProvider} from "./Theme";
 import Users from "./pages/Users";
+import NotFound from './pages/NotFound';
 import {GlobalProvider} from "./Global";
 import Alert from "./components/Alert";
 import {
@@ -129,6 +130,7 @@ function App({
                     <ThemeProvider importTheme={importTheme}>
                         <Routes>
                             <Route path={AUTH_REDIRECT_URI} element={<Authorize />}></Route>
+                            <Route path='*' element={<NotFound />}></Route>
                             <>
                             {renderRoutes({default: [{ path: "/" }], ...{
                                 ...menu,
