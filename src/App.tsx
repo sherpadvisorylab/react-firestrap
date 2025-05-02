@@ -82,8 +82,21 @@ function App({
 
     const LayoutEmpty = ({ children }: { children: React.ReactNode }) => <>{children}</>;
 
+    function getPageSource(path: string): string {
+        if (path === "/") return "Home";
+        
+        const parts = path.replace(/^\/|\/$/g, "").split("/"); // rimuove slash iniziali/finali e splitta
+        const dirs = parts.slice(0, -1);                       // tutte le directory tranne l'ultima
+        const file = parts.at(-1);                             // nome del file
+    
+        const pascalFile = file ? file.charAt(0).toUpperCase() + file.slice(1) : "Index";
+    
+        return [...dirs, pascalFile].join("/");
+    }
+    
+
     function getRoute(key: string, item: MenuItem, index: number): React.ReactElement {
-        const pageSource = item.path === "/" ? "Home" : convert.toCamel(item.path);
+        const pageSource = getPageSource(item.path);
         const PageComponent = item.page || React.lazy(() =>
             importPage(pageSource).catch(() =>
                 Promise.resolve({
