@@ -6,7 +6,7 @@ import PageHeader from "../sections/PageHeader.js";
 
 function Admin({children}) {
     return (
-        <div className="app app-sidebar-toggled" id="app">
+        <div className="app app-sidebar-collapse" id="app">
             <PreLoader />
             <Header/>
             <Sidebar/>
