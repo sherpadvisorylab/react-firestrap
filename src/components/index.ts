@@ -27,6 +27,7 @@ export * from './ui/fields/Select';
 export { default as Upload} from './ui/fields/Upload';
 
 export { default as Form } from './widgets/Form';
+export { default as FormComposer } from './widgets/FormComposer';
 export { default as Grid } from './widgets/Grid';
 export { default as ImageEditor } from './widgets/ImageEditor';
 

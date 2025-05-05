@@ -16,51 +16,70 @@ interface ComponentEnhancerProps {
 
 const applyOnChangeRecursive = ({
                                     children,
-                                    record          = undefined,
-                                    handleChange    = undefined,
-                                    onEnhance       = undefined
-} : ApplyOnChangeParams): React.ReactNode => {
+                                    record,
+                                    handleChange,
+                                    onEnhance,
+                                }: ApplyOnChangeParams): React.ReactNode => {
     return React.Children.map(children, (child) => {
-        if (React.isValidElement(child)) {
-            const onChange = handleChange && ((event: React.ChangeEvent<any>) => {
-                child.props.onChange?.(event);
-                handleChange?.(event);
+        if (!React.isValidElement(child)) return child;
+
+        const {type, props} = child;
+        const isFragment = type === React.Fragment;
+        const isCustomComponent = typeof type !== 'string';
+        const name = props.name;
+
+        const onChange = handleChange && ((event: React.ChangeEvent<any>) => {
+            props.onChange?.(event);
+            handleChange?.(event);
+        });
+
+        if (isFragment) {
+            return applyOnChangeRecursive({
+                children: props.children,
+                record,
+                handleChange,
+                onEnhance,
             });
-
-            if (typeof child.type !== 'string' && (child.type as any).enhance) {
-                return React.cloneElement(child as any, {
-                    value: record?.[child.props.name] ?? '',
-                    onChange: onChange
-                });
-            }
-
-            if (child.props.children) {
-                return React.cloneElement(child as any, {
-                    children: applyOnChangeRecursive({children: child.props.children, record, handleChange, onEnhance})
-                });
-            } else if(onEnhance) {
-                if(typeof child.type !== 'string' && child.props.name) {
-                    onEnhance(child);
-                }
-                return child;
-            } else {
-                if (typeof child.type !== 'string' && record?.[child.props.name] === undefined) {
-                    console.warn(`The property ${child.props.name} is not present in the record`, child);
-                }
-
-                return (typeof child.type === 'string'
-                    ? React.cloneElement(child as any, {
-                        className: "mb-3" + (child.props?.className ? ' ' + child.props.className : '')
-                    })
-                    : React.cloneElement(child as any, {
-                        wrapClass: "mb-3" + (child.props?.wrapClass ? ' ' + child.props.wrapClass : ''),
-                        value: record?.[child.props.name] ?? '',
-                        onChange: onChange
-                    }));
-            }
         }
 
-        return child;
+        if (isCustomComponent && (type as any).enhance) {
+            return React.cloneElement(child as any, {
+                value: record?.[name] ?? '',
+                onChange,
+            });
+        }
+
+        if (props.children) {
+            return React.cloneElement(child as any, {
+                children: applyOnChangeRecursive({
+                    children: props.children,
+                    record,
+                    handleChange,
+                    onEnhance,
+                }),
+            });
+        }
+
+        if (onEnhance && isCustomComponent && name) {
+            onEnhance(child);
+            return child;
+        }
+
+        if (isCustomComponent && record?.[name] === undefined) {
+            console.warn(`The property "${name}" is not present in the record`, child);
+        }
+
+        console.log(record, child);
+
+        return React.cloneElement(child as any, isCustomComponent
+            ? {
+                wrapClass: `mb-3${props.wrapClass ? ' ' + props.wrapClass : ''}`,
+                value: record?.[name] ?? props.value ?? '',
+                onChange,
+            }
+            : {
+                className: `mb-3${props.className ? ' ' + props.className : ''}`,
+            });
     });
 };
 

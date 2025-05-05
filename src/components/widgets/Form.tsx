@@ -11,7 +11,7 @@ import {useTheme} from "../../Theme";
 import Alert from "../ui/Alert";
 import {RecordProps} from "../../integrations/google/firedatabase";
 
-interface FormProps {
+export interface FormProps {
     children: React.ReactNode;
     header?: React.ReactNode;
     footer?: React.ReactNode | false;
