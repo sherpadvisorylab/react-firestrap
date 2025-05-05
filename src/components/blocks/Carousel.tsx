@@ -1,6 +1,6 @@
 import React from 'react';
-import {useTheme} from "../Theme";
-import {generateUniqueId} from "../libs/utils";
+import {useTheme} from "../../Theme";
+import {generateUniqueId} from "../../libs/utils";
 
 type AutoPlayOptions = {
     interval: number;

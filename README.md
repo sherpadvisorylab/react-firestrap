@@ -52,7 +52,6 @@ REACT_APP_FIREBASE_DATABASE_URL=https://[PROJECT_ID]-default-rtdb.[REGION].fireb
 REACT_APP_GOOGLE_CLIENT_ID=000000000000-XXXXXXXXXXXX.apps.googleusercontent.com
 ```
 
-
 ---
 
 ### 4. Configure OAuth Client in Google Cloud Console (Required)
@@ -65,17 +64,18 @@ To make Google Sign-In work in development and production:
 4. Add the following redirect URIs:
 
 #### Development Redirect URIs
+
 ```
 https://localhost
 https://localhost:3000
 ```
 
 #### Production Redirect URIs
+
 ```
 https://[PROJECT_ID].web.app
 https://[PROJECT_ID].firebaseapp.com
 ```
-
 
 ---
 
@@ -188,9 +188,32 @@ REACT_APP_GEMINI_API_KEY=...                        # Optional
 
 ---
 
+## 📊 Component Architecture
+
+### 📁 Project Structure
+
+```
+src/
+└── components/
+    ├── blocks/         # UI blocks like menus, brand, breadcrumbs, notifications
+    ├── ui/
+    │   ├── fields/     # Form fields like Input, Select, Upload
+    │   └── ...         # Other UI parts: Card, Table, Alert, Modal, etc.
+    ├── widgets/        # High-level functional components (Form, Grid, ImageEditor)
+    ├── sections/       # Full layout sections (e.g., Topbar, Footer)
+    └── index.ts        # Aggregated export of all components
+```
+
+You can import any component centrally:
+
+```tsx
+import { Form, Grid, Card, Input, Modal } from 'components';
+```
+
+---
+
 ## 📚 More Info
 
 For a complete walkthrough of API integrations, see [`ai-project-setup-guide.md`](./ai-project-setup-guide.md)
 
 If you have questions or need help setting up, feel free to open an issue or contribute!
-

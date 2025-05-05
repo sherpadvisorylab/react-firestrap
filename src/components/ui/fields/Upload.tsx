@@ -1,7 +1,7 @@
 import React, {useRef, useState} from "react";
-import storage  from "../libs/storage";
-import Image from "./Image";
-import {PLACEHOLDER_IMAGE} from "../Theme";
+import storage  from "../../../libs/storage";
+import Image from "../Image";
+import {PLACEHOLDER_IMAGE} from "../../../Theme";
 
 
 interface UploadProps {

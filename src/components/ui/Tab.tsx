@@ -1,8 +1,8 @@
 import React, {useState} from 'react';
 import {ActionButton} from "./Buttons";
-import ComponentEnhancer from "./ComponentEnhancer";
-import {converter} from "../libs/converter";
-import {RecordArray, RecordProps} from "../integrations/google/firedatabase";
+import ComponentEnhancer from "../ComponentEnhancer";
+import {converter} from "../../libs/converter";
+import {RecordArray, RecordProps} from "../../integrations/google/firedatabase";
 
 interface TabLayoutProps {
     menu: React.ReactNode;

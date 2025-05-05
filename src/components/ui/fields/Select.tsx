@@ -1,10 +1,10 @@
 import React, {useEffect, useMemo, useState} from 'react';
-import database from "../libs/database";
+import database from "../../../libs/database";
 import {Label} from "./Input";
-import {Wrapper} from "./GridSystem"
-import {useTheme} from "../Theme";
-import {arraysEqual, arrayUnique, isEmpty, sanitizeKey} from "../libs/utils";
-import {DatabaseOptions, RecordProps} from "../integrations/google/firedatabase";
+import {Wrapper} from "../GridSystem"
+import {useTheme} from "../../../Theme";
+import {arraysEqual, arrayUnique, isEmpty, sanitizeKey} from "../../../libs/utils";
+import {DatabaseOptions, RecordProps} from "../../../integrations/google/firedatabase";
 
 interface Option extends RecordProps {
     label: string;

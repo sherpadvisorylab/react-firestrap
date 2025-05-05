@@ -1,16 +1,16 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
-import {useTheme} from "../Theme";
-import Table, {TableHeaderProp} from "./Table";
-import Gallery from "./Gallery";
-import Card from "./Card";
-import db from "../libs/database";
-import Modal from "./Modal";
-import {generateUniqueId, normalizeKey, safeClone, trimSlash, ucfirst} from "../libs/utils";
+import {useTheme} from "../../Theme";
+import Table, {TableHeaderProp} from "../ui/Table";
+import Gallery from "../ui/Gallery";
+import Card from "../ui/Card";
+import db from "../../libs/database";
+import Modal from "../ui/Modal";
+import {generateUniqueId, normalizeKey, safeClone, trimSlash, ucfirst} from "../../libs/utils";
 import {useLocation} from "react-router-dom";
-import {converter} from "../libs/converter";
-import ComponentEnhancer, {extractComponentProps} from "./ComponentEnhancer";
-import setLog from "../libs/log";
-import {RecordArray, RecordProps} from "../integrations/google/firedatabase";
+import {converter} from "../../libs/converter";
+import ComponentEnhancer, {extractComponentProps} from "../ComponentEnhancer";
+import setLog from "../../libs/log";
+import {RecordArray, RecordProps} from "../../integrations/google/firedatabase";
 //todo: fare pulizia dei //todo: da togliere
 //todo: gestire refDomElem poiche non viene mai scritto
 type ColumnFunction = (args: {

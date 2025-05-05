@@ -1,6 +1,6 @@
 import React, {ChangeEvent} from 'react';
-import {generateUniqueId, isEmpty} from "../libs/utils";
-import {Wrapper} from "./GridSystem";
+import {generateUniqueId, isEmpty} from "../../../libs/utils";
+import {Wrapper} from "../GridSystem";
 
 interface InputProps {
     name: string;

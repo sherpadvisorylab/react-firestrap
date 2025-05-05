@@ -1,9 +1,9 @@
 import React, {useRef, useEffect, useCallback, useState} from 'react';
 import TuiImageEditor from 'tui-image-editor';
 import 'tui-image-editor/dist/tui-image-editor.css';
-import Modal from "./Modal";
-import {useTheme} from "../Theme";
-import {LoadingButton} from "./Buttons";
+import Modal from "../ui/Modal";
+import {useTheme} from "../../Theme";
+import {LoadingButton} from "../ui/Buttons";
 
 type ImageEditorProps = {
     imageUrl: string;

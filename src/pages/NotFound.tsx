@@ -1,19 +1,14 @@
-import { ActionButton } from '../components/Buttons';
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import {Link} from "react-router-dom";
+import {useTheme} from "../Theme";
 
 const NotFound: React.FC = () => {
-    const navigate = useNavigate();
-
+    const theme = useTheme("page");
     return (
         <div className='d-flex flex-column justify-content-center align-items-center vh-100'>
             <h1>404</h1>
-            <p>Oops! Pagina non trovata.</p>
-            <ActionButton
-                onClick={() => navigate('/')}
-                label='Torna alla home'
-                icon='bi bi-house-door'
-            />
+            <p>Oops! Page not found.</p>
+            <Link to='/'><i className={theme.getIcon("house-door")} /> Go to Home</Link>
         </div>
     );
 };

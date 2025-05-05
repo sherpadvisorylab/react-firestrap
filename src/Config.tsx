@@ -1,6 +1,6 @@
 import React, {createContext, useContext, useState, ReactNode, useRef, useEffect} from 'react';
 import {fetchJson} from "./libs/fetch";
-import {DropdownLink} from "./components/Dropdown";
+import {DropdownLink} from "./components/blocks/Dropdown";
 
 export type FirebaseConfig = {
     apiKey: string;

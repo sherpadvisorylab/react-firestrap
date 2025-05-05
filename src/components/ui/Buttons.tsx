@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {useTheme} from "../Theme";
+import {useTheme} from "../../Theme";
 
 export interface IButton {
     onClick?: (e: any) => void,

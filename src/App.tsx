@@ -7,12 +7,11 @@ import {
 } from 'react-router-dom';
 
 import Authorize, {AUTH_REDIRECT_URI} from "./auth";
-import {converter as convert} from "./libs/converter";
 import {ThemeProvider} from "./Theme";
 import Users from "./pages/Users";
 import NotFound from './pages/NotFound';
 import {GlobalProvider} from "./Global";
-import Alert from "./components/Alert";
+import Alert from "./components/ui/Alert";
 import {
     AIConfig,
     ConfigProvider,
@@ -84,16 +83,16 @@ function App({
 
     function getPageSource(path: string): string {
         if (path === "/") return "Home";
-        
-        const parts = path.replace(/^\/|\/$/g, "").split("/"); // rimuove slash iniziali/finali e splitta
-        const dirs = parts.slice(0, -1);                       // tutte le directory tranne l'ultima
-        const file = parts.at(-1);                             // nome del file
-    
-        const pascalFile = file ? file.charAt(0).toUpperCase() + file.slice(1) : "Index";
-    
-        return [...dirs, pascalFile].join("/");
+
+        const directories = path
+            .split("/")
+            .filter(Boolean);
+
+        const fileName = directories.pop() ?? "";
+        const capitalizedFile = fileName[0].toUpperCase() + fileName.slice(1);
+
+        return [...directories, capitalizedFile].join("/");
     }
-    
 
     function getRoute(key: string, item: MenuItem, index: number): React.ReactElement {
         const pageSource = getPageSource(item.path);

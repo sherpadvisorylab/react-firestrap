@@ -1,5 +1,5 @@
 import React from "react";
-import {useTheme} from "../Theme";
+import {useTheme} from "../../Theme";
 
 type BadgeProps = {
     children: string | React.ReactNode;

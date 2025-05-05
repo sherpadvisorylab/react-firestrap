@@ -1,7 +1,7 @@
 import React from 'react';
-import {useTheme} from "../Theme";
+import {useTheme} from "../../Theme";
 import {Wrapper} from "./GridSystem";
-import {RecordArray, RecordProps} from "../integrations/google/firedatabase";
+import {RecordArray, RecordProps} from "../../integrations/google/firedatabase";
 
 export type TableHeaderProp = {
     key: string,

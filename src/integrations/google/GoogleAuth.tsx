@@ -1,13 +1,13 @@
 import React from "react";
 import {getAuth, GoogleAuthProvider, signInWithCredential, getAdditionalUserInfo, signOut} from 'firebase/auth';
-import {Dropdown, DropdownButton, DropdownLink} from "../../components/Dropdown";
+import {Dropdown, DropdownButton, DropdownLink} from "../../components/blocks/Dropdown";
 import {useMenu} from "../../App";
 import {decodeJWT, loadScripts} from "../../libs/utils";
 import {PLACEHOLDER_USER, useTheme} from "../../Theme";
 import {useGlobalVars} from "../../Global";
 import {authConfig} from "./auth";
 import TenantMenu from "../../Config";
-import ImageAvatar from "../../components/ImageAvatar";
+import ImageAvatar from "../../components/ui/ImageAvatar";
 
 declare global {
     interface Window {

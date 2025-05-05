@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import path from "../libs/path";
-import {PLACEHOLDER_USER} from "../Theme";
+import path from "../../libs/path";
+import {PLACEHOLDER_USER} from "../../Theme";
 
 interface ImageAvatarProps {
     src: string;
@@ -12,14 +12,14 @@ interface ImageAvatarProps {
     cacheKey?: string;
 }
 
-const ImageAvatar: React.FC<ImageAvatarProps> = ({
-                                                     src,
-                                                     width      = undefined,
-                                                     height     = undefined,
-                                                     className  = undefined,
-                                                     title      = undefined,
-                                                     alt        = undefined
-                                                 }) => {
+const ImageAvatar = ({
+    src,
+    width      = undefined,
+    height     = undefined,
+    className  = undefined,
+    title      = undefined,
+    alt        = undefined
+}: ImageAvatarProps) => {
     const [imgSrc, setImgSrc] = useState(PLACEHOLDER_USER);
 
     const storageKey = `avatar::${src}`;

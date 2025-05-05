@@ -1,7 +1,7 @@
 import React from "react";
 import {Dropdown, DropdownLink} from "./Dropdown";
-import {useTheme} from "../Theme";
-import {Wrapper} from "./GridSystem";
+import {useTheme} from "../../Theme";
+import {Wrapper} from "../ui/GridSystem";
 
 interface NotificationItem {
     title: string;

@@ -1,7 +1,7 @@
 import React from "react";
-import Grid from "../components/Grid";
-import {String, Email} from "../components/Input";
-import {Select} from "../components/Select";
+import Grid from "../components/widgets/Grid";
+import {String, Email} from "../components/ui/fields/Input";
+import {Select} from "../components/ui/fields/Select";
 
 function Users() {
   return (

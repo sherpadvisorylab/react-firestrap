@@ -1,15 +1,15 @@
 import React, {useEffect, useState} from 'react';
 import {useLocation} from "react-router-dom";
-import {Wrapper} from "./GridSystem";
-import ComponentEnhancer from "./ComponentEnhancer";
-import {trimSlash} from "../libs/utils";
-import db from "../libs/database";
-import Card from "./Card";
-import {LoadingButton} from "./Buttons";
-import setLog from "../libs/log";
-import {useTheme} from "../Theme";
-import Alert from "./Alert";
-import {RecordProps} from "../integrations/google/firedatabase";
+import {Wrapper} from "../ui/GridSystem";
+import ComponentEnhancer from "../ComponentEnhancer";
+import {trimSlash} from "../../libs/utils";
+import db from "../../libs/database";
+import Card from "../ui/Card";
+import {LoadingButton} from "../ui/Buttons";
+import setLog from "../../libs/log";
+import {useTheme} from "../../Theme";
+import Alert from "../ui/Alert";
+import {RecordProps} from "../../integrations/google/firedatabase";
 
 interface FormProps {
     children: React.ReactNode;
@@ -37,15 +37,15 @@ function Form(props: FormProps) {
 }
 
 function FormDatabase(props: FormProps) {
-    const [record, setRecord] = useState<any>(null);
+    const { dataStoragePath, ...rest } = props;
     const location = useLocation();
+
     const dbStoragePath = props.dataStoragePath ?? trimSlash(location.pathname);
+    const [record, setRecord] = useState<any>(null);
 
-    useEffect(() => {
-        db.useListener(dbStoragePath, setRecord);
-    }, [dbStoragePath]);
+    db.useListener(dbStoragePath, setRecord);
 
-    return <FormData {...props} dataObject={record} dataStoragePath={dbStoragePath} />;
+    return <FormData {...rest} dataObject={record} dataStoragePath={dbStoragePath} />;
 }
 
 type NoticeProps = {

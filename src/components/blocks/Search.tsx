@@ -1,6 +1,6 @@
 import React from 'react';
 import {Link} from "react-router-dom";
-import {useTheme} from "../Theme";
+import {useTheme} from "../../Theme";
 
 
 interface SearchProps {

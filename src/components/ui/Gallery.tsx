@@ -1,9 +1,9 @@
-import React, {useEffect, useMemo, useState} from 'react';
-import {useTheme} from "../Theme";
-import Carousel from "./Carousel";
-import {Wrapper} from "./GridSystem";
-import {converter} from "../libs/converter";
-import {RecordProps} from "../integrations/google/firedatabase";
+import React, {useMemo} from 'react';
+import {useTheme} from "../../Theme";
+import Carousel from "../blocks/Carousel";
+import {Wrapper} from "../ui/GridSystem";
+import {converter} from "../../libs/converter";
+import {RecordProps} from "../../integrations/google/firedatabase";
 
 type ImageProps = React.ReactElement<HTMLImageElement>;
 type GalleryRecord = RecordProps & {

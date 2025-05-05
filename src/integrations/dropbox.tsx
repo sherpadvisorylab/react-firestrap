@@ -2,7 +2,7 @@ import React from "react";
 import {fetchWithRetry} from "../libs/fetch";
 import {sleep} from "../libs/utils";
 import {AuthButton, getAccessToken, useAccessToken} from "../auth";
-import type {IButton} from "../components/Buttons";
+import type {IButton} from "../components/ui/Buttons";
 import pathInfo from "../libs/path";
 import {Config, DropboxConfig, onConfigChange} from "../Config";
 import {useTheme} from "../Theme";

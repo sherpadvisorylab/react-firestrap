@@ -1,6 +1,6 @@
 import React from "react";
 import { Wrapper } from "./GridSystem";
-import {PLACEHOLDER_IMAGE} from "../Theme";
+import {PLACEHOLDER_IMAGE} from "../../Theme";
 
 type ImageProps = {
     src: string;

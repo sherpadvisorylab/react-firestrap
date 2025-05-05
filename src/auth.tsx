@@ -1,8 +1,7 @@
 import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import {fetchRest} from "./libs/fetch";
-import {ActionButton} from "./components/Buttons";
-import {IButton} from "./components/Buttons";
+import {ActionButton, IButton} from "./components/ui/Buttons";
 import {getGlobalVars, setGlobalVars, useGlobalVars} from "./Global";
 import GoogleAuth from './integrations/google/GoogleAuth';
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import {Link} from "react-router-dom";
-import {useTheme} from "../Theme";
-import {Wrapper} from "./GridSystem";
+import {useTheme} from "../../Theme";
+import {Wrapper} from "../ui/GridSystem";
 
 interface DropdownProps {
     icon?: string;

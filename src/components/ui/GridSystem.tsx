@@ -10,7 +10,13 @@ type RowProps = BaseProps & {
 };
 
 type ColProps = BaseProps & {
-    size?: number;
+    defaultSize?: number;
+    xxl?: number;
+    xl?: number;
+    lg?: number;
+    md?: number;
+    sm?: number;
+    xs?: number;
 };
 
 export const Wrapper = ({
@@ -44,10 +50,35 @@ export const Row = ({
 
 export const Col = ({
                         children,
-                        className = undefined,
-                        size = 6
-}: ColProps) => {
-    const fullClassName = className ? `col-${size} ${className}` : `col-${size}`;
+                        className = "",
+                        defaultSize = 12,
+                        xxl,
+                        xl,
+                        lg,
+                        md,
+                        sm,
+                        xs,
+                    }: ColProps) => {
+    const entries = (
+        [
+            ["", xs],
+            ["-sm", sm],
+            ["-md", md],
+            ["-lg", lg],
+            ["-xl", xl],
+            ["-xxl", xxl],
+        ] as [string, number | undefined][]
+    ).filter(([, v]) => v !== undefined);
 
-    return (<div className={fullClassName}>{children}</div>);
+    const classParts = entries.reduce<string[]>((acc, [bp, val], i) => {
+        if (i === 0 || val !== entries[i - 1][1]) {
+            acc.push(`col${bp}-${val}`);
+        }
+        return acc;
+    }, []);
+
+    const classSize =
+        classParts.join(" ") || `col-${defaultSize}`;
+
+    return <div className={`${classSize} ${className}`}>{children}</div>;
 };

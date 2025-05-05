@@ -1,7 +1,7 @@
 import React from 'react';
 import {Link} from "react-router-dom";
-import {PLACEHOLDER_BRAND} from "../Theme";
-import Image from "./Image";
+import {PLACEHOLDER_BRAND} from "../../Theme";
+import Image from "../ui/Image";
 
 type BrandProps = {
     url?: string;

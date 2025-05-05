@@ -1,6 +1,6 @@
 import React from 'react';
 import {Link, useLocation} from "react-router-dom";
-import {trimSlash} from "../libs/utils";
+import {trimSlash} from "../../libs/utils";
 
 type Breadcrumb = {
     label: string;
