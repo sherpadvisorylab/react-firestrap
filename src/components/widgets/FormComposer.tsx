@@ -22,6 +22,7 @@ import Carousel from "../blocks/Carousel";
 import { Dropdown, DropdownButton, DropdownLink } from "../blocks/Dropdown";
 import Notifications from "../blocks/Notifications";
 import Search from "../blocks/Search";
+import Grid from "./Grid";
 
 type FieldMap = { [key: string]: React.ReactNode };
 
@@ -71,6 +72,9 @@ type FieldType =
     | 'dropdownButton'
     | 'notifications'
     | 'search'
+    | 'form'
+    | 'formComposer'
+    | 'grid'
     ;
 type FieldEntry = {
     type: FieldType;
@@ -154,7 +158,10 @@ const renderField = ({
         dropdownButton: <DropdownButton url={entry.url} children={entry.children}/>,
 
         notifications: <Notifications badge={entry.badge} children={entry.children} />,
-        search: <Search/>
+        search: <Search/>,
+        form: <Form dataStoragePath={entry.dataStoragePath} children={entry.children} />,
+        formComposer: <FormComposer dataStoragePath={entry.dataStoragePath} model={entry.model} />,
+        grid: <Grid dataArray={entry.dataArray} columns={entry.columns} onClick={entry.onClick} />,
     };
 
     return components[entry.type] ?? <></>;
