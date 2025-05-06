@@ -261,7 +261,7 @@ interface SwitchInputProps {
 
 export const SwitchInput = ({
                                                             label,
-                                                            status,
+                                                            status = false,
                                                             onChange,
                                                             className   = undefined,
                                                             id          = 'mint-switch'

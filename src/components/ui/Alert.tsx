@@ -19,8 +19,8 @@ const Alert = ({
     const ICONS = {
         info: "info",
         success: "check",
-        warning: "warning",
-        danger: "warning-octagon",
+        warning: "exclamation-triangle",
+        danger: "x-circle",
         primary: "",
         secondary: "",
         light: "",

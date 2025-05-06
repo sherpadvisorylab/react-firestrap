@@ -270,7 +270,7 @@ console.log("AUTOCOMPLETE", selectedItems, opts);
             {label && <Label label={label} required={required}/>}
             <Wrapper className={pre || post ? "input-group" : ""}>
                 {pre && <span className="input-group-text">{pre}</span>}
-                <div className={`d-flex flex-wrap form-control${selectedItemsClass}`}>
+                <div className={`d-flex flex-wrap mb-3 form-control${selectedItemsClass}`}>
                     {selectedItems.map(item => (
                         <span className="bg-secondary p-1 ms-2 my-2" key={item}>
                             <small>{item}</small>
@@ -279,7 +279,7 @@ console.log("AUTOCOMPLETE", selectedItems, opts);
                     ))}
                     {(!max || selectedItems.length < max) && <input
                         type={"text"}
-                        className={`border-0 p-0 bg-transparent ${className || theme.Autocomplete.className}`}
+                        className={`border-0 p-0 bg-transparent w-100 ${className || theme.Autocomplete.className}`}
                         required={required && selectedItems.length < (min || 0)}
                         disabled={disabled || (!updatable && !isEmpty(value))}
                         placeholder={placeholder}
