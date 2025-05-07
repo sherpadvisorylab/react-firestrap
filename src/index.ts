@@ -7,3 +7,4 @@ export { useGlobalVars, getGlobalVars, setGlobalVars, removeGlobalVars} from './
 export * from './integrations';
 export * from './components';
 export * from './libs';
+export * from './pages';
