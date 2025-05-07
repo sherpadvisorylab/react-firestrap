@@ -5,11 +5,12 @@ import ComponentEnhancer from "../ComponentEnhancer";
 import {trimSlash} from "../../libs/utils";
 import db from "../../libs/database";
 import Card from "../ui/Card";
-import {LoadingButton} from "../ui/Buttons";
+import {BackLink, LoadingButton} from "../ui/Buttons";
 import setLog from "../../libs/log";
 import {useTheme} from "../../Theme";
 import Alert from "../ui/Alert";
 import {RecordProps} from "../../integrations/google/firedatabase";
+import {converter} from "../../libs";
 
 export interface FormProps {
     children: React.ReactNode;
@@ -24,6 +25,7 @@ export interface FormProps {
     onFinally?: () => Promise<void>;
     log?: boolean;
     showNotice?: boolean;
+    showBack?: boolean;
     wrapClass?: string;
     headerClass?: string;
     className?: string;
@@ -36,14 +38,25 @@ function Form(props: FormProps) {
         : <FormDatabase {...props} />;
 }
 
-function FormDatabase(props: FormProps) {
-    const { dataStoragePath, ...rest } = props;
+export function FormDatabase(props: FormProps) {
+    const { dataStoragePath, dataObject, ...rest } = props;
     const location = useLocation();
 
     const dbStoragePath = props.dataStoragePath ?? trimSlash(location.pathname);
-    const [record, setRecord] = useState<any>(null);
+    const [record, setRecord] = useState<any>(undefined);
 
-    db.useListener(dbStoragePath, setRecord);
+    useEffect(() => {
+        db.read(dbStoragePath).then(data => {
+            setRecord({...dataObject, ...data});
+        }).catch(error => {
+            console.error(error);
+            setRecord({});
+        });
+    }, [dbStoragePath]);
+
+    if (!record) {
+        return <p className={"p-4"}><i className={"spinner-border spinner-border-sm"}></i> Caricamento in corso...</p>;
+    }
 
     return <FormData {...rest} dataObject={record} dataStoragePath={dbStoragePath} />;
 }
@@ -54,7 +67,7 @@ type NoticeProps = {
 };
 
 
-function FormData({
+export function FormData({
                   children,
                   header            = undefined,
                   footer            = undefined,
@@ -67,6 +80,7 @@ function FormData({
                   onFinally         = undefined,
                   log               = false,
                   showNotice        = true,
+                  showBack          = true,
                   wrapClass         = undefined,
                   headerClass       = undefined,
                   className         = undefined,
@@ -74,9 +88,10 @@ function FormData({
 } : FormProps) {
     const theme = useTheme("form");
 
-    const [record, setRecord] = useState<RecordProps | undefined>(undefined);
+    const [record, setRecord] = useState<RecordProps | undefined>(dataObject);
     const [notification, setNotification] = useState<NoticeProps | undefined>(undefined);
 
+    console.log("FORM", record);
     const notice = ({ message, type = "danger" }: NoticeProps) => {
         if (showNotice) {
             setNotification({type, message});
@@ -84,11 +99,8 @@ function FormData({
         }
     };
 
-    useEffect(() => {
-        setRecord(prevData => prevData == dataObject ? prevData : dataObject);
-    }, [dataObject]);
-
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        console.log("CHANGE", e.target.name, e.target.value, record);
         setRecord(prevState => ({
             ...prevState,
             [e.target.name]: e.target.value
@@ -131,23 +143,27 @@ function FormData({
                 </Alert>
             )}
             <Card
-                header={header || (dataObject ? "Update Record" : "Insert Record")}
+                header={header || (dataObject ? "Update " : "Insert ") + converter.toCamel(dataStoragePath ?? "Record", "/")}
                 footer={footer !== false && <>
                     {footer}
                     {(onInsert || dataStoragePath) && !dataObject && <LoadingButton
-                        className="btn-primary"
+                        className={theme.Form.buttonSaveClass}
                         label={"Insert"}
                         onClick={handleSave}
                     />}
                     {(onUpdate || dataStoragePath) && dataObject && <LoadingButton
-                        className="btn-primary"
+                        className={theme.Form.buttonSaveClass}
                         label={"Update"}
                         onClick={handleSave}
                     />}
-                    {(onDelete || dataStoragePath) && <LoadingButton
-                        className="btn-danger"
+                    {(onDelete || dataStoragePath) && dataObject && <LoadingButton
+                        className={theme.Form.buttonDeleteClass}
                         label={"Delete"}
                         onClick={handleDelete}
+                    />}
+                    {showBack && <BackLink
+                        className={theme.Form.buttonBackClass}
+                        label={"Back"}
                     />}
                 </>}
                 headerClass={headerClass || theme.Form.Card.headerClass}

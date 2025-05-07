@@ -96,8 +96,14 @@ export const theme = {
         className: "",
         spinnerClass: "spinner-border spinner-border-sm"
     },
+    LinkButton: {
+        className: "",
+    },
     Alert: {
         className: "alert-info"
+    },
+    Badge: {
+        ClassName: ""
     },
     Modal: {
         size: "lg",
@@ -118,4 +124,23 @@ export const theme = {
         headerClass: "",
         footerClass: ""
     },
+    Notifications: {
+        wrapClass: "",
+        Dropdown: {
+            className: "",
+            buttonClass: "",
+            menuClass: ""
+        }
+    },
+    Form: {
+        wrapClass: "",
+        buttonSaveClass: "btn-primary",
+        buttonDeleteClass: "btn-danger",
+        buttonBackClass: "btn-link",
+        Card: {
+            headerClass: "",
+            bodyClass: "",
+            footerClass: "",
+        }
+    }
 }

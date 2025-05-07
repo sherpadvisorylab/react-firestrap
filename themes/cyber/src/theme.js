@@ -91,6 +91,9 @@ export const theme = {
         className: "btn-outline-theme border-0",
         spinnerClass: "spinner-border spinner-border-sm"
     },
+    LinkButton: {
+        className: "btn-link"
+    },
     Alert: {
         ClassName: ""
     },
@@ -105,22 +108,35 @@ export const theme = {
         titleClass: "",
         bodyClass: "",
         footerClass: "",
+        iconExpand: "arrows-out",
+        iconCollapse: "arrows-in"
     },
     Dropdown: {
-        wrapClass: null,
-        className: null,
-        buttonClass: null,
-        badgeClass: null,
-        menuClass: null,
-        headerClass: null,
-        footerClass: null
+        wrapClass: "",
+        className: "",
+        buttonClass: "",
+        badgeClass: "",
+        menuClass: "",
+        headerClass: "",
+        footerClass: ""
     },
     Notifications: {
-        wrapClass: null,
+        wrapClass: "",
         Dropdown: {
-            className: null,
-            buttonClass: null,
-            menuClass: null
+            className: "",
+            buttonClass: "",
+            menuClass: ""
+        }
+    },
+    Form: {
+        wrapClass: "",
+        buttonSaveClass: "btn-outline-primary border-0",
+        buttonDeleteClass: "btn-outline-danger border-0",
+        buttonBackClass: "btn-link",
+        Card: {
+            headerClass: "",
+            bodyClass: "",
+            footerClass: "text-end",
         }
     }
 }

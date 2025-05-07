@@ -69,8 +69,6 @@ const applyOnChangeRecursive = ({
             console.warn(`The property "${name}" is not present in the record`, child);
         }
 
-        console.log(record, child);
-
         return React.cloneElement(child as any, isCustomComponent
             ? {
                 wrapClass: `mb-3${props.wrapClass ? ' ' + props.wrapClass : ''}`,
@@ -82,6 +80,10 @@ const applyOnChangeRecursive = ({
             });
     });
 };
+//todo:                     value: record?.[child.props.name] ?? child.props.value ?? '',
+// quando viene preso il default record non è consapevole quindi non viene salvato il valore
+// capire perche parte in update il form
+// capire perche non legge e non salva da db
 
 const ComponentEnhancer = ({
                                components,

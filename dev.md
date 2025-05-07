@@ -1,5 +1,4 @@
 # Install React-firestrap for dev
-
 - Create new folder react-firestrap
 - Clone repository react-firestrap in folder react-firestrap
 - npm install
@@ -7,22 +6,23 @@
 - npm link
 
 # Create new project
-
 - Create new folder, the name of the folder is project 
 - Put the package.json inside the project foldername
 - npm install
 - delete folder in node_modules/react-firestrap
 - npm link react-firestrap
 
-# Create new theme
+# Scaffold new project
+- npx react-firestrap setup
+- follow the instructions
 
+# Create new theme
 - Clean all project folder except package.json, package-lock.json, node_modules
 - Create src and public folders
 - Create theme
 - npm start
 
 # Porting theme
-
 - Inside of react-firestrap create in themes/[theme-name]
 - Copy inside [theme-name] src and public folders of new theme project
 
@@ -72,7 +72,10 @@
 
 
 # Deploy React Firestrap
-
+- go in folder react-firestrap
 - npm run build:local
 
-## Comando che rende disponibile il progetto react-firestrap a tutti i progetti che lo usano con npm link.
+
+# Kill process by port 3000
+netstat -aon | findstr :3000
+taskkill /PID [pid_number] /F

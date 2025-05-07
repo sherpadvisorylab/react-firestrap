@@ -207,7 +207,7 @@ src/
 You can import any component centrally:
 
 ```tsx
-import { Form, Grid, Card, Input, Modal } from 'components';
+import { Form, Grid, Card, Input, Modal } from 'react-firestrap';
 ```
 
 ---

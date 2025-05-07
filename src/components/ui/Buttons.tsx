@@ -1,4 +1,6 @@
 import React, {useEffect, useState} from 'react';
+import { useNavigate } from 'react-router-dom';
+
 import {useTheme} from "../../Theme";
 
 export interface IButton {
@@ -40,7 +42,7 @@ export const LoadingButton = ({
     return (
         <button
             title={title}
-            className={"btn border-0 " + (className || theme.LoadingButton.className) + (badge ? " position-relative" : "")}
+            className={"btn " + (className || theme.LoadingButton.className) + (badge ? " position-relative" : "")}
             disabled={disable || loader}
             onClick={async (e) => {
                 e.stopPropagation();
@@ -86,7 +88,7 @@ export const ActionButton = ({
     return (
         <button
             title={title}
-            className={"btn border-0 " + (className || theme.ActionButton.className) + (badge ? " position-relative" : "")}
+            className={"btn " + (className || theme.ActionButton.className) + (badge ? " position-relative" : "")}
             data-bs-toggle={toggle}
             data-bs-target={target}
             disabled={disabled}
@@ -103,6 +105,29 @@ export const ActionButton = ({
             {badge && <span className={"position-absolute badge " + (badgeClass || theme.ActionButton.badgeClass)}>{badge}</span>}
             {post}
         </button>
+    );
+};
+
+interface BackLinkProps {
+    label?: string;
+    className?: string;
+}
+
+export const BackLink = ({ label = "← Back", className = "" }: BackLinkProps) => {
+    const navigate = useNavigate();
+    const theme = useTheme("button");
+    const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+        e.preventDefault();
+        navigate(-1);
+    };
+
+    return (
+        <a href="#"
+           className={"btn " + (className || theme.LinkButton.className)}
+           onClick={handleClick}
+        >
+            {label}
+        </a>
     );
 };
 

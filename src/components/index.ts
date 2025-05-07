@@ -30,4 +30,5 @@ export { default as Form } from './widgets/Form';
 export { default as FormComposer } from './widgets/FormComposer';
 export { default as Grid } from './widgets/Grid';
 export { default as ImageEditor } from './widgets/ImageEditor';
+export { default as Models } from './Models';
 
