@@ -80,7 +80,7 @@ export const SidebarToggler = ({ device, toggle, dismiss }) => {
     const [isCollapsed, setIsCollapsed] = useState(false)
 
     const handleSidebar = () => {
-        const isDesktop = window.innerWidth >= 1024;
+        const isDesktop = window.innerWidth >= 768;
         const appElement = document.getElementById('app');
         const sidebar = document.getElementById('sidebar');
 
@@ -91,8 +91,8 @@ export const SidebarToggler = ({ device, toggle, dismiss }) => {
                 sidebar.style.marginLeft = '0px'
                 setIsCollapsed(false)
             } else {
-                appElement.classList.add('app-sidebar-collapse');
                 appElement.classList.remove('app-sidebar-toggled');
+                appElement.classList.add('app-sidebar-collapse');
                 sidebar.style.marginLeft = '-270px'
                 setIsCollapsed(true)
             }

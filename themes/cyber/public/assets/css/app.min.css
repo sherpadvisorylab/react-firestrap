@@ -61,9 +61,6 @@
   z-index: 1100 !important; 
   position: fixed;
 }
-  .app-content{
-    margin-left: 0;
-  }
 
 .offcanvas-backdrop {
     display: none !important;
