@@ -79,6 +79,72 @@ https://[PROJECT_ID].firebaseapp.com
 
 ---
 
+### 5. Project Setup
+
+1. Create your project folder
+2. Create a **package.json** and paste the following content inside:
+
+```
+{
+  "name": "[theme-name]",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "",
+  "author": "[author]",
+  "license": "Apache-2.0",
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-papaparse": "^4",
+    "react-firestrap": "^1.2.9",
+    "react-router-dom": "^6.22.0",
+    "react-scripts": "^5"
+  },
+  "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.0"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
+
+```
+3. Install the dependencies
+```
+npm install
+```
+4. Scaffold your project
+```
+npx react-firestrap create --reset
+```
+The CLI will ask for some input interactively:
+
+- Project name
+- Theme to use (from available themes)
+- Bootstrap background color
+- Firebase configuration (API key, Auth domain, Database URL, etc.)
+- Firebase Hosting configuration
+
+---
+
 ## 🟡 Optional Integrations
 
 React FireStrap supports these optional services if your app requires advanced capabilities:
@@ -217,3 +283,6 @@ import { Form, Grid, Card, Input, Modal } from 'react-firestrap';
 For a complete walkthrough of API integrations, see [`ai-project-setup-guide.md`](./ai-project-setup-guide.md)
 
 If you have questions or need help setting up, feel free to open an issue or contribute!
+
+
+##
