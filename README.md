@@ -61,7 +61,7 @@ To make Google Sign-In work in development and production:
 1. Go to [https://console.cloud.google.com/apis/credentials](https://console.cloud.google.com/apis/credentials)
 2. Select the Firebase project you created
 3. Navigate to **OAuth 2.0 Client IDs**
-4. Add the following redirect URIs:
+4. Add the following redirect URIs (Authorized JavaScript origins):
 
 #### Development Redirect URIs
 
