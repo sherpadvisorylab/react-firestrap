@@ -557,9 +557,9 @@ function Helper() {
                     <FormComposer
                       dataStoragePath="/demo/form/composer"
                       model={{
-                        fullName: Models.field.string({ value: "ciao" }),
-                        birthDate: Models.field.date({ value: "ciao" }),
-                        email: Models.field.email({ value: "ciao" }),
+                        fullName: Models.input.string(),
+                        birthDate: Models.input.date({ value: "ciao" }),
+                        email: Models.input.email({ value: "ciao" }),
                       }}
                     />
                   </Card>

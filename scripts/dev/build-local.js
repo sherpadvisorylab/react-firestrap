@@ -55,6 +55,12 @@ function renameReactFolders() {
 
 function main() {
     const args = process.argv.slice(2);
+
+    if (args.includes("--restore-only")) {
+        restoreReactFolders();
+        process.exit(0);
+    }
+
     const forceInstall = args.includes("--force");
 
     restoreReactFolders();

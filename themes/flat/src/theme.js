@@ -43,11 +43,6 @@ export const theme = {
             footerClass: ""
         }
     },
-    Notification: {
-        Dropdown: {
-            className: "w-300px pt-1"
-        }
-    },
     Table: {
         wrapClass: "bootstrap-table",
         scrollClass: "app-scroll simplebar-scrollable-y",
@@ -91,9 +86,11 @@ export const theme = {
     },
     ActionButton: {
         className: "",
+        badgeClass: ""
     },
     LoadingButton: {
         className: "",
+        badgeClass: "",
         spinnerClass: "spinner-border spinner-border-sm"
     },
     LinkButton: {
@@ -120,6 +117,7 @@ export const theme = {
         wrapClass: "",
         className: "",
         buttonClass: "position-relative btn dropdown-toggle p-0 border-0 arrow-none",
+        badgeClass: "",
         menuClass: "",
         headerClass: "",
         footerClass: ""
@@ -127,10 +125,18 @@ export const theme = {
     Notifications: {
         wrapClass: "",
         Dropdown: {
-            className: "",
+            className: "w-300px pt-1",
             buttonClass: "",
             menuClass: ""
         }
+    },
+    Select: {
+        wrapClass: "",
+        className: ""
+    },
+    Autocomplete: {
+        wrapClass: "",
+        className: ""
     },
     Form: {
         wrapClass: "",

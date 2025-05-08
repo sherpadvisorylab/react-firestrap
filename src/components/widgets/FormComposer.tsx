@@ -9,21 +9,36 @@ interface FormComposerProps extends Omit<FormProps, 'children'> {
     layout?: (fields: FieldMap) => React.ReactNode;
 }
 
+function normalizeValue(value: any): any {
+    if (Array.isArray(value)) {
+        return value.map(normalizeValue);
+    }
+    if (value && typeof value === 'object') {
+        return Object.fromEntries(
+            Object.entries(value).map(([k, v]) => [k, normalizeValue(v)])
+        );
+    }
+    return value === undefined ? null : value;
+}
+
 export function FormComposer({
                                  model,
                                  layout = (fields) => <>{Object.values(fields)}</>,
                                  ...formProps
                              }: FormComposerProps
 ) {
-    let values = {};
-    const children = React.useMemo(() => {
-        if (!model || !layout) return null;
+    const [children, values] = React.useMemo(() => {
+        if (!model || !layout) return [null, {}];
 
-        return layout(Object.entries(model).reduce((acc: FieldMap, [key, fieldModel]) => {
+        let defaults: any = {};
+
+        const fields = Object.entries(model).reduce((acc: FieldMap, [key, fieldModel]) => {
             acc[key] = fieldModel.editor(key);
-            values = {...values, ...fieldModel.defaults(key) };
+            defaults = { ...defaults, ...fieldModel.defaults(key) };
             return acc;
-        }, {} as FieldMap));
+        }, {} as FieldMap);
+
+        return [layout(fields), normalizeValue(defaults)];
     }, [model, layout]);
 
     return <FormDatabase dataObject={values} {...formProps}>{children}</FormDatabase>;

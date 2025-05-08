@@ -2,7 +2,7 @@ import React from "react";
 import {FieldFactory} from "../components/Models";
 import { Number, String } from "../components/ui/fields/Input";
 
-export interface FieldModelsMap {
+export interface InputModelsMap {
     string: FieldFactory<{ value?: string }>;
     email: FieldFactory<{ value?: string }>;
     number: FieldFactory<{ value?: number }>;
@@ -20,45 +20,40 @@ export interface FieldModelsMap {
     menu: FieldFactory<{ staticMenu?: string; db?: any; options?: any; sort?: any }>;   //todo: da togliere da qui
 }
 
-const FieldModels: FieldModelsMap = {
-    string: ({ value }) => ({
+const InputModels: InputModelsMap = {
+    string: ({ value } = {}) => ({
         defaults: (key) => ({ [key]: value }),
         editor: (key) => <String name={key} label={key} />
     }),
-    email: ({ value }) => ({
+    email: ({ value } = {}) => ({
         defaults: (key) => ({ [key]: value }),
         editor: (key) => <String name={key} label={key} />
     }),
-    number: ({ value }) => ({
+    number: ({ value } = {}) => ({
         defaults: (key) => ({ [key]: value }),
         editor: (key) => <Number name={key} label={key} />
     }),
-    textarea: ({ value }) => ({
+    textarea: ({ value } = {}) => ({
         defaults: (key) => ({ [key]: value }),
         editor: (key) => <String name={key} label={key} />
     }),
-    date: ({ value }) => ({
+    date: ({ value } = {}) => ({
         defaults: (key) => ({ [key]: value }),
         editor: (key) => <String name={key} label={key} />
     }),
-    time: ({ value }) => ({
+    time: ({ value } = {}) => ({
         defaults: (key) => ({ [key]: value }),
         editor: (key) => <String name={key} label={key} />
     }),
-    datetime: ({ value }) => ({
+    datetime: ({ value } = {}) => ({
         defaults: (key) => ({ [key]: value }),
         editor: (key) => <String name={key} label={key} />
     }),
-    checkbox: ({ value }) => ({
+    checkbox: ({ value } = {}) => ({
         defaults: (key) => ({ [key]: value }),
         editor: (key) => <String name={key} label={key} />
     }),
-    image: ({ src, alt, width, height }: {
-        src?: string;
-        alt?: string;
-        width?: number;
-        height?: number;
-    }) => ({
+    image: ({ src, alt, width, height } = {}) => ({
         defaults: (key) => ({
             [`${key}:src`]: src,
             [`${key}:alt`]: alt,
@@ -72,7 +67,7 @@ const FieldModels: FieldModelsMap = {
             <Number name={`${key}:height`} label="Height" value={height} />
         </>
     }),
-    menu: ({ staticMenu, db, options, sort }) => ({  //todo: da togliere da qui
+    menu: ({ staticMenu, db, options, sort } = {}) => ({  //todo: da togliere da qui
         defaults: (key) => ({
             [`${key}:static`]: staticMenu,
             [`${key}:db`]: db,
@@ -83,4 +78,4 @@ const FieldModels: FieldModelsMap = {
     }),
 };
 
-export default FieldModels;
+export default InputModels;

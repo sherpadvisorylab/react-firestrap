@@ -85,10 +85,12 @@ export const theme = {
         description: ""
     },
     ActionButton: {
-        className: "btn-outline-theme"
+        className: "btn-outline-theme",
+        badgeClass: ""
     },
     LoadingButton: {
         className: "btn-outline-theme border-0",
+        badgeClass: "",
         spinnerClass: "spinner-border spinner-border-sm"
     },
     LinkButton: {
@@ -127,6 +129,14 @@ export const theme = {
             buttonClass: "",
             menuClass: ""
         }
+    },
+    Select: {
+        wrapClass: "",
+        className: ""
+    },
+    Autocomplete: {
+        wrapClass: "",
+        className: ""
     },
     Form: {
         wrapClass: "",

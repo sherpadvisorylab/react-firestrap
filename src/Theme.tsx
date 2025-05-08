@@ -61,14 +61,6 @@ const defaultTheme = {
             footerClass: "",
         }
     },
-    Form: {
-        wrapClass: "",
-        Card: {
-            headerClass: "",
-            bodyClass: "",
-            footerClass: ""
-        }
-    },
     Table: {
         wrapClass: "bootstrap-table",
         scrollClass: "fixed-table-container",
@@ -119,6 +111,9 @@ const defaultTheme = {
         badgeClass: "rounded-pill bg-danger",
         spinnerClass: "spinner-border spinner-border-sm"
     },
+    LinkButton: {
+        className: "",
+    },
     Alert: {
         className: ""
     },
@@ -161,6 +156,17 @@ const defaultTheme = {
         wrapClass: "",
         className: ""
     },
+    Form: {
+        wrapClass: "",
+        buttonSaveClass: "btn-outline-primary border-0",
+        buttonDeleteClass: "btn-outline-danger border-0",
+        buttonBackClass: "btn-link",
+        Card: {
+            headerClass: "",
+            bodyClass: "",
+            footerClass: "text-end",
+        }
+    }
 }
 
 const ThemeContext = createContext<Theme>(defaultTheme);
