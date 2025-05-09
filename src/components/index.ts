@@ -28,9 +28,9 @@ export { default as Upload} from './ui/fields/Upload';
 export * from './ui/fields/Menu';
 
 export { default as Form } from './widgets/Form';
-export { FormFieldsProps } from './widgets/Form';
 export { default as Grid } from './widgets/Grid';
 export { default as ImageEditor } from './widgets/ImageEditor';
 export { default as Models } from './Models';
+export { ComponentBlock } from './Models';
 export { default as PageModify } from './widgets/PageModify';
 

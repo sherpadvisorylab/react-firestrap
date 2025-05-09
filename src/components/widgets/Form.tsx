@@ -14,7 +14,7 @@ import {FieldDefinition} from "../Models";
 import Breadcrumbs from "../blocks/Breadcrumbs";
 
 
-export type FormFieldsProps = { [key: string]: React.ReactNode };
+type FormFieldsProps = { [key: string]: React.ReactNode };
 
 interface BaseFormProps {
     header?: React.ReactNode;

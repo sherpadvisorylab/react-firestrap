@@ -111,25 +111,4 @@ export function extractComponentProps<T>(
     return result;
 }
 
-export function extractComponentProps2<T = any>(
-    components: React.ReactNode | React.ReactNode[],
-    onEnhance?: (child: React.ReactElement) => T
-) : T[] | { [key: string]: string } {
-    const children = Array.isArray(components) ? components : [components];
-    const props = onEnhance ? [] : {};
-
-    applyOnChangeRecursive({
-        children,
-        onEnhance: (child) => {
-            if (onEnhance) {
-                (props as T[]).push(onEnhance(child));
-            } else {
-                (props as { [key: string]: string })[child.props.name] = "";
-            }
-        }
-    });
-
-    return props;
-}
-
 export default ComponentEnhancer;
