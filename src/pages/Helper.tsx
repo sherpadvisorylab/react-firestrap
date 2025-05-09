@@ -17,7 +17,6 @@ import Tab2 from "../components/ui/Tab2";
 import Table from "../components/ui/Table";
 import Brand from "../components/blocks/Brand";
 import { Breadcrumbs } from "../components/blocks/Breadcrumbs";
-import FormComposer from "../components/widgets/FormComposer";
 import Carousel from "../components/blocks/Carousel";
 import { Dropdown, DropdownLink, DropdownButton } from "../components/blocks/Dropdown";
 import Image from "../components/ui/Image";
@@ -556,11 +555,11 @@ function Helper() {
                     </Form>
                   </Card>
                   {/* Form Composer */}
-                  <Card cardClass="mb-3" title="Dynamic Form via FormComposer">
+                  <Card cardClass="mb-3" title="Dynamic Form via Form using model">
                     <p className="text-muted">
                       Automatically generates form fields from a model object. Ideal for dynamic UIs, low-code interfaces, or admin panels.
                     </p>
-                    <FormComposer
+                    <Form
                       dataStoragePath="/demo/form/composer"
                       model={{
                         fullName: Models.input.string(),

@@ -40,8 +40,8 @@ export const Container = ({
 
 export const Row = ({
                         children,
-                        className = undefined,
-                        style = undefined
+                        className   = undefined,
+                        style       = undefined
 }: RowProps) => {
     const fullClassName = className ? `row ${className}` : 'row';
 
@@ -50,14 +50,13 @@ export const Row = ({
 
 export const Col = ({
                         children,
-                        className = "",
-                        defaultSize = 12,
-                        xxl,
-                        xl,
-                        lg,
-                        md,
-                        sm,
-                        xs,
+                        className   = undefined,
+                        xxl         = undefined,
+                        xl          = undefined,
+                        lg          = undefined,
+                        md          = undefined,
+                        sm          = undefined,
+                        xs          = undefined,
                     }: ColProps) => {
     const entries = (
         [
@@ -67,7 +66,7 @@ export const Col = ({
             ["-lg", lg],
             ["-xl", xl],
             ["-xxl", xxl],
-        ] as [string, number | undefined][]
+        ]
     ).filter(([, v]) => v !== undefined);
 
     const classParts = entries.reduce<string[]>((acc, [bp, val], i) => {
@@ -77,8 +76,8 @@ export const Col = ({
         return acc;
     }, []);
 
-    const classSize =
-        classParts.join(" ") || `col-${defaultSize}`;
 
-    return <div className={`${classSize} ${className}`}>{children}</div>;
+    const fullClassName = (classParts.join(" ") || `col`) + (className ? ` ${className}` : "");
+
+    return <div className={fullClassName}>{children}</div>;
 };

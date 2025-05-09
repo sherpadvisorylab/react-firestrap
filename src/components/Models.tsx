@@ -7,9 +7,8 @@ import WidgetModels from "../models/WidgetModels";
 
 export interface FieldDefinition<TDefaults> {
     defaults: (key: string) => TDefaults;
-    editor: (key: string) => React.ReactNode;
+    form: (key: string) => React.ReactNode;
 }
-
 export type FieldFactory<TDefaults = {}> = (defaults?: TDefaults) => FieldDefinition<TDefaults>;
 
 const Models = {
