@@ -28,6 +28,8 @@ import Repeat from "../components/ui/Repeat";
 import Models from "../components/Models";
 import Modal from "../components/ui/Modal";
 import ImageEditor from "../components/widgets/ImageEditor";
+import { PLACEHOLDER_BRAND, PLACEHOLDER_IMAGE } from '../Theme';
+import { Menu } from '../components/ui/fields/Menu';
 
 
 
@@ -70,7 +72,7 @@ function Helper() {
                       {/* DateTime */}
                       <DateTime name='datetime' label='DateTime' inputClass='mb-3' placeholder='YYYY-MM-DD HH:MM:SS' />
                       {/* Custom date */}
-                      <DateInput onChange={()=>{}} placeholder='YYYY-MM-DD' />
+                      <DateInput name='dateInput' onChange={()=>{}} placeholder='YYYY-MM-DD' />
                     </form>
                   </Card>
 
@@ -83,8 +85,8 @@ function Helper() {
                       <Checkbox name='checkbox' label='Checkbox2' checkboxClass='mb-3' value={true} />
                       {/* Switch */}
                       <Label label='Switches' />
-                      <SwitchInput label='Switch input' onChange={()=>{}} status={false} />
-                      <SwitchInput onChange={()=>{}} label='Switch input' className='mb-3' status={true} />
+                      <SwitchInput name='switch1' label='Switch input' onChange={()=>{}} status={false} />
+                      <SwitchInput name='switch2' onChange={()=>{}} label='Switch input' className='mb-3' status={true} />
                     </form>
                   </Card>
 
@@ -107,7 +109,7 @@ function Helper() {
                   <Card cardClass='mb-3'>
                     <form className='form-group'>
                       {/* Select  */}
-                      <Select name='select' label='Select' className='mb-3' options={['Option1', 'Option2', 'Option3']} />
+                      <Select name='select' label='Select' className='mb-3' value={'Option1'} options={['Option1', 'Option2', 'Option3']} />
                       {/* Autocomplete */}
                       <Autocomplete name='autocomplete' label='Autocomplete' options={['Option1', 'Option2', 'Option3']} />
                       {/* Checklist */}
@@ -221,7 +223,7 @@ function Helper() {
                         <ReferSite
                           title="OpenAI"
                           url="https://www.openai.com"
-                          imageUrl="https://world-schools.com/it/wp-content/uploads/sites/22/2023/04/Logo-IMG-Academy-200x200-1.jpg"
+                          imageUrl= {PLACEHOLDER_BRAND}
                           width={120}
                         />
                       </Col>
@@ -261,28 +263,28 @@ function Helper() {
                       body={
                         [
                           {
-                            thumbnail: 'https://lh4.googleusercontent.com/rV7j2cc-_2vwsVxR26zKDYwnwLgDk3k8dXkKwm7ZPDQonHc1dyfLe8E0qOgb4lpWRujGY6W-XtkGLROQ6VxGolTsfFSqJFAq8VhxbTDDxMo6cdkIeDsYQ3LPWzk_Tzj4-ZDIS7hMhGeTMIh6bO_s6HV9YtX4ogfgvmfsPwfQCyFR9WAOUacD9ouzjQ',
+                            thumbnail: PLACEHOLDER_IMAGE,
                             name: 'Foto 1',
                             mimetype: '', // oppure "" se non serve
                             width: 200,
                             height: 150,
                           },
                           {
-                            thumbnail: 'https://lh4.googleusercontent.com/rV7j2cc-_2vwsVxR26zKDYwnwLgDk3k8dXkKwm7ZPDQonHc1dyfLe8E0qOgb4lpWRujGY6W-XtkGLROQ6VxGolTsfFSqJFAq8VhxbTDDxMo6cdkIeDsYQ3LPWzk_Tzj4-ZDIS7hMhGeTMIh6bO_s6HV9YtX4ogfgvmfsPwfQCyFR9WAOUacD9ouzjQ',
+                            thumbnail: PLACEHOLDER_IMAGE,
                             name: 'Foto 2',
                             mimetype: '',
                             width: 200,
                             height: 150,
                           },
                           {
-                            thumbnail: 'https://lh4.googleusercontent.com/rV7j2cc-_2vwsVxR26zKDYwnwLgDk3k8dXkKwm7ZPDQonHc1dyfLe8E0qOgb4lpWRujGY6W-XtkGLROQ6VxGolTsfFSqJFAq8VhxbTDDxMo6cdkIeDsYQ3LPWzk_Tzj4-ZDIS7hMhGeTMIh6bO_s6HV9YtX4ogfgvmfsPwfQCyFR9WAOUacD9ouzjQ',
+                            thumbnail: PLACEHOLDER_IMAGE,
                             name: 'Foto 1',
                             mimetype: '', // oppure "" se non serve
                             width: 200,
                             height: 150,
                           },
                           {
-                            thumbnail: 'https://lh4.googleusercontent.com/rV7j2cc-_2vwsVxR26zKDYwnwLgDk3k8dXkKwm7ZPDQonHc1dyfLe8E0qOgb4lpWRujGY6W-XtkGLROQ6VxGolTsfFSqJFAq8VhxbTDDxMo6cdkIeDsYQ3LPWzk_Tzj4-ZDIS7hMhGeTMIh6bO_s6HV9YtX4ogfgvmfsPwfQCyFR9WAOUacD9ouzjQ',
+                            thumbnail: PLACEHOLDER_IMAGE,
                             name: 'Foto 2',
                             mimetype: '',
                             width: 200,
@@ -325,7 +327,7 @@ function Helper() {
 
                     </p>
                     <Image
-                      src="https://lh4.googleusercontent.com/rV7j2cc-_2vwsVxR26zKDYwnwLgDk3k8dXkKwm7ZPDQonHc1dyfLe8E0qOgb4lpWRujGY6W-XtkGLROQ6VxGolTsfFSqJFAq8VhxbTDDxMo6cdkIeDsYQ3LPWzk_Tzj4-ZDIS7hMhGeTMIh6bO_s6HV9YtX4ogfgvmfsPwfQCyFR9WAOUacD9ouzjQ"
+                      src={PLACEHOLDER_IMAGE}
                       className="img-fluid"
                       width={150}
                       height={150}
@@ -343,7 +345,7 @@ function Helper() {
                       </ul>
                     </p>
                     <Image
-                      src="https://lh4.googleusercontent.com/rV7j2cc-_2vwsVxR26zKDYwnwLgDk3k8dXkKwm7ZPDQonHc1dyfLe8E0qOgb4lpWRujGY6W-XtkGLROQ6VxGolTsfFSqJFAq8VhxbTDDxMo6cdkIeDsYQ3LPWzk_Tzj4-ZDIS7hMhGeTMIh6bO_s6HV9YtX4ogfgvmfsPwfQCyFR9WAOUacD9ouzjQ"
+                      src={PLACEHOLDER_IMAGE}
                       className="img-fluid"
                       width={150}
                       height={150}
@@ -383,7 +385,11 @@ function Helper() {
                 <Col className='mb-5'>
                   <h2 id='repeat'>Repeat</h2>
                   <Card cardClass='mb-3' title=''>
-                    <Repeat children='ciao' />
+                    <Repeat>
+                      <String name='repeat' label='Repeat 1' inputClass='mb-3' placeholder='Lorem ipsum.' />
+                      <String name='repeat' label='Repeat 2' inputClass='mb-3' placeholder='Lorem ipsum.' />
+                      <String name='repeat' label='Repeat 3' inputClass='mb-3' placeholder='Lorem ipsum.' />
+                      </Repeat>
                   </Card>
                 </Col>
 
@@ -436,7 +442,7 @@ function Helper() {
                 <Col className='mb-5'>
                   <h2 id='brand'>Brand</h2>
                   <Card cardClass='mb-3' title=''>
-                    <Brand url='https://it.wikipedia.org/wiki/Sicurezza_informatica' src='https://t3.ftcdn.net/jpg/03/70/02/42/360_F_370024269_Vdagu80v6RI6zwh6as7vai6FLeNwPnvl.jpg' label='Cyber' />
+                    <Brand url='https://it.wikipedia.org/wiki/Sicurezza_informatica' src={PLACEHOLDER_BRAND} label='Cyber' />
                   </Card>
                 </Col>
 
@@ -461,9 +467,9 @@ function Helper() {
                       startSlide={0}
                     >
                       {[
-                        <img key="1" src="https://www.rettificheresca.it/wp-content/uploads/img-placeholder.png" alt="First slide" className="d-block w-50 m-auto" />,
-                        <img key="2" src="https://www.rettificheresca.it/wp-content/uploads/img-placeholder.png" alt="Second slide" className="d-block w-50 m-auto" />,
-                        <img key="3" src="https://www.rettificheresca.it/wp-content/uploads/img-placeholder.png" alt="Third slide" className="d-block w-50 m-auto" />
+                        <img key="1" src={PLACEHOLDER_IMAGE} alt="First slide" className="d-block w-50 m-auto" />,
+                        <img key="2" src={PLACEHOLDER_IMAGE} alt="Second slide" className="d-block w-50 m-auto" />,
+                        <img key="3" src={PLACEHOLDER_IMAGE} alt="Third slide" className="d-block w-50 m-auto" />
                       ]}
                     </Carousel>
                   </Card>
@@ -611,6 +617,9 @@ function Helper() {
                     />
                   </Card>
                 </Col>
+
+                {/* Menu */}
+                <Menu context='header' />
 
                 {/* Image Editor -> blocca tutto */}
                 {/*  <Col className='mb-5'>

@@ -63,6 +63,9 @@ export const setStaticMenu = (config: MenuConfig) => {
 export const getStaticMenu = (type: string): MenuItem[] => {
     return menu[type] || [];
 };
+export const getContextMenu = (): string[] => {
+    return Object.keys(menu);
+};
 
 function App({
                  importPage,

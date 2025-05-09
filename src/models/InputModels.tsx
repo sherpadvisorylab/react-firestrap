@@ -1,6 +1,9 @@
 import React from "react";
-import {FieldFactory} from "../components/Models";
-import { Number, String } from "../components/ui/fields/Input";
+import { FieldFactory } from "../components/Models";
+import { Checkbox, Date, DateInput, DateTime, Email, Number, String, SwitchInput, TextArea, Time } from "../components/ui/fields/Input";
+import { Select } from "../components/ui/fields/Select";
+import { getContextMenu } from "../App";
+import { Menu } from "../components/ui/fields/Menu";
 
 export interface InputModelsMap {
     string: FieldFactory<{ value?: string }>;
@@ -10,14 +13,16 @@ export interface InputModelsMap {
     date: FieldFactory<{ value?: string }>;
     time: FieldFactory<{ value?: string }>;
     datetime: FieldFactory<{ value?: string }>;
+    dateinput: FieldFactory<{ value?: string }>;
     checkbox: FieldFactory<{ value?: string | boolean }>;
+    switch: FieldFactory<{ value?: boolean }>;
     image: FieldFactory<{
         src?: string;
         alt?: string;
         width?: number;
         height?: number;
     }>;
-    menu: FieldFactory<{ staticMenu?: string; db?: any; options?: any; sort?: any }>;   //todo: da togliere da qui
+    menu: FieldFactory<{ context?: string }>;   //todo: da togliere da qui
 }
 
 const InputModels: InputModelsMap = {
@@ -27,7 +32,7 @@ const InputModels: InputModelsMap = {
     }),
     email: ({ value } = {}) => ({
         defaults: (key) => ({ [key]: value }),
-        editor: (key) => <String name={key} label={key} />
+        editor: (key) => <Email name={key} label={key} />
     }),
     number: ({ value } = {}) => ({
         defaults: (key) => ({ [key]: value }),
@@ -35,23 +40,31 @@ const InputModels: InputModelsMap = {
     }),
     textarea: ({ value } = {}) => ({
         defaults: (key) => ({ [key]: value }),
-        editor: (key) => <String name={key} label={key} />
+        editor: (key) => <TextArea name={key} label={key} />
     }),
     date: ({ value } = {}) => ({
         defaults: (key) => ({ [key]: value }),
-        editor: (key) => <String name={key} label={key} />
+        editor: (key) => <Date name={key} label={key} />
     }),
     time: ({ value } = {}) => ({
         defaults: (key) => ({ [key]: value }),
-        editor: (key) => <String name={key} label={key} />
+        editor: (key) => <Time name={key} label={key} />
     }),
     datetime: ({ value } = {}) => ({
         defaults: (key) => ({ [key]: value }),
-        editor: (key) => <String name={key} label={key} />
+        editor: (key) => <DateTime name={key} label={key} />
+    }),
+    dateinput: ({ value } = {}) => ({
+        defaults: (key) => ({ [key]: value }),
+        editor: (key) => <DateInput name={key} value={value} />
     }),
     checkbox: ({ value } = {}) => ({
         defaults: (key) => ({ [key]: value }),
-        editor: (key) => <String name={key} label={key} />
+        editor: (key) => <Checkbox name={key} label={key} />
+    }),
+    switch: ({ value } = {}) => ({
+        defaults: (key) => ({ [key]: value }),
+        editor: (key) => <SwitchInput name={key} label={key} />
     }),
     image: ({ src, alt, width, height } = {}) => ({
         defaults: (key) => ({
@@ -67,15 +80,10 @@ const InputModels: InputModelsMap = {
             <Number name={`${key}:height`} label="Height" value={height} />
         </>
     }),
-    menu: ({ staticMenu, db, options, sort } = {}) => ({  //todo: da togliere da qui
-        defaults: (key) => ({
-            [`${key}:static`]: staticMenu,
-            [`${key}:db`]: db,
-            [`${key}:options`]: options,
-            [`${key}:sort`]: sort
-        }),
-        editor: (key) => <>{key} Menu statico Preview! </>
-    }),
+    menu: ({ context } = {}) => ({
+        defaults: (key) => ({ [key]: context }),
+        editor: (key) => <Select name="context" value={context} options={getContextMenu()} />
+    })
 };
 
 export default InputModels;

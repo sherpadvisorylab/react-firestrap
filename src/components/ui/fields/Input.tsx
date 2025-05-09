@@ -186,7 +186,7 @@ export const TextArea = ({
                                                       required      = false,
                                                       updatable     = true,
                                                       disabled      = false,
-                                                      rows          = 4,
+                                                      rows          = undefined,
                                                       onChange      = undefined,
                                                       useRef        = {},
                                                       pre           = undefined,
@@ -219,32 +219,32 @@ export const TextArea = ({
 };
 
 interface DateInputProps {
-    placeholder: string;
-    onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    name: string;
+    placeholder?: string;
+    onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
     value?: string;
     className?: string;
-    id?: string;
 }
 
 export const DateInput = ({
-                                                        placeholder,
-                                                        onChange,
+                                                        name,
+                                                        placeholder     = undefined,
+                                                        onChange        = undefined,
                                                         value           = undefined,
-                                                        className       = undefined,
-                                                        id              = 'datepicker-component'
+                                                        className       = undefined
 }: DateInputProps) => {
     const fullClassName = `form-control${className ? ' ' + className : ''}`;
     return (
         <div className="input-group w-50">
             <input
+                name={name}
                 type="text"
                 className={fullClassName}
-                id={id}
                 placeholder={placeholder}
                 defaultValue={value}
                 onChange={onChange}
             />
-            <label className="input-group-text" htmlFor={id}>
+            <label className="input-group-text" htmlFor={name}>
                 <i className="fa fa-calendar"></i>
             </label>
         </div>
@@ -252,31 +252,32 @@ export const DateInput = ({
 };
 
 interface SwitchInputProps {
-    label: string;
-    status: boolean;
-    onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    name: string;
+    label?: string;
+    status?: boolean;
+    onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
     className?: string;
-    id?: string; // opzionale se vuoi personalizzare l'id
 }
 
 export const SwitchInput = ({
-                                                            label,
-                                                            status = false,
-                                                            onChange,
-                                                            className   = undefined,
-                                                            id          = 'mint-switch'
+                                                            name,
+                                                            label       = undefined,
+                                                            status      = false,
+                                                            onChange    = undefined,
+                                                            className   = undefined
 }: SwitchInputProps) => {
     const fullClassName = `form-check form-switch${className ? ' ' + className : ''}`;
     return (
         <div className={fullClassName}>
             <input
+                name={name}
                 type="checkbox"
                 className="form-check-input"
-                id={id}
                 checked={status}
                 onChange={onChange}
             />
-            <label className="form-check-label" htmlFor={id}>
+            
+            <label className="form-check-label" htmlFor={name}>
                 {label}
             </label>
         </div>
@@ -285,14 +286,14 @@ export const SwitchInput = ({
 
 interface ListGroupProps {
     items: React.ReactNode[];
-    onClick: (event: React.MouseEvent<HTMLAnchorElement>, index: number) => void;
+    onClick?: (event: React.MouseEvent<HTMLAnchorElement>, index: number) => void;
     active?: number;
     className?: string;
     indexLoading?: number | string;
 }
 export const ListGroup = ({
                                                         items,
-                                                        onClick,
+                                                        onClick         = undefined,
                                                         active          = undefined,
                                                         className       = undefined,
                                                         indexLoading    = undefined
