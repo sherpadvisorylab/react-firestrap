@@ -1,7 +1,7 @@
 import React from "react";
 import {useTheme} from "../../Theme";
 
-type BadgeProps = {
+export type BadgeProps = {
     children: string | React.ReactNode;
     type?: "info" | "success" | "warning" | "danger" | "primary" | "secondary" | "light" | "dark";
     className?: string;

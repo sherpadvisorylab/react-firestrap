@@ -148,5 +148,11 @@ export const theme = {
             bodyClass: "",
             footerClass: "",
         }
+    },
+    Menu: {
+        wrapClass: "",
+        listClass: "",
+        itemClass: "",
+        linkClass: ""
     }
 }

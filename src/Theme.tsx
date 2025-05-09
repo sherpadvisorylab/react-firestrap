@@ -166,6 +166,12 @@ const defaultTheme = {
             bodyClass: "",
             footerClass: "text-end",
         }
+    },
+    Menu: {
+        wrapClass: "",
+        className: "nav",
+        itemClass: "nav-item",
+        linkClass: "nav-link"
     }
 }
 
