@@ -151,8 +151,10 @@ export const theme = {
     },
     Menu: {
         wrapClass: "",
-        listClass: "",
-        itemClass: "",
-        linkClass: ""
+        className: "pc-navbar",
+        itemClass: "pc-item",
+        linkClass: "pc-link",
+        iconClass: "",
+        headerClass: ""
     }
 }

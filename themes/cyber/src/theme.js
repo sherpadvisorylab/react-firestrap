@@ -152,7 +152,11 @@ export const theme = {
     Menu: {
         wrapClass: "",
         className: "menu",
+        headerClass: "menu-header",
         itemClass: "menu-item",
-        linkClass: "menu-link"
+        linkClass: "menu-link",
+        iconClass: "menu-icon",
+        textClass: "flex-fill",
+        submenuClass: "nav flex-column ms-4",
     }
 }

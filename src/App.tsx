@@ -1,4 +1,4 @@
-import React, {useState, Suspense} from 'react';
+import React, { useState, Suspense, useMemo } from 'react';
 import {
     BrowserRouter,
     Route,
@@ -6,11 +6,11 @@ import {
     useLocation
 } from 'react-router-dom';
 
-import Authorize, {AUTH_REDIRECT_URI} from "./auth";
-import {ThemeProvider} from "./Theme";
+import Authorize, { AUTH_REDIRECT_URI } from "./auth";
+import { ThemeProvider } from "./Theme";
 import Users from "./pages/Users";
 import NotFound from './pages/NotFound';
-import {GlobalProvider} from "./Global";
+import { GlobalProvider } from "./Global";
 import Alert from "./components/ui/Alert";
 import {
     AIConfig,
@@ -27,16 +27,17 @@ interface MenuItem {
     path: string;
     title?: string;
     icon?: string;
+    children?: MenuItem[];
     [key: string]: any;
 }
 
 interface UseMenuItem extends MenuItem {
     active: boolean;
-    onClick: () => void;
+    onClick?: () => void;
 }
 
 type MenuConfig = {
-    [key: string]:(MenuItem & {
+    [key: string]: (MenuItem & {
         page?: React.ComponentType;
         layout?: React.ComponentType;
     })[];
@@ -68,17 +69,17 @@ export const getContextMenu = (): string[] => {
 };
 
 function App({
-                 importPage,
-                 firebaseConfig,
-                 oAuth2,
-                 importTheme        = undefined,
-                 LayoutDefault      = undefined,
-                 serviceAccount     = undefined,
-                 dropBoxConfig      = undefined,
-                 aiConfig           = undefined,
-                 tenantsURI         = undefined,
-                 proxyURI           = undefined,
-                 menuConfig         = {},
+    importPage,
+    firebaseConfig,
+    oAuth2,
+    importTheme = undefined,
+    LayoutDefault = undefined,
+    serviceAccount = undefined,
+    dropBoxConfig = undefined,
+    aiConfig = undefined,
+    tenantsURI = undefined,
+    proxyURI = undefined,
+    menuConfig = {},
 }: AppProps) {
     setStaticMenu(menuConfig);
 
@@ -127,19 +128,19 @@ function App({
         Object.keys(menuObject).flatMap(key =>
             menuObject[key].flatMap((item, index) => [
                 item.path && getRoute(key, item, index),
-                item.children && renderRoutes({children: item.children})
+                item.children && renderRoutes({ children: item.children })
             ].filter(Boolean))
         );
 
     return (
         <BrowserRouter>
             <ConfigProvider defaultConfig={{
-                title       : "Default",
-                firebase    : firebaseConfig,
-                google      : { oAuth2, serviceAccount },
-                dropbox     : dropBoxConfig,
-                ai          : aiConfig,
-                proxyURI    : proxyURI
+                title: "Default",
+                firebase: firebaseConfig,
+                google: { oAuth2, serviceAccount },
+                dropbox: dropBoxConfig,
+                ai: aiConfig,
+                proxyURI: proxyURI
             }} tenantsURI={tenantsURI}>
                 <GlobalProvider>
                     <ThemeProvider importTheme={importTheme}>
@@ -147,14 +148,16 @@ function App({
                             <Route path={AUTH_REDIRECT_URI} element={<Authorize />}></Route>
                             <Route path='*' element={<NotFound />}></Route>
                             <>
-                            {renderRoutes({default: [{ path: "/" }], ...{
-                                ...menu,
-                                _auth: [{
-                                    path: "/users",
-                                    page: Users,
-                                    layout: LayoutDefault
-                                }]
-                            }})}
+                                {renderRoutes({
+                                    default: [{ path: "/" }], ...{
+                                        ...menu,
+                                        _auth: [{
+                                            path: "/users",
+                                            page: Users,
+                                            layout: LayoutDefault
+                                        }]
+                                    }
+                                })}
                             </>
                         </Routes>
                     </ThemeProvider>
@@ -165,25 +168,32 @@ function App({
 }
 
 
-
 export const useMenu = (type: string): UseMenuItem[] => {
-    const menuItems = getStaticMenu(type);
+    const menuItems: MenuItem[] = getStaticMenu(type);
     const location = useLocation();
-    const [activeId, setActiveId] = useState(() =>
-        menuItems.findIndex(item =>
-            location.pathname === item?.path ||
-            (item?.path && item.path !== "/" && location.pathname.startsWith(item.path))
-        )
-    );
 
+    // Funzione ricorsiva per determinare se l'item o uno dei suoi figli è attivo
+    const markActive = (items: MenuItem[]): UseMenuItem[] => {
+        return items.map((item) => {
+            // Determina se l'item è attivo in base alla path
+            const isActive = location.pathname === item.path;
 
-    return menuItems
-        .filter(item => item.title)
-        .map((item, index) => ({
-            ...item,
-            active: index === activeId,
-            onClick: () => setActiveId(index)
-        }));
-}
+            // Se ha dei figli, applica markActive ricorsivamente
+            const children = item.children ? markActive(item.children) : [];
+
+            // Se uno dei figli è attivo, il genitore diventa attivo
+            const active = isActive || children.some(child => child.active);
+
+            return {
+                ...item,
+                active,
+                children
+            };
+        });
+    };
+
+    // Ottieni il menu processato e memorizza i risultati
+    return useMemo(() => markActive(menuItems), [location.pathname]);
+};
 
 export default App;
