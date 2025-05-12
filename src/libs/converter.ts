@@ -1,4 +1,3 @@
-
 interface DateTimeResult {
     year: string;
     shortYear: string;
@@ -12,7 +11,7 @@ interface DateTimeResult {
     second: string;
 }
 
-function DateTime(date : string | number | Date): DateTimeResult {
+function DateTime(date: string | number | Date): DateTimeResult {
     const d = new Date(typeof date === 'number' || /^\d+$/.test(String(date)) ? Number(date) : date);
     if (isNaN(d.getTime())) {
         return {
@@ -98,14 +97,13 @@ function getDefaultTimeFormat(): string {
     }).join('');
 }
 
-
 type ConverterFunction = (value: string | number | Date, format?: string) => string;
 
 interface ConverterCore {
     toDate: ConverterFunction;
     toTime: ConverterFunction;
     toDateTime: ConverterFunction;
-    toCamel: (str: string, separator?: string) => string;
+    toCamel: (str: string, separator?: string, delimiter?: string[]) => string;
     toUpper: (str: string) => string;
     toLower: (str: string) => string;
     subStringCount: (str: string, subStr: string) => number;
@@ -122,17 +120,11 @@ interface Converter extends ConverterCore {
     [key: string]: ConverterCore[keyof ConverterCore] | any;
 }
 
-export const converter: Converter = <Converter>{
+export const converter: Converter = {
     parse: (values, pattern) => {
         const parse = pattern.replace(/{([^}:]+)(?::([^}:]+))?(?::([^}:]+))?}/g, (_, Key, Func, format) => {
-            const [pre, key] = ((Key || "").indexOf("(") === -1
-                    ? ["", Key]
-                    : Key.split("(", 2)
-            );
-            const [func, post] = ((Func || "").indexOf(")") === -1
-                    ? [Func, ""]
-                    : Func.split(")", 2)
-            );
+            const [pre, key] = ((Key || '').indexOf('(') === -1 ? ['', Key] : Key.split('(', 2));
+            const [func, post] = ((Func || '').indexOf(')') === -1 ? [Func, ''] : Func.split(')', 2));
 
             if (!converter?.[func] || !values?.[key]) {
                 //console.error(`Conversion failed`, values, key, func)
@@ -167,55 +159,48 @@ export const converter: Converter = <Converter>{
         }
         return formatDate(date, format || defaultFormat);
     },
-    toCamel: (str, separator = '') => {
-        return str.toLowerCase().replace(/(?:[-_/ ]+|^)(.)/g, (_, char) => separator + char.toUpperCase());
+    toCamel: (str, separator = '', delimiter = ['-', '_', ' ']) => {
+        const parts = str.split('/');
+        const last = parts.pop() || '';
+        const escaped = delimiter.map(d => '\\' + d).join('');
+        const regex = new RegExp(`(?:[${escaped}]+|^)(.)`, 'g');
+        const camel = last.toLowerCase().replace(regex, (_, char) => separator + char.toUpperCase());
+        return [...parts, camel].join('/');
     },
-    toUpper: (str) => {
-        return str.toUpperCase();
-    },
-    toLower: (str) => {
-        return str.toLowerCase();
-    },
+    toUpper: (str) => str.toUpperCase(),
+    toLower: (str) => str.toLowerCase(),
     splitLast: (str, seps, regException = undefined) => {
         const splitter = (sep: string): [string, string] | null => {
             const split = str.split(sep);
             if (split.length <= 1) return null;
-
             let last = split.pop() || '';
             while (split.length && regException?.test(split[split.length - 1])) {
                 last = split.pop() + sep + last;
             }
-
             return [split.join(sep), last];
         };
-
         const separators: string[] = typeof seps === 'string' ? [seps] : Array.isArray(seps) ? seps : [];
         for (const sep of separators) {
             const result = splitter(sep);
             if (result) return result;
         }
-
         return [str, ''];
     },
     splitFirst: (str, seps, regException = undefined) => {
         const splitter = (sep: string): [string, string] | null => {
             const split = str.split(sep);
             if (split.length <= 1) return null;
-
             let first = split.shift() || '';
             while (split.length && regException?.test(split[0])) {
                 first += sep + split.shift();
             }
-
             return [first, split.join(sep)];
         };
-
         const separators: string[] = typeof seps === 'string' ? [seps] : Array.isArray(seps) ? seps : [];
         for (const sep of separators) {
             const result = splitter(sep);
             if (result) return result;
         }
-
         return [str, ''];
     },
     padLeft: (str, length, char = ' ', regex = undefined) => {
@@ -232,7 +217,6 @@ export const converter: Converter = <Converter>{
     },
     toQueryString: (params, startWith = "?", fill = undefined) => {
         const query = Object.keys(params);
-
         return (query.length > 0 ? startWith : "") + query.map(key => {
             return `${encodeURIComponent(key)}=${encodeURIComponent(fill === undefined
                 ? params[key]
@@ -248,11 +232,9 @@ export const converter: Converter = <Converter>{
     },
     subStringCount: (str, subStr) => {
         if (subStr === '') return 0;
-
         return str.split(subStr).length - 1;
     }
 };
-
 
 function replacer(pattern: string) {
     return pattern.replace(/replace\(([^,]+),([^,]+),([^)]+)\)/gi, (_, key, from, to) => {

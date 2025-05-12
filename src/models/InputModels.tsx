@@ -77,8 +77,8 @@ const InputModels: InputModelsMap = {
             <String name={`${key}:src`} label="Image source" />
             <String name={`${key}:alt`} label="Alt text" />
             <Row>
-            <Col><Number name={`${key}:width`} label="Width" value={width} /></Col>
-            <Col><Number name={`${key}:height`} label="Height" value={height} /></Col>
+                <Col><Number name={`${key}:width`} label="Width" value={width} /></Col>
+                <Col><Number name={`${key}:height`} label="Height" value={height} /></Col>
             </Row>
         </>
     }),

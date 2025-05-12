@@ -7,7 +7,7 @@ import Admin from "./layouts/Admin.js";
 const root = createRoot(document.getElementById('root'));
 root.render(
     <App
-        importPage={(pageSource) => import(`./pages/${pageSource}.js`)}
+        importPage={(pageSource) => import(`${pageSource}`)}
         importTheme={() => import(`./theme.js`)}
         LayoutDefault={Admin}
         firebaseConfig={{

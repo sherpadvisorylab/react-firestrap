@@ -189,7 +189,7 @@ const db = {
 
                             mapped[prop] = field.includes("{")
                                 ? converter.parse({ key, ...value }, field)
-                                : value[field];
+                                : (field === "key" ? key : value[field]);
                         }
 
                         records.push({
@@ -198,7 +198,6 @@ const db = {
                             ...mapped
                         } as T);
                     }
-
                     setRecords(onLoad ? onLoad(records) : records);
                 };
 

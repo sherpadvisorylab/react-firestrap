@@ -6,8 +6,9 @@ import {
     useLocation
 } from 'react-router-dom';
 
-import Authorize, { AUTH_REDIRECT_URI } from "./auth";
-import { ThemeProvider } from "./Theme";
+import Authorize, {AUTH_REDIRECT_URI} from "./auth";
+import {converter as convert} from "./libs/converter";
+import {ThemeProvider} from "./Theme";
 import Users from "./pages/Users";
 import NotFound from './pages/NotFound';
 import { GlobalProvider } from "./Global";
@@ -69,44 +70,32 @@ export const getContextMenu = (): string[] => {
 };
 
 function App({
-    importPage,
-    firebaseConfig,
-    oAuth2,
-    importTheme = undefined,
-    LayoutDefault = undefined,
-    serviceAccount = undefined,
-    dropBoxConfig = undefined,
-    aiConfig = undefined,
-    tenantsURI = undefined,
-    proxyURI = undefined,
-    menuConfig = {},
+                 importPage,
+                 firebaseConfig,
+                 oAuth2,
+                 importTheme        = undefined,
+                 LayoutDefault      = undefined,
+                 serviceAccount     = undefined,
+                 dropBoxConfig      = undefined,
+                 aiConfig           = undefined,
+                 tenantsURI         = undefined,
+                 proxyURI           = undefined,
+                 menuConfig         = {},
 }: AppProps) {
     setStaticMenu(menuConfig);
 
     const LayoutEmpty = ({ children }: { children: React.ReactNode }) => <>{children}</>;
     const FallbackPage: React.FC<{ pageSource: string }> = ({ pageSource }) => (
-        <Alert type="warning">Missing Page: {`pages/${pageSource}.js`}</Alert>
+        <Alert type="warning">Missing Page: {pageSource}</Alert>
     );
-    function getPageSource(path: string): string {
-        if (path === "/") return "Home";
-
-        const directories = path
-            .split("/")
-            .filter(Boolean);
-
-        const fileName = directories.pop() ?? "";
-        const capitalizedFile = fileName[0].toUpperCase() + fileName.slice(1);
-
-        return [...directories, capitalizedFile].join("/");
-    }
 
     function getRoute(key: string, item: MenuItem, index: number): React.ReactElement {
-        const pageSource = getPageSource(item.path);
+        const pageSource = `./pages${item.path === "/" ? "/Home" : convert.toCamel(item.path)}.js`;
         const PageComponent = item.page || React.lazy(() =>
             importPage(pageSource)
                 .then((mod): { default: React.ComponentType<any> } => {
                     if (typeof mod.default !== 'function') {
-                        console.warn(`⚠️ Invalid default export in ./pages/${pageSource}.js`);
+                        console.warn(`⚠️ Invalid default export in ${pageSource}`);
                         return { default: () => <FallbackPage pageSource={pageSource} /> };
                     }
 
