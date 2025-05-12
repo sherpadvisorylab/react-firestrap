@@ -10,14 +10,16 @@ import setLog from "../../libs/log";
 import {useTheme} from "../../Theme";
 import Alert from "../ui/Alert";
 import {RecordProps} from "../../integrations/google/firedatabase";
-import {converter} from "../../libs";
+import {FieldDefinition} from "../Models";
+import Breadcrumbs from "../blocks/Breadcrumbs";
 
-export interface FormProps {
-    children: React.ReactNode;
+
+type FormFieldsProps = { [key: string]: React.ReactNode };
+
+interface BaseFormProps {
     header?: React.ReactNode;
     footer?: React.ReactNode | false;
     dataStoragePath?: string;
-    dataObject?: any;
     onLoad?: () => void;
     onInsert?: (record: any) => Promise<void>;
     onUpdate?: (record: any) => Promise<void>;
@@ -31,14 +33,39 @@ export interface FormProps {
     className?: string;
     footerClass?: string;
 }
-
-function Form(props: FormProps) {
-    return props.dataObject
-        ? <FormData {...props} />
-        : <FormDatabase {...props} />;
+interface FormDefaultProps extends BaseFormProps {
+    children: React.ReactNode;
+    dataObject?: any;
 }
 
-export function FormDatabase(props: FormProps) {
+interface FormModelProps extends BaseFormProps {
+    model: { [key: string]: FieldDefinition<any> | React.ReactNode };
+    children?: ((fields: { [key: string]: React.ReactNode }) => React.ReactNode);
+}
+
+interface FormProps extends BaseFormProps {
+    model?: { [key: string]: FieldDefinition<any> | React.ReactNode };
+    children?: React.ReactNode | ((fields: { [key: string]: React.ReactNode }) => React.ReactNode);
+    dataObject?: any;
+}
+function Form(props: FormProps) {
+    const { model, dataObject, children, ...rest } = props;
+
+    if (model) {
+        return (
+            <FormModel model={model} {...rest}>
+                {typeof children === 'function' ? children : () => <>{children}</>}
+            </FormModel>
+        );
+    }
+
+    const formChildren = children as React.ReactNode;
+    return dataObject
+        ? <FormData children={formChildren} dataObject={dataObject} {...rest} />
+        : <FormDatabase children={formChildren} dataObject={dataObject} {...rest} />;
+}
+
+export function FormDatabase(props: FormDefaultProps) {
     const { dataStoragePath, dataObject, ...rest } = props;
     const location = useLocation();
 
@@ -80,12 +107,12 @@ export function FormData({
                   onFinally         = undefined,
                   log               = false,
                   showNotice        = true,
-                  showBack          = true,
+                  showBack          = false,
                   wrapClass         = undefined,
                   headerClass       = undefined,
                   className         = undefined,
                   footerClass       = undefined
-} : FormProps) {
+} : FormDefaultProps) {
     const theme = useTheme("form");
 
     const [record, setRecord] = useState<RecordProps | undefined>(dataObject);
@@ -143,7 +170,7 @@ export function FormData({
                 </Alert>
             )}
             <Card
-                header={header || (dataObject ? "Update " : "Insert ") + converter.toCamel(dataStoragePath ?? "Record", "/")}
+                header={header ||  <Breadcrumbs pre={(dataObject ? "Update " : "Insert ")} path={dataStoragePath ?? "Record"} />}
                 footer={footer !== false && <>
                     {footer}
                     {(onInsert || dataStoragePath) && !dataObject && <LoadingButton
@@ -178,6 +205,59 @@ export function FormData({
             </Card>
         </Wrapper>
     )
+}
+
+function normalizeValue(value: any): any {
+    if (Array.isArray(value)) {
+        return value.map(normalizeValue);
+    }
+    if (value && typeof value === 'object') {
+        return Object.fromEntries(
+            Object.entries(value).map(([k, v]) => [k, normalizeValue(v)])
+        );
+    }
+    return value === undefined ? null : value;
+}
+
+function isFieldDefinition(obj: any): obj is FieldDefinition<any> {
+    return (
+        obj &&
+        typeof obj === 'object' &&
+        typeof obj.form === 'function'
+    );
+}
+
+export function FormModel({
+                                 model,
+                                 children,
+                                 ...formProps
+                             }: FormModelProps
+) {
+    const [fields, values] = React.useMemo(() => {
+        if (!model) return [{}, {}];
+
+        let defaults: Record<string, any> = {};
+
+        const fieldMap = Object.entries(model).reduce((acc: FormFieldsProps, [key, fieldModel]) => {
+            if (isFieldDefinition(fieldModel)) {
+                acc[key] = fieldModel.form(key);
+                defaults = { ...defaults, ...fieldModel.defaults?.(key) };
+            } else {
+                acc[key] = fieldModel;
+            }
+            return acc;
+        }, {});
+
+        return [fieldMap, normalizeValue(defaults)];
+    }, [model]);
+
+    return (
+        <FormDatabase dataObject={values} {...formProps}>
+            {typeof children === 'function'
+                ? children(fields)
+                : Object.values(fields)}
+        </FormDatabase>
+    );
 }
 
 export default Form;

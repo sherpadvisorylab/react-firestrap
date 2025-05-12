@@ -12,7 +12,7 @@ const SectionModels: SectionModelsMap = {
             [`${key}:menu`]: menu,
             [`${key}:profile`]: profile
         }),
-        editor: (key) => <>{key} Coming soon...</>
+        form: (key) => <>{key} Coming soon...</>
     })
 };
 

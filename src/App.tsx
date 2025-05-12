@@ -84,7 +84,9 @@ function App({
     setStaticMenu(menuConfig);
 
     const LayoutEmpty = ({ children }: { children: React.ReactNode }) => <>{children}</>;
-
+    const FallbackPage: React.FC<{ pageSource: string }> = ({ pageSource }) => (
+        <Alert type="warning">Missing Page: {`pages/${pageSource}.js`}</Alert>
+    );
     function getPageSource(path: string): string {
         if (path === "/") return "Home";
 
@@ -101,11 +103,19 @@ function App({
     function getRoute(key: string, item: MenuItem, index: number): React.ReactElement {
         const pageSource = getPageSource(item.path);
         const PageComponent = item.page || React.lazy(() =>
-            importPage(pageSource).catch(() =>
-                Promise.resolve({
-                    default: () => <Alert type="warning">Missing Page {`pages/${pageSource}.js`}</Alert>
+            importPage(pageSource)
+                .then((mod): { default: React.ComponentType<any> } => {
+                    if (typeof mod.default !== 'function') {
+                        console.warn(`⚠️ Invalid default export in ./pages/${pageSource}.js`);
+                        return { default: () => <FallbackPage pageSource={pageSource} /> };
+                    }
+
+                    return { default: mod.default };
                 })
-            )
+                .catch((err): { default: React.ComponentType<any> } => {
+                    console.error(`❌ Failed to load ${pageSource}:`, err);
+                    return { default: () => <FallbackPage pageSource={pageSource} /> };
+                })
         );
 
         const LayoutComponent = item.layout || LayoutDefault || LayoutEmpty;

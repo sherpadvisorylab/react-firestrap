@@ -80,10 +80,6 @@ const applyOnChangeRecursive = ({
             });
     });
 };
-//todo:                     value: record?.[child.props.name] ?? child.props.value ?? '',
-// quando viene preso il default record non è consapevole quindi non viene salvato il valore
-// capire perche parte in update il form
-// capire perche non legge e non salva da db
 
 const ComponentEnhancer = ({
                                components,
@@ -113,27 +109,6 @@ export function extractComponentProps<T>(
     });
 
     return result;
-}
-
-export function extractComponentProps2<T = any>(
-    components: React.ReactNode | React.ReactNode[],
-    onEnhance?: (child: React.ReactElement) => T
-) : T[] | { [key: string]: string } {
-    const children = Array.isArray(components) ? components : [components];
-    const props = onEnhance ? [] : {};
-
-    applyOnChangeRecursive({
-        children,
-        onEnhance: (child) => {
-            if (onEnhance) {
-                (props as T[]).push(onEnhance(child));
-            } else {
-                (props as { [key: string]: string })[child.props.name] = "";
-            }
-        }
-    });
-
-    return props;
 }
 
 export default ComponentEnhancer;
