@@ -1,16 +1,16 @@
-import React, {useEffect, useState} from 'react';
-import {useLocation} from "react-router-dom";
-import {Wrapper} from "../ui/GridSystem";
+import React, { useEffect, useState } from 'react';
+import { useLocation } from "react-router-dom";
+import { Wrapper } from "../ui/GridSystem";
 import ComponentEnhancer from "../ComponentEnhancer";
-import {trimSlash} from "../../libs/utils";
+import { trimSlash } from "../../libs/utils";
 import db from "../../libs/database";
 import Card from "../ui/Card";
-import {BackLink, LoadingButton} from "../ui/Buttons";
+import { BackLink, LoadingButton } from "../ui/Buttons";
 import setLog from "../../libs/log";
-import {useTheme} from "../../Theme";
+import { useTheme } from "../../Theme";
 import Alert from "../ui/Alert";
-import {RecordProps} from "../../integrations/google/firedatabase";
-import {FieldDefinition} from "../Models";
+import { RecordProps } from "../../integrations/google/firedatabase";
+import { FieldDefinition } from "../Models";
 import Breadcrumbs from "../blocks/Breadcrumbs";
 
 
@@ -74,7 +74,7 @@ export function FormDatabase(props: FormDefaultProps) {
 
     useEffect(() => {
         db.read(dbStoragePath).then(data => {
-            setRecord({...dataObject, ...data});
+            setRecord({ ...dataObject, ...data });
         }).catch(error => {
             console.error(error);
             setRecord({});
@@ -95,24 +95,24 @@ type NoticeProps = {
 
 
 export function FormData({
-                  children,
-                  header            = undefined,
-                  footer            = undefined,
-                  dataStoragePath   = undefined,
-                  dataObject        = undefined,
-                  onLoad            = undefined,
-                  onInsert          = undefined,
-                  onUpdate          = undefined,
-                  onDelete          = undefined,
-                  onFinally         = undefined,
-                  log               = false,
-                  showNotice        = true,
-                  showBack          = false,
-                  wrapClass         = undefined,
-                  headerClass       = undefined,
-                  className         = undefined,
-                  footerClass       = undefined
-} : FormDefaultProps) {
+    children,
+    header = undefined,
+    footer = undefined,
+    dataStoragePath = undefined,
+    dataObject = undefined,
+    onLoad = undefined,
+    onInsert = undefined,
+    onUpdate = undefined,
+    onDelete = undefined,
+    onFinally = undefined,
+    log = false,
+    showNotice = true,
+    showBack = false,
+    wrapClass = undefined,
+    headerClass = undefined,
+    className = undefined,
+    footerClass = undefined
+}: FormDefaultProps) {
     const theme = useTheme("form");
 
     const [record, setRecord] = useState<RecordProps | undefined>(dataObject);
@@ -121,18 +121,29 @@ export function FormData({
     console.log("FORM", record);
     const notice = ({ message, type = "danger" }: NoticeProps) => {
         if (showNotice) {
-            setNotification({type, message});
+            setNotification({ type, message });
             setTimeout(() => setNotification(undefined), 5000);
         }
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        console.log("CHANGE", e.target.name, e.target.value, record);
-        setRecord(prevState => ({
-            ...prevState,
-            [e.target.name]: e.target.value
-        }));
+        const path = e.target.name.split(".");
+        const value = e.target.value;
+
+        setRecord(prev => {
+            const updated = { ...prev };
+            let target = updated;
+
+            for (let i = 0; i < path.length - 1; i++) {
+                if (!target[path[i]]) target[path[i]] = {};
+                target = target[path[i]];
+            }
+
+            target[path[path.length - 1]] = value;
+            return updated;
+        });
     };
+
 
     const handleSave = async (e: React.ChangeEvent<HTMLInputElement>) => {
         e.preventDefault();
@@ -154,12 +165,12 @@ export function FormData({
         await handleFinally("delete");
     };
 
-    const handleFinally = async(action: 'create' | 'update' | 'delete') => {
+    const handleFinally = async (action: 'create' | 'update' | 'delete') => {
         log && dataStoragePath && setLog(dataStoragePath, action, record);
 
         onFinally && await onFinally();
 
-        notice({message: `Record ${action}ed successfully`, type: "success"});
+        notice({ message: `Record ${action}ed successfully`, type: "success" });
     }
 
     return (
@@ -170,7 +181,7 @@ export function FormData({
                 </Alert>
             )}
             <Card
-                header={header ||  <Breadcrumbs pre={(dataObject ? "Update " : "Insert ")} path={dataStoragePath ?? "Record"} />}
+                header={header || <Breadcrumbs pre={(dataObject ? "Update " : "Insert ")} path={dataStoragePath ?? "Record"} />}
                 footer={footer !== false && <>
                     {footer}
                     {(onInsert || dataStoragePath) && !dataObject && <LoadingButton
@@ -227,29 +238,42 @@ function isFieldDefinition(obj: any): obj is FieldDefinition<any> {
     );
 }
 
+function buildFieldsAndDefaults(model: any, parentKey: string = '') {
+    let fields: any = {};
+    let defaults: any = {};
+
+    for (const [key, value] of Object.entries(model)) {
+        const fullKey = parentKey ? `${parentKey}.${key}` : key;
+
+        if (isFieldDefinition(value)) {
+            fields[key] = value.form(key);
+            defaults[key] = normalizeValue(value.defaults?.(fullKey));
+        } else if (value && typeof value === 'object') {
+            const nested = buildFieldsAndDefaults(value, fullKey);
+            fields[key] = nested.fields;
+            defaults[key] = nested.defaults;
+        } else {
+            fields[key] = value; // React node or null
+        }
+    }
+
+    return { fields, defaults };
+}
+
+
+
 export function FormModel({
-                                 model,
-                                 children,
-                                 ...formProps
-                             }: FormModelProps
+    model,
+    children,
+    ...formProps
+}: FormModelProps
 ) {
     const [fields, values] = React.useMemo(() => {
         if (!model) return [{}, {}];
-
-        let defaults: Record<string, any> = {};
-
-        const fieldMap = Object.entries(model).reduce((acc: FormFieldsProps, [key, fieldModel]) => {
-            if (isFieldDefinition(fieldModel)) {
-                acc[key] = fieldModel.form(key);
-                defaults = { ...defaults, ...fieldModel.defaults?.(key) };
-            } else {
-                acc[key] = fieldModel;
-            }
-            return acc;
-        }, {});
-
-        return [fieldMap, normalizeValue(defaults)];
+        const { fields, defaults } = buildFieldsAndDefaults(model);
+        return [fields, defaults];
     }, [model]);
+
 
     return (
         <FormDatabase dataObject={values} {...formProps}>
