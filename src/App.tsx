@@ -85,8 +85,10 @@ function App({
     setStaticMenu(menuConfig);
 
     const LayoutEmpty = ({ children }: { children: React.ReactNode }) => <>{children}</>;
-    const FallbackPage: React.FC<{ pageSource: string }> = ({ pageSource }) => (
-        <Alert type="warning">Missing Page: {pageSource}</Alert>
+    const FallbackPage: React.FC<{ pageSource: string, message?: string }> = ({ pageSource, message }) => (
+        <Alert type="warning">Missing Page: {pageSource}
+            {message && <code className={"ms-2"}>{message}</code>}
+        </Alert>
     );
 
     function getRoute(key: string, item: MenuItem, index: number): React.ReactElement {
@@ -101,9 +103,9 @@ function App({
 
                     return { default: mod.default };
                 })
-                .catch((err): { default: React.ComponentType<any> } => {
+                .catch((err: Error): { default: React.ComponentType<any> } => {
                     console.error(`❌ Failed to load ${pageSource}:`, err);
-                    return { default: () => <FallbackPage pageSource={pageSource} /> };
+                    return { default: () => <FallbackPage pageSource={pageSource} message={err.message} /> };
                 })
         );
 

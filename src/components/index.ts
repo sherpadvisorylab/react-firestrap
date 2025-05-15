@@ -25,7 +25,7 @@ export { default as Table } from './ui/Table';
 export * from './ui/fields/Input';
 export * from './ui/fields/Select';
 export { default as Upload} from './ui/fields/Upload';
-export * from './ui/fields/Menu';
+export * from './blocks/Menu';
 
 export { default as Form } from './widgets/Form';
 export { default as Grid } from './widgets/Grid';

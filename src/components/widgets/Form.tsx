@@ -10,11 +10,8 @@ import setLog from "../../libs/log";
 import { useTheme } from "../../Theme";
 import Alert from "../ui/Alert";
 import { RecordProps } from "../../integrations/google/firedatabase";
-import { FieldDefinition } from "../Models";
+import {FieldsMap, ModelProps, modelToFormFields} from "../Models";
 import Breadcrumbs from "../blocks/Breadcrumbs";
-
-
-type FormFieldsProps = { [key: string]: React.ReactNode };
 
 interface BaseFormProps {
     header?: React.ReactNode;
@@ -39,13 +36,13 @@ interface FormDefaultProps extends BaseFormProps {
 }
 
 interface FormModelProps extends BaseFormProps {
-    model: { [key: string]: FieldDefinition<any> | React.ReactNode };
-    children?: ((fields: { [key: string]: React.ReactNode }) => React.ReactNode);
+    model: ModelProps;
+    children?: ((fields: FieldsMap) => React.ReactNode);
 }
 
 interface FormProps extends BaseFormProps {
-    model?: { [key: string]: FieldDefinition<any> | React.ReactNode };
-    children?: React.ReactNode | ((fields: { [key: string]: React.ReactNode }) => React.ReactNode);
+    model?: ModelProps;
+    children?: React.ReactNode | ((fields: FieldsMap) => React.ReactNode);
     dataObject?: any;
 }
 function Form(props: FormProps) {
@@ -218,69 +215,39 @@ export function FormData({
     )
 }
 
-function normalizeValue(value: any): any {
-    if (Array.isArray(value)) {
-        return value.map(normalizeValue);
-    }
-    if (value && typeof value === 'object') {
-        return Object.fromEntries(
-            Object.entries(value).map(([k, v]) => [k, normalizeValue(v)])
-        );
-    }
-    return value === undefined ? null : value;
-}
+//todo: da sistemare
+function flattenFieldsToArray(fields: FieldsMap): React.ReactNode[] {
+    const result: React.ReactNode[] = [];
 
-function isFieldDefinition(obj: any): obj is FieldDefinition<any> {
-    return (
-        obj &&
-        typeof obj === 'object' &&
-        typeof obj.form === 'function'
-    );
-}
-
-function buildFieldsAndDefaults(model: any, parentKey: string = '') {
-    let fields: any = {};
-    let defaults: any = {};
-
-    for (const [key, value] of Object.entries(model)) {
-        const fullKey = parentKey ? `${parentKey}.${key}` : key;
-
-        if (isFieldDefinition(value)) {
-            fields[key] = value.form(key);
-            defaults[key] = normalizeValue(value.defaults?.(fullKey));
+    for (const value of Object.values(fields)) {
+        if (React.isValidElement(value)) {
+            result.push(value);
         } else if (value && typeof value === 'object') {
-            const nested = buildFieldsAndDefaults(value, fullKey);
-            fields[key] = nested.fields;
-            defaults[key] = nested.defaults;
-        } else {
-            fields[key] = value; // React node or null
+            result.push(...flattenFieldsToArray(value as FieldsMap));
         }
     }
 
-    return { fields, defaults };
+    return result;
 }
 
-
-
 export function FormModel({
-    model,
-    children,
-    ...formProps
-}: FormModelProps
+                              model,
+                              children,
+                              ...formProps
+                          }: FormModelProps
 ) {
-    const [fields, values] = React.useMemo(() => {
+    const [ fields, defaults ] = React.useMemo(() => {
         if (!model) return [{}, {}];
-        const { fields, defaults } = buildFieldsAndDefaults(model);
-        return [fields, defaults];
+        return modelToFormFields(model);
     }, [model]);
 
-
     return (
-        <FormDatabase dataObject={values} {...formProps}>
+        <FormDatabase dataObject={defaults} {...formProps}>
             {typeof children === 'function'
                 ? children(fields)
-                : Object.values(fields)}
+                : flattenFieldsToArray(fields)}
         </FormDatabase>
+
     );
 }
 

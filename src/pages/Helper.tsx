@@ -28,7 +28,7 @@ import Models from "../components/Models";
 import Modal from "../components/ui/Modal";
 import ImageEditor from "../components/widgets/ImageEditor";
 import { PLACEHOLDER_BRAND, PLACEHOLDER_IMAGE } from '../Theme';
-import { Menu } from '../components/ui/fields/Menu';
+import { Menu } from '../components/blocks/Menu';
 
 
 

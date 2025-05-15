@@ -4,7 +4,7 @@ import Image from "../Image";
 import {PLACEHOLDER_IMAGE} from "../../../Theme";
 
 
-interface UploadProps {
+export interface UploadProps {
     name: string;
     value?: string;
     onChange?: (e: { target: { name: string; value: string } }) => void;
