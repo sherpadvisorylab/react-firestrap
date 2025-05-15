@@ -7,12 +7,12 @@ export interface SectionModelsMap {
 
 const SectionModels: SectionModelsMap = {
     topbar: ({ logo, menu, profile } = {}) => ({
-        defaults: (key) => ({
+        getDefaults: (key) => ({
             [`${key}:logo`]: logo,
             [`${key}:menu`]: menu,
             [`${key}:profile`]: profile
         }),
-        form: (key) => <>{key} Coming soon...</>
+        renderForm: (key) => <>{key} Coming soon...</>
     })
 };
 

@@ -10,7 +10,7 @@ import setLog from "../../libs/log";
 import { useTheme } from "../../Theme";
 import Alert from "../ui/Alert";
 import { RecordProps } from "../../integrations/google/firedatabase";
-import {FieldsMap, ModelProps, modelToFormFields} from "../Models";
+import {FieldsMap, ModelProps, buildFormFields} from "../Models";
 import Breadcrumbs from "../blocks/Breadcrumbs";
 
 interface BaseFormProps {
@@ -141,6 +141,21 @@ export function FormData({
         });
     };
 
+    const cleanedRecord = (record: RecordProps | undefined): RecordProps => {
+        const cleaned: RecordProps = {};
+        if (!record) return cleaned;
+
+        for (const [k, v] of Object.entries(record)) {
+            if (Array.isArray(v)) {
+                cleaned[k] = v.filter((item) => item !== undefined);
+            } else if(v && typeof v === 'object') {
+                cleanedRecord(v);
+            } else if (v !== undefined) {
+                cleaned[k] = v;
+            }
+        }
+        return cleaned;
+    }
 
     const handleSave = async (e: React.ChangeEvent<HTMLInputElement>) => {
         e.preventDefault();
@@ -148,7 +163,7 @@ export function FormData({
         showNotice && setNotification(undefined);
         dataObject && onInsert && await onInsert(record);
         !dataObject && onUpdate && await onUpdate(record);
-        dataStoragePath && await db.set(dataStoragePath, record);
+        dataStoragePath && await db.set(dataStoragePath, cleanedRecord(record));
 
         await handleFinally(dataObject ? "update" : "create");
     };
@@ -238,7 +253,7 @@ export function FormModel({
 ) {
     const [ fields, defaults ] = React.useMemo(() => {
         if (!model) return [{}, {}];
-        return modelToFormFields(model);
+        return buildFormFields(model);
     }, [model]);
 
     return (

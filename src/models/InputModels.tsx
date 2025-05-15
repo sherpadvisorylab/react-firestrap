@@ -49,109 +49,109 @@ const InputModels: InputModelsMap = {
     string: (props = {}) => {
         const { value, label, ...rest } = props;
         return {
-            defaults: (key) => ({[key]: value}),
-            form: (key) => <String name={key} label={label ?? key} {...rest} />
+            getDefaults: (key) => ({[key]: value}),
+            renderForm: (key) => <String name={key} label={label ?? key} {...rest} />
         }
     },
     email: (props = {}) => {
         const { value, label, ...rest } = props;
         return {
-            defaults: (key) => ({[key]: value}),
-            form: (key) => <Email name={key} label={label ?? key} {...rest} />
+            getDefaults: (key) => ({[key]: value}),
+            renderForm: (key) => <Email name={key} label={label ?? key} {...rest} />
         }
     },
     number: (props = {}) => {
         const { value, label, ...rest } = props;
         return {
-            defaults: (key) => ({[key]: value}),
-            form: (key) => <Number name={key} label={label ?? key} {...rest} />
+            getDefaults: (key) => ({[key]: value}),
+            renderForm: (key) => <Number name={key} label={label ?? key} {...rest} />
         }
     },
     date: (props = {}) => {
         const { value, label, ...rest } = props;
         return {
-            defaults: (key) => ({[key]: value}),
-            form: (key) => <Date name={key} label={label ?? key} {...rest} />
+            getDefaults: (key) => ({[key]: value}),
+            renderForm: (key) => <Date name={key} label={label ?? key} {...rest} />
         }
     },
     time: (props = {}) => {
         const { value, label, ...rest } = props;
         return {
-            defaults: (key) => ({[key]: value}),
-            form: (key) => <Time name={key} label={label ?? key} {...rest} />
+            getDefaults: (key) => ({[key]: value}),
+            renderForm: (key) => <Time name={key} label={label ?? key} {...rest} />
         }
     },
     datetime: (props = {}) => {
         const { value, label, ...rest } = props;
         return {
-            defaults: (key) => ({ [key]: value }),
-            form: (key) => <DateTime name={key} label={label ?? key} {...rest} />
+            getDefaults: (key) => ({ [key]: value }),
+            renderForm: (key) => <DateTime name={key} label={label ?? key} {...rest} />
         }
     },
     textarea: (props = {}) => {
         const { value, label, ...rest } = props;
         return {
-            defaults: (key) => ({[key]: value}),
-            form: (key) => <TextArea name={key} label={label ?? key} {...rest} />
+            getDefaults: (key) => ({[key]: value}),
+            renderForm: (key) => <TextArea name={key} label={label ?? key} {...rest} />
         }
     },
     dateinput: (props = {}) => {
         const { value, label, ...rest } = props;
         return {
-            defaults: (key) => ({[key]: value}),
-            form: (key) => <DateInput name={key} label={label ?? key} {...rest} />
+            getDefaults: (key) => ({[key]: value}),
+            renderForm: (key) => <DateInput name={key} label={label ?? key} {...rest} />
         }
     },
     checkbox: (props = {}) => {
         const { value, label, ...rest } = props;
         return {
-            defaults: (key) => ({[key]: value}),
-            form: (key) => <Checkbox name={key} label={label ?? key} {...rest} />
+            getDefaults: (key) => ({[key]: value}),
+            renderForm: (key) => <Checkbox name={key} label={label ?? key} {...rest} />
         }
     },
     switch: (props = {}) => {
         const { value, label, ...rest } = props;
         return {
-            defaults: (key) => ({[key]: value}),
-            form: (key) => <SwitchInput name={key} label={label ?? key} {...rest} />
+            getDefaults: (key) => ({[key]: value}),
+            renderForm: (key) => <SwitchInput name={key} label={label ?? key} {...rest} />
         }
     },
     select: (props = {}) => {
         const { value, label, ...rest } = props;
         return {
-            defaults: (key) => ({[key]: value}),
-            form: (key) => <Select name={key} label={label ?? key} {...rest} />
+            getDefaults: (key) => ({[key]: value}),
+            renderForm: (key) => <Select name={key} label={label ?? key} {...rest} />
         }
     },
     autocomplete: (props = {}) => {
         const { value, label, ...rest } = props;
         return {
-            defaults: (key) => ({[key]: value}),
-            form: (key) => <Autocomplete name={key} label={label ?? key} {...rest} />
+            getDefaults: (key) => ({[key]: value}),
+            renderForm: (key) => <Autocomplete name={key} label={label ?? key} {...rest} />
         }
     },
     checklist: (props = {}) => {
         const { value, label, ...rest } = props;
         return {
-            defaults: (key) => ({[key]: value}),
-            form: (key) => <Checklist name={key} label={label ?? key} {...rest} />
+            getDefaults: (key) => ({[key]: value}),
+            renderForm: (key) => <Checklist name={key} label={label ?? key} {...rest} />
         }
     },
     upload: (props = {}) => {
         const { value, label, ...rest } = props;
         return {
-            defaults: (key) => ({[key]: value}),
-            form: (key) => <Upload name={key} label={label ?? key} {...rest} />
+            getDefaults: (key) => ({[key]: value}),
+            renderForm: (key) => <Upload name={key} label={label ?? key} {...rest} />
         }
     },
     image: ({ src, alt, width, height } = {}) => ({
-        defaults: (key) => ({
+        getDefaults: (key) => ({
             [`${key}:src`]: src,
             [`${key}:alt`]: alt,
             [`${key}:width`]: width,
             [`${key}:height`]: height
         }),
-        form: (key) => <>
+        renderForm: (key) => <>
             <String name={`${key}:src`} label="Image source" />
             <String name={`${key}:alt`} label="Alt text" />
             <Row>
@@ -161,8 +161,8 @@ const InputModels: InputModelsMap = {
         </>
     }),
     menu: ({ context } = {}) => ({
-        defaults: (key) => ({ [key]: context }),
-        form: (key) => <Select name={key} label={key} value={context} options={getContextMenu()} />
+        getDefaults: (key) => ({ [key]: context }),
+        renderForm: (key) => <Select name={key} label={key} value={context} options={getContextMenu()} />
     })
 };
 

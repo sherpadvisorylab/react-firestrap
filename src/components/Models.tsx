@@ -8,12 +8,13 @@ import Form from "./widgets/Form";
 
 type Primitive = string | number | boolean | undefined;
 
-interface FieldDefinition {
-    defaults: (key: string) => Record<string, Primitive>;
-    form: (key: string) => React.ReactNode;
+interface FieldAdapter {
+    getDefaults: (key: string) => Record<string, Primitive>;
+    renderForm: (key: string) => React.ReactNode;
 }
 
-export type FieldFactory<TProps = {}> = (props?: TProps) => FieldDefinition;
+
+export type FieldFactory<TProps = {}> = (props?: TProps) => FieldAdapter;
 
 interface ComponentProps {
     [key: string]: any;
@@ -23,7 +24,7 @@ type Defaults = {
     [key: string]: Primitive | Primitive[];
 };
 export type ModelProps = {
-    [key: string]: FieldDefinition | React.ReactNode | ModelProps;
+    [key: string]: FieldAdapter | React.ReactNode | ModelProps;
 };
 
 export type FieldsMap = {
@@ -68,8 +69,8 @@ export abstract class ComponentBlock {
     }
 }
 
-function isFieldDefinition(obj: any): obj is FieldDefinition {
-    return typeof obj?.form === 'function' && typeof obj?.defaults === 'function';
+function isFieldAdapter(obj: any): obj is FieldAdapter {
+    return typeof obj?.renderForm === 'function' && typeof obj?.getDefaults === 'function';
 }
 
 function isComponentBlockClass(obj: any): obj is new () => ComponentBlock {
@@ -83,7 +84,7 @@ function isModelProps(obj: any): obj is ModelProps {
     );
 }
 
-export function modelToFormFields(
+export function buildFormFields(
     model: ModelProps
 ): [ FieldsMap, Defaults ] {
     const fields: FieldsMap = {};
@@ -91,34 +92,42 @@ export function modelToFormFields(
 
     function setDefaults(obj: Defaults) {
         for (const [k, v] of Object.entries(obj)) {
-            if (Array.isArray(v)) {
-                defaults[k] = v.filter((item) => item !== undefined);
-            } else if(v && typeof v === 'object') {
-                 setDefaults(v);
-            } else if (v !== undefined) {
-                defaults[k] = v;
-            }
+            defaults[k] = v;
         }
     }
 
     for (const [key, value] of Object.entries(model)) {
-        if (isFieldDefinition(value)) {
-            fields[key] = value.form(key);
-            setDefaults(value.defaults(key));
+        if (isFieldAdapter(value)) {
+            fields[key] = value.renderForm(key);
+            setDefaults(value.getDefaults(key));
         } else if (isComponentBlockClass(value)) {
             const instance = new value();
-            const [subFields, subDefaults] = modelToFormFields(instance.model);
+            const [subFields, subDefaults] = buildFormFields(instance.model);
 
             fields[key] = instance.form(subFields);
             setDefaults(subDefaults);
-        } else if (Array.isArray(value)) { // todo: da sistemare
-            fields[key] = value.map(v => {
-                const [subFields, subDefaults] = modelToFormFields(v);
-                setDefaults(subDefaults);
-                return subFields;
-            }).join();
+        } else if (Array.isArray(value)) {
+            console.warn(
+                `[buildFormFields] ⚠️ The field "${key}" is defined as an array. ` +
+                `It has been automatically converted into an object with generated keys (e.g., "${key}_0"). ` +
+                `Consider refactoring your model to use an explicit object instead of an array.`
+            );
+            const syntheticModel: ModelProps = {};
+
+            value.forEach((item, i) => {
+                const itemKey = `${key}_${i}`;
+                syntheticModel[itemKey] = item;
+            });
+
+            const [subFields, subDefaults] = buildFormFields(syntheticModel);
+            setDefaults(subDefaults);
+
+            fields[key] = subFields
+            // Merge flat dei subFields nel fields principale
+            //Object.assign(fields, subFields); // ✅ FLAT
+            console.log(fields);
         } else if (isModelProps(value)) {
-            const [nestedFields, nestedDefaults] = modelToFormFields(value);
+            const [nestedFields, nestedDefaults] = buildFormFields(value);
             fields[key] = nestedFields;
             setDefaults(nestedDefaults);
         } else {
