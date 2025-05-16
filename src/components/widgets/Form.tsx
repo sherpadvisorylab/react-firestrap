@@ -10,7 +10,7 @@ import setLog from "../../libs/log";
 import { useTheme } from "../../Theme";
 import Alert from "../ui/Alert";
 import { RecordProps } from "../../integrations/google/firedatabase";
-import {FieldsMap, ModelProps, buildFormFields} from "../Models";
+import {FormTree, ModelProps, buildFormFields} from "../Models";
 import Breadcrumbs from "../blocks/Breadcrumbs";
 
 interface BaseFormProps {
@@ -37,12 +37,12 @@ interface FormDefaultProps extends BaseFormProps {
 
 interface FormModelProps extends BaseFormProps {
     model: ModelProps;
-    children?: ((fields: FieldsMap) => React.ReactNode);
+    children?: ((fields: FormTree) => React.ReactNode);
 }
 
 interface FormProps extends BaseFormProps {
     model?: ModelProps;
-    children?: React.ReactNode | ((fields: FieldsMap) => React.ReactNode);
+    children?: React.ReactNode | ((fields: FormTree) => React.ReactNode);
     dataObject?: any;
 }
 function Form(props: FormProps) {
@@ -230,19 +230,24 @@ export function FormData({
     )
 }
 
-//todo: da sistemare
-function flattenFieldsToArray(fields: FieldsMap): React.ReactNode[] {
-    const result: React.ReactNode[] = [];
-
-    for (const value of Object.values(fields)) {
+function defaultFormRenderer(tree: FormTree): React.ReactNode {
+    return Object.entries(tree).map(([key, value]) => {
         if (React.isValidElement(value)) {
-            result.push(value);
+            return (
+                <div key={key} className="form-group">
+                    {value}
+                </div>
+            );
         } else if (value && typeof value === 'object') {
-            result.push(...flattenFieldsToArray(value as FieldsMap));
+            return (
+                <>
+                    {defaultFormRenderer(value as FormTree)}
+                </>
+            );
+        } else {
+            return null;
         }
-    }
-
-    return result;
+    });
 }
 
 export function FormModel({
@@ -258,9 +263,7 @@ export function FormModel({
 
     return (
         <FormDatabase dataObject={defaults} {...formProps}>
-            {typeof children === 'function'
-                ? children(fields)
-                : flattenFieldsToArray(fields)}
+            {defaultFormRenderer(fields)}
         </FormDatabase>
 
     );

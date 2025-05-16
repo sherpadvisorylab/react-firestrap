@@ -42,13 +42,14 @@ export interface InputModelsMap {
         width?: number;
         height?: number;
     }>;
-    menu: FieldFactory<{ context?: string }>;   //todo: da togliere da qui
+    menu: FieldFactory<{ context?: string }>;
 }
 
 const InputModels: InputModelsMap = {
     string: (props = {}) => {
         const { value, label, ...rest } = props;
         return {
+            __props: props,
             getDefaults: (key) => ({[key]: value}),
             renderForm: (key) => <String name={key} label={label ?? key} {...rest} />
         }
@@ -56,6 +57,7 @@ const InputModels: InputModelsMap = {
     email: (props = {}) => {
         const { value, label, ...rest } = props;
         return {
+            __props: props,
             getDefaults: (key) => ({[key]: value}),
             renderForm: (key) => <Email name={key} label={label ?? key} {...rest} />
         }
@@ -63,6 +65,7 @@ const InputModels: InputModelsMap = {
     number: (props = {}) => {
         const { value, label, ...rest } = props;
         return {
+            __props: props,
             getDefaults: (key) => ({[key]: value}),
             renderForm: (key) => <Number name={key} label={label ?? key} {...rest} />
         }
@@ -70,6 +73,7 @@ const InputModels: InputModelsMap = {
     date: (props = {}) => {
         const { value, label, ...rest } = props;
         return {
+            __props: props,
             getDefaults: (key) => ({[key]: value}),
             renderForm: (key) => <Date name={key} label={label ?? key} {...rest} />
         }
@@ -77,6 +81,7 @@ const InputModels: InputModelsMap = {
     time: (props = {}) => {
         const { value, label, ...rest } = props;
         return {
+            __props: props,
             getDefaults: (key) => ({[key]: value}),
             renderForm: (key) => <Time name={key} label={label ?? key} {...rest} />
         }
@@ -84,6 +89,7 @@ const InputModels: InputModelsMap = {
     datetime: (props = {}) => {
         const { value, label, ...rest } = props;
         return {
+            __props: props,
             getDefaults: (key) => ({ [key]: value }),
             renderForm: (key) => <DateTime name={key} label={label ?? key} {...rest} />
         }
@@ -91,6 +97,7 @@ const InputModels: InputModelsMap = {
     textarea: (props = {}) => {
         const { value, label, ...rest } = props;
         return {
+            __props: props,
             getDefaults: (key) => ({[key]: value}),
             renderForm: (key) => <TextArea name={key} label={label ?? key} {...rest} />
         }
@@ -98,6 +105,7 @@ const InputModels: InputModelsMap = {
     dateinput: (props = {}) => {
         const { value, label, ...rest } = props;
         return {
+            __props: props,
             getDefaults: (key) => ({[key]: value}),
             renderForm: (key) => <DateInput name={key} label={label ?? key} {...rest} />
         }
@@ -105,6 +113,7 @@ const InputModels: InputModelsMap = {
     checkbox: (props = {}) => {
         const { value, label, ...rest } = props;
         return {
+            __props: props,
             getDefaults: (key) => ({[key]: value}),
             renderForm: (key) => <Checkbox name={key} label={label ?? key} {...rest} />
         }
@@ -112,6 +121,7 @@ const InputModels: InputModelsMap = {
     switch: (props = {}) => {
         const { value, label, ...rest } = props;
         return {
+            __props: props,
             getDefaults: (key) => ({[key]: value}),
             renderForm: (key) => <SwitchInput name={key} label={label ?? key} {...rest} />
         }
@@ -119,6 +129,7 @@ const InputModels: InputModelsMap = {
     select: (props = {}) => {
         const { value, label, ...rest } = props;
         return {
+            __props: props,
             getDefaults: (key) => ({[key]: value}),
             renderForm: (key) => <Select name={key} label={label ?? key} {...rest} />
         }
@@ -126,6 +137,7 @@ const InputModels: InputModelsMap = {
     autocomplete: (props = {}) => {
         const { value, label, ...rest } = props;
         return {
+            __props: props,
             getDefaults: (key) => ({[key]: value}),
             renderForm: (key) => <Autocomplete name={key} label={label ?? key} {...rest} />
         }
@@ -133,6 +145,7 @@ const InputModels: InputModelsMap = {
     checklist: (props = {}) => {
         const { value, label, ...rest } = props;
         return {
+            __props: props,
             getDefaults: (key) => ({[key]: value}),
             renderForm: (key) => <Checklist name={key} label={label ?? key} {...rest} />
         }
@@ -140,30 +153,39 @@ const InputModels: InputModelsMap = {
     upload: (props = {}) => {
         const { value, label, ...rest } = props;
         return {
+            __props: props,
             getDefaults: (key) => ({[key]: value}),
             renderForm: (key) => <Upload name={key} label={label ?? key} {...rest} />
         }
     },
-    image: ({ src, alt, width, height } = {}) => ({
-        getDefaults: (key) => ({
-            [`${key}:src`]: src,
-            [`${key}:alt`]: alt,
-            [`${key}:width`]: width,
-            [`${key}:height`]: height
-        }),
-        renderForm: (key) => <>
-            <String name={`${key}:src`} label="Image source" />
-            <String name={`${key}:alt`} label="Alt text" />
-            <Row>
-                <Col><Number name={`${key}:width`} label="Width" value={width} /></Col>
-                <Col><Number name={`${key}:height`} label="Height" value={height} /></Col>
-            </Row>
-        </>
-    }),
-    menu: ({ context } = {}) => ({
-        getDefaults: (key) => ({ [key]: context }),
-        renderForm: (key) => <Select name={key} label={key} value={context} options={getContextMenu()} />
-    })
+    image: (props = {}) => {
+        const { src, alt, width,  height} = props;
+        return {
+            __props: props,
+            getDefaults: (key) => ({
+                [`${key}:src`]: src,
+                [`${key}:alt`]: alt,
+                [`${key}:width`]: width,
+                [`${key}:height`]: height
+            }),
+            renderForm: (key) => <>
+                <String name={`${key}:src`} label="Image source" />
+                <String name={`${key}:alt`} label="Alt text" />
+                <Row>
+                    <Col><Number name={`${key}:width`} label="Width" value={width} /></Col>
+                    <Col><Number name={`${key}:height`} label="Height" value={height} /></Col>
+                </Row>
+            </>
+        }
+    },
+    menu: (props = {}) => {
+        const {context} = props;
+        return {
+            __props: props,
+            getDefaults: (key) => ({[key]: context}),
+            renderForm: (key) => <Select name={key} label={key} value={context} options={getContextMenu()}/>
+        }
+    }
 };
 
 export default InputModels;
