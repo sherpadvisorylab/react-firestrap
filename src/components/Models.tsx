@@ -1,9 +1,6 @@
 import React from "react";
-import InputModels from "../models/InputModels";
-import ViewModels from "../models/ViewModels";
-import BlockModels from "../models/BlockModels";
-import SectionModels from "../models/SectionModel";
-import WidgetModels from "../models/WidgetModels";
+import modelFormFields from "../models/modelFormFields";
+import modelUIComponents from "../models/modelUIComponents";
 import Form from "./widgets/Form";
 
 type Primitive = string | number | boolean | undefined;
@@ -31,14 +28,10 @@ export type FormTree = {
     [key: string]: React.ReactNode | FormTree;
 };
 
-//todo: da ristrutturare i nomi: input, ui o block, widget => component. quindi solo 3 elementi di base poi si aggiunge section layout
-const Models = {
-    input: InputModels,
-    ui: ViewModels,
-    block: BlockModels,
-    section: SectionModels,
-    widget: WidgetModels,
-}
+export const Model = {
+    input: modelFormFields,
+    ui: modelUIComponents,
+};
 
 
 export abstract class ComponentBlock {
@@ -176,7 +169,7 @@ export function ComponentBlockSave(blockClass: new () => ComponentBlock, dbStora
     }
 
     function detectFieldType(adapter: FieldAdapter): string {
-        for (const [typeName, factory] of Object.entries(InputModels)) {
+        for (const [typeName, factory] of Object.entries(modelFormFields)) {
             const testAdapter = factory();
             if (testAdapter.renderForm.toString() === adapter.renderForm.toString()) {
                 return typeName;
@@ -255,7 +248,7 @@ function ComponentBlockSave2(blockClass: new () => ComponentBlock, dbStoragePath
     }
 
     function detectFieldType(adapter: FieldAdapter): string {
-        for (const [typeName, factory] of Object.entries(InputModels)) {
+        for (const [typeName, factory] of Object.entries(modelFormFields)) {
             const testAdapter = factory();
             if (testAdapter.renderForm.toString() === adapter.renderForm.toString()) {
                 return typeName;
@@ -409,4 +402,4 @@ export class ComponentTemplate {
 
 
 
-export default Models;
+export default Model;

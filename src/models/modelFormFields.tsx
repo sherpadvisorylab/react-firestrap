@@ -18,7 +18,7 @@ import { getContextMenu } from "../App";
 import {Col, Row} from "../components";
 import Upload, {UploadProps} from "../components/ui/fields/Upload";
 
-export interface InputModelsMap {
+export interface formFieldsModels {
 //    label: FieldFactory<Omit<LabelProps, 'name' | 'onChange'>>;
     string: FieldFactory<Omit<InputProps, 'name' | 'onChange'>>;
     email: FieldFactory<Omit<InputProps, 'name' | 'onChange'>>;
@@ -45,7 +45,7 @@ export interface InputModelsMap {
     menu: FieldFactory<{ context?: string }>;
 }
 
-const InputModels: InputModelsMap = {
+const modelFormFields: formFieldsModels = {
     string: (props = {}) => {
         const { value, label, ...rest } = props;
         return {
@@ -188,4 +188,4 @@ const InputModels: InputModelsMap = {
     }
 };
 
-export default InputModels;
+export default modelFormFields;

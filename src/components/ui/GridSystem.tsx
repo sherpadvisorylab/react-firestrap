@@ -1,15 +1,15 @@
 import React, { CSSProperties, ReactNode } from 'react';
 
-type BaseProps = {
+type ContainerProps = {
     children: ReactNode;
     className?: string;
 };
 
-type RowProps = BaseProps & {
+type RowProps = ContainerProps & {
     style?: CSSProperties;
 };
 
-type ColProps = BaseProps & {
+type ColProps = ContainerProps & {
     defaultSize?: number;
     xxl?: number;
     xl?: number;
@@ -22,7 +22,7 @@ type ColProps = BaseProps & {
 export const Wrapper = ({
                             children,
                             className = undefined
-} : BaseProps) => {
+} : ContainerProps) => {
     return className
         ? <div className={className}>{children}</div>
         : <>{children}</>;
@@ -32,7 +32,7 @@ export const Wrapper = ({
 export const Container = ({
                                                    children,
                                                    className = undefined
-}: BaseProps) => {
+}: ContainerProps) => {
     const fullClassName = className ? `container ${className}` : 'container';
 
     return (<div className={fullClassName}>{children}</div>);

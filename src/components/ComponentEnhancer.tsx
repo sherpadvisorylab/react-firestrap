@@ -1,6 +1,12 @@
 import React from 'react';
 import {RecordProps} from "../integrations/google/firedatabase";
 
+interface ComponentEnhancerProps {
+    components: React.ReactNode | React.ReactNode[];
+    record?: RecordProps;
+    handleChange?: (event: React.ChangeEvent<any>) => void;
+}
+
 type ApplyOnChangeParams = {
     children: React.ReactNode;
     record?: RecordProps;
@@ -8,11 +14,7 @@ type ApplyOnChangeParams = {
     onEnhance?: (child: React.ReactElement) => void;
 };
 
-interface ComponentEnhancerProps {
-    components: React.ReactNode | React.ReactNode[];
-    record?: RecordProps;
-    handleChange?: (event: React.ChangeEvent<any>) => void;
-}
+
 
 const applyOnChangeRecursive = ({
                                     children,
