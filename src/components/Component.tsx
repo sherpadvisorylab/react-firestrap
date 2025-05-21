@@ -1,6 +1,9 @@
 import React from "react";
-import modelFormFields from "../models/modelFormFields";
-import modelUIComponents from "../models/modelUIComponents";
+import componentLayout from "../models/componentLayout";
+import componentFormFields from "../models/componentFormFields";
+import componentBlock from "../models/componentBlock";
+import componentSection from "../models/componentSection";
+
 import Form from "./widgets/Form";
 
 type Primitive = string | number | boolean | undefined;
@@ -28,9 +31,11 @@ export type FormTree = {
     [key: string]: React.ReactNode | FormTree;
 };
 
-export const Model = {
-    input: modelFormFields,
-    ui: modelUIComponents,
+export const Component = {
+    layout: componentLayout,
+    input: componentFormFields,
+    block: componentBlock,
+    section: componentSection
 };
 
 
@@ -169,7 +174,7 @@ export function ComponentBlockSave(blockClass: new () => ComponentBlock, dbStora
     }
 
     function detectFieldType(adapter: FieldAdapter): string {
-        for (const [typeName, factory] of Object.entries(modelFormFields)) {
+        for (const [typeName, factory] of Object.entries(componentFormFields)) {
             const testAdapter = factory();
             if (testAdapter.renderForm.toString() === adapter.renderForm.toString()) {
                 return typeName;
@@ -248,7 +253,7 @@ function ComponentBlockSave2(blockClass: new () => ComponentBlock, dbStoragePath
     }
 
     function detectFieldType(adapter: FieldAdapter): string {
-        for (const [typeName, factory] of Object.entries(modelFormFields)) {
+        for (const [typeName, factory] of Object.entries(componentFormFields)) {
             const testAdapter = factory();
             if (testAdapter.renderForm.toString() === adapter.renderForm.toString()) {
                 return typeName;
@@ -402,4 +407,4 @@ export class ComponentTemplate {
 
 
 
-export default Model;
+export default Component;

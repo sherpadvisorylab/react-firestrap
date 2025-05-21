@@ -10,7 +10,7 @@ import setLog from "../../libs/log";
 import { useTheme } from "../../Theme";
 import Alert from "../ui/Alert";
 import { RecordProps } from "../../integrations/google/firedatabase";
-import {FormTree, ModelProps, buildFormFields} from "../Models";
+import {FormTree, ModelProps, buildFormFields} from "../Component";
 import Breadcrumbs from "../blocks/Breadcrumbs";
 
 interface BaseFormProps {
@@ -126,7 +126,7 @@ export function FormData({
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const path = e.target.name.split(".");
         const value = e.target.value;
-
+        console.log("handleChange", path, value);
         setRecord(prev => {
             const updated = { ...prev };
             let target = updated;
@@ -260,7 +260,7 @@ export function FormModel({
         if (!model) return [{}, {}];
         return buildFormFields(model);
     }, [model]);
-
+    console.log("formnodel nodes", defaultFormRenderer(fields));
     return (
         <FormDatabase dataObject={defaults} {...formProps}>
             {defaultFormRenderer(fields)}

@@ -29,7 +29,7 @@ const applyOnChangeRecursive = ({
         const isFragment = type === React.Fragment;
         const isCustomComponent = typeof type !== 'string';
         const name = props.name;
-
+        console.log(name, "component enanchger", props, isFragment, isCustomComponent);
         const onChange = handleChange && ((event: React.ChangeEvent<any>) => {
             props.onChange?.(event);
             handleChange?.(event);
@@ -88,6 +88,7 @@ const ComponentEnhancer = ({
                                record,
                                handleChange
 }: ComponentEnhancerProps ) => {
+    console.log("ENANGHER", components, record);
     const children = Array.isArray(components) ? components : [components];
     return (
         <>

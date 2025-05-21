@@ -24,7 +24,7 @@ import Gallery from "../components/ui/Gallery";
 import Loader from "../components/ui/Loader";
 import Percentage from "../components/ui/Percentage";
 import Repeat from "../components/ui/Repeat";
-import Model from "../components/Models";
+import Component from "../components/Component";
 import Modal from "../components/ui/Modal";
 import ImageEditor from "../components/widgets/ImageEditor";
 import { PLACEHOLDER_BRAND, PLACEHOLDER_IMAGE } from '../Theme';
@@ -562,9 +562,9 @@ function Helper() {
                     <Form
                       dataStoragePath="/demo/form/composer"
                       model={{
-                        fullName: Model.input.string(),
-                        birthDate: Model.input.date({ value: "ciao" }),
-                        email: Model.input.email({ value: "ciao" }),
+                        fullName: Component.input.string(),
+                        birthDate: Component.input.date({ value: "ciao" }),
+                        email: Component.input.email({ value: "ciao" }),
                       }}
                     />
                   </Card>

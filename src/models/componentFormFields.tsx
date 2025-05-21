@@ -1,5 +1,5 @@
 import React from "react";
-import { FieldFactory } from "../components/Models";
+import { FieldFactory } from "../components/Component";
 import {
     InputProps,
     Checkbox,
@@ -18,7 +18,7 @@ import { getContextMenu } from "../App";
 import {Col, Row} from "../components";
 import Upload, {UploadProps} from "../components/ui/fields/Upload";
 
-export interface formFieldsModels {
+export interface ComponentFormFieldsMap {
 //    label: FieldFactory<Omit<LabelProps, 'name' | 'onChange'>>;
     string: FieldFactory<Omit<InputProps, 'name' | 'onChange'>>;
     email: FieldFactory<Omit<InputProps, 'name' | 'onChange'>>;
@@ -45,7 +45,7 @@ export interface formFieldsModels {
     menu: FieldFactory<{ context?: string }>;
 }
 
-const modelFormFields: formFieldsModels = {
+const componentFormFields: ComponentFormFieldsMap = {
     string: (props = {}) => {
         const { value, label, ...rest } = props;
         return {
@@ -188,4 +188,4 @@ const modelFormFields: formFieldsModels = {
     }
 };
 
-export default modelFormFields;
+export default componentFormFields;
