@@ -25,14 +25,14 @@ export { default as Table } from './ui/Table';
 
 export * from './ui/fields/Input';
 export * from './ui/fields/Select';
-export * from './ui/fields/Menu';
 export * from './ui/fields/Upload';
 export * from './ui/fields/Crop';
+export * from './blocks/Menu';
 
 export { default as Form } from './widgets/Form';
 export { default as Grid } from './widgets/Grid';
 export { default as ImageEditor } from './widgets/ImageEditor';
-export { default as Models } from './Models';
-export { ComponentBlock } from './Models';
-export { default as PageModify } from './widgets/PageModify';
+export { default as Component } from './Component';
+export { ComponentBlock } from './Component';
+export * from './Template';
 

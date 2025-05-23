@@ -10,11 +10,8 @@ import setLog from "../../libs/log";
 import { useTheme } from "../../Theme";
 import Alert from "../ui/Alert";
 import { RecordProps } from "../../integrations/google/firedatabase";
-import { FieldDefinition } from "../Models";
+import {FormTree, ModelProps, buildFormFields} from "../Component";
 import Breadcrumbs from "../blocks/Breadcrumbs";
-
-
-type FormFieldsProps = { [key: string]: React.ReactNode };
 
 interface BaseFormProps {
     header?: React.ReactNode;
@@ -39,13 +36,13 @@ interface FormDefaultProps extends BaseFormProps {
 }
 
 interface FormModelProps extends BaseFormProps {
-    model: { [key: string]: FieldDefinition<any> | React.ReactNode };
-    children?: ((fields: { [key: string]: React.ReactNode }) => React.ReactNode);
+    model: ModelProps;
+    children?: ((fields: FormTree) => React.ReactNode);
 }
 
 interface FormProps extends BaseFormProps {
-    model?: { [key: string]: FieldDefinition<any> | React.ReactNode };
-    children?: React.ReactNode | ((fields: { [key: string]: React.ReactNode }) => React.ReactNode);
+    model?: ModelProps;
+    children?: React.ReactNode | ((fields: FormTree) => React.ReactNode);
     dataObject?: any;
 }
 function Form(props: FormProps) {
@@ -129,7 +126,7 @@ export function FormData({
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const path = e.target.name.split(".");
         const value = e.target.value;
-
+        console.log("handleChange", path, value);
         setRecord(prev => {
             const updated = { ...prev };
             let target = updated;
@@ -144,6 +141,21 @@ export function FormData({
         });
     };
 
+    const cleanedRecord = (record: RecordProps | undefined): RecordProps => {
+        const cleaned: RecordProps = {};
+        if (!record) return cleaned;
+
+        for (const [k, v] of Object.entries(record)) {
+            if (Array.isArray(v)) {
+                cleaned[k] = v.filter((item) => item !== undefined);
+            } else if(v && typeof v === 'object') {
+                cleanedRecord(v);
+            } else if (v !== undefined) {
+                cleaned[k] = v;
+            }
+        }
+        return cleaned;
+    }
 
     const handleSave = async (e: React.ChangeEvent<HTMLInputElement>) => {
         e.preventDefault();
@@ -151,7 +163,7 @@ export function FormData({
         showNotice && setNotification(undefined);
         dataObject && onInsert && await onInsert(record);
         !dataObject && onUpdate && await onUpdate(record);
-        dataStoragePath && await db.set(dataStoragePath, record);
+        dataStoragePath && await db.set(dataStoragePath, cleanedRecord(record));
 
         await handleFinally(dataObject ? "update" : "create");
     };
@@ -218,69 +230,42 @@ export function FormData({
     )
 }
 
-function normalizeValue(value: any): any {
-    if (Array.isArray(value)) {
-        return value.map(normalizeValue);
-    }
-    if (value && typeof value === 'object') {
-        return Object.fromEntries(
-            Object.entries(value).map(([k, v]) => [k, normalizeValue(v)])
-        );
-    }
-    return value === undefined ? null : value;
-}
-
-function isFieldDefinition(obj: any): obj is FieldDefinition<any> {
-    return (
-        obj &&
-        typeof obj === 'object' &&
-        typeof obj.form === 'function'
-    );
-}
-
-function buildFieldsAndDefaults(model: any, parentKey: string = '') {
-    let fields: any = {};
-    let defaults: any = {};
-
-    for (const [key, value] of Object.entries(model)) {
-        const fullKey = parentKey ? `${parentKey}.${key}` : key;
-
-        if (isFieldDefinition(value)) {
-            fields[key] = value.form(key);
-            defaults[key] = normalizeValue(value.defaults?.(fullKey));
+function defaultFormRenderer(tree: FormTree): React.ReactNode {
+    return Object.entries(tree).map(([key, value]) => {
+        if (React.isValidElement(value)) {
+            return (
+                <div key={key} className="form-group">
+                    {value}
+                </div>
+            );
         } else if (value && typeof value === 'object') {
-            const nested = buildFieldsAndDefaults(value, fullKey);
-            fields[key] = nested.fields;
-            defaults[key] = nested.defaults;
+            return (
+                <>
+                    {defaultFormRenderer(value as FormTree)}
+                </>
+            );
         } else {
-            fields[key] = value; // React node or null
+            return null;
         }
-    }
-
-    return { fields, defaults };
+    });
 }
-
-
 
 export function FormModel({
-    model,
-    children,
-    ...formProps
-}: FormModelProps
+                              model,
+                              children,
+                              ...formProps
+                          }: FormModelProps
 ) {
-    const [fields, values] = React.useMemo(() => {
+    const [ fields, defaults ] = React.useMemo(() => {
         if (!model) return [{}, {}];
-        const { fields, defaults } = buildFieldsAndDefaults(model);
-        return [fields, defaults];
+        return buildFormFields(model);
     }, [model]);
-
-
+    console.log("formnodel nodes", defaultFormRenderer(fields));
     return (
-        <FormDatabase dataObject={values} {...formProps}>
-            {typeof children === 'function'
-                ? children(fields)
-                : Object.values(fields)}
+        <FormDatabase dataObject={defaults} {...formProps}>
+            {defaultFormRenderer(fields)}
         </FormDatabase>
+
     );
 }
 

@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Select } from './Select';
-import { getContextMenu, useMenu } from '../../../App';
-import { useTheme } from '../../../Theme';
+import { useMenu } from '../../App';
+import { useTheme } from '../../Theme';
 import { Link } from 'react-router-dom';
-import { Wrapper } from '../GridSystem';
-import Badge, { BadgeProps } from '../Badge';
+import { Wrapper } from '../ui/GridSystem';
+import Badge, { BadgeProps } from '../ui/Badge';
 
 interface MenuProps {
   context: string;
@@ -24,18 +23,18 @@ interface MenuProps {
 
 export const Menu = ({
   context,
-  Type = 'ul',
-  badges = [],
-  pre,
-  post,
-  wrapClass,
-  className,
-  headerClass,
-  itemClass,
-  linkClass,
-  textClass,
-  iconClass,
-  submenuClass,
+  Type          = 'ul',
+  badges        = [],
+  pre           = undefined,
+  post          = undefined,
+  wrapClass     = undefined,
+  className     = undefined,
+  headerClass   = undefined,
+  itemClass     = undefined,
+  linkClass     = undefined,
+  textClass     = undefined,
+  iconClass     = undefined,
+  submenuClass  = undefined,
 }: MenuProps) => {
   const menu = useMenu(context);
   const theme = useTheme('menu');

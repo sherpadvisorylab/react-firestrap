@@ -2,7 +2,7 @@ import React, {ChangeEvent} from 'react';
 import {generateUniqueId, isEmpty} from "../../../libs/utils";
 import {Wrapper} from "../GridSystem";
 
-interface InputProps {
+interface BaseInputProps {
     name: string;
     value?: string | number;
     placeholder?: string;
@@ -21,9 +21,9 @@ interface InputProps {
     inputClass?: string;
 }
 
-type TypedInputProps = Omit<InputProps, 'type'>;
+export type InputProps = Omit<BaseInputProps, 'type'>;
 
-interface CheckboxProps {
+export interface CheckboxProps {
     name: string;
     value?: boolean;
     onChange?: (event: ChangeEvent<HTMLInputElement>) => void;
@@ -42,7 +42,7 @@ interface LabelProps {
     className?: string;
 }
 
-interface TextAreaProps {
+export interface TextAreaProps {
     name: string;
     value?: string;
     placeholder?: string;
@@ -77,7 +77,7 @@ export const Input = ({
                                                 max         = undefined,
                                                 wrapClass   = undefined,
                                                 inputClass  = undefined
-}: InputProps) => {
+}: BaseInputProps) => {
     return (
         <Wrapper className={wrapClass}>
             {label && <Label label={label} required={required} />}
@@ -102,27 +102,27 @@ export const Input = ({
     );
 };
 
-export const Number = (props: TypedInputProps) => (
+export const Number = (props: InputProps) => (
     <Input {...props} type="number" />
 );
 
-export const String = (props: TypedInputProps) => (
+export const String = (props: InputProps) => (
     <Input {...props} type="text" />
 );
 
-export const Email = (props: TypedInputProps) => (
+export const Email = (props: InputProps) => (
     <Input {...props} type="email" />
 );
 
-export const Date = (props: TypedInputProps) => (
+export const Date = (props: InputProps) => (
     <Input {...props} type="date" />
 );
 
-export const Time = (props: TypedInputProps) => (
+export const Time = (props: InputProps) => (
     <Input {...props} type="time" />
 );
 
-export const DateTime = (props: TypedInputProps) => (
+export const DateTime = (props: InputProps) => (
     <Input {...props} type="datetime-local" />
 );
 
@@ -218,23 +218,28 @@ export const TextArea = ({
   );
 };
 
-interface DateInputProps {
+export interface DateInputProps {
     name: string;
-    placeholder?: string;
-    onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
     value?: string;
+    placeholder?: string;
+    label?: string;
+    required?: boolean;
+    onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
     className?: string;
 }
 
 export const DateInput = ({
-                                                        name,
-                                                        placeholder     = undefined,
-                                                        onChange        = undefined,
-                                                        value           = undefined,
-                                                        className       = undefined
+                                                            name,
+                                                            value           = undefined,
+                                                            placeholder     = undefined,
+                                                            label           = undefined,
+                                                            required        = false,
+                                                            onChange        = undefined,
+                                                            className       = undefined
 }: DateInputProps) => {
     const fullClassName = `form-control${className ? ' ' + className : ''}`;
-    return (
+    return (<>
+        {label && <Label required={required} label={label}/>}
         <div className="input-group w-50">
             <input
                 name={name}
@@ -248,11 +253,12 @@ export const DateInput = ({
                 <i className="fa fa-calendar"></i>
             </label>
         </div>
-    );
+    </>);
 };
 
-interface SwitchInputProps {
+export interface SwitchInputProps {
     name: string;
+    value?: string | number;
     label?: string;
     status?: boolean;
     onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -261,6 +267,7 @@ interface SwitchInputProps {
 
 export const SwitchInput = ({
                                                             name,
+                                                            value       = undefined,
                                                             label       = undefined,
                                                             status      = false,
                                                             onChange    = undefined,
@@ -274,6 +281,7 @@ export const SwitchInput = ({
                 type="checkbox"
                 className="form-check-input"
                 checked={status}
+                value={value}
                 onChange={onChange}
             />
             
@@ -284,7 +292,7 @@ export const SwitchInput = ({
     );
 };
 
-interface ListGroupProps {
+export interface ListGroupProps {
     items: React.ReactNode[];
     onClick?: (event: React.MouseEvent<HTMLAnchorElement>, index: number) => void;
     active?: number;

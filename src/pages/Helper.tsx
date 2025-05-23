@@ -24,11 +24,11 @@ import Gallery from "../components/ui/Gallery";
 import Loader from "../components/ui/Loader";
 import Percentage from "../components/ui/Percentage";
 import Repeat from "../components/ui/Repeat";
-import Models from "../components/Models";
+import Component from "../components/Component";
 import Modal from "../components/ui/Modal";
 import ImageEditor from "../components/widgets/ImageEditor";
 import { PLACEHOLDER_BRAND, PLACEHOLDER_IMAGE } from '../Theme';
-import { Menu } from '../components/ui/fields/Menu';
+import { Menu } from '../components/blocks/Menu';
 
 
 
@@ -609,9 +609,9 @@ function Helper() {
                     <Form
                       dataStoragePath="/demo/form/composer"
                       model={{
-                        fullName: Models.input.string(),
-                        birthDate: Models.input.date({ value: "ciao" }),
-                        email: Models.input.email({ value: "ciao" }),
+                        fullName: Component.input.string(),
+                        birthDate: Component.input.date({ value: "ciao" }),
+                        email: Component.input.email({ value: "ciao" }),
                       }}
                     />
                   </Card>
