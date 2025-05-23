@@ -1,11 +1,11 @@
-import React from 'react'
+import React, { useState } from 'react'
 import Grid from "../components/widgets/Grid";
-import {Select} from "../components/ui/fields/Select";
+import { Select } from "../components/ui/fields/Select";
 import { Wrapper, Container, Row, Col } from "../components/ui/GridSystem";
 import Card from "../components/ui/Card";
 import { String, Number, Email, Date, Time, DateTime, DateInput, TextArea, Checkbox, ListGroup, SwitchInput, Label } from "../components/ui/fields/Input";
 import { Autocomplete, Checklist } from "../components/ui/fields/Select";
-import Upload from "../components/ui/fields/Upload";
+import { UploadDocument, UploadImage } from "../components/ui/fields/Upload";
 import { ActionButton, LoadingButton, GoSite, ReferSite } from "../components/ui/Buttons";
 import Alert from "../components/ui/Alert";
 import Badge from "../components/ui/Badge";
@@ -34,6 +34,20 @@ import { Menu } from '../components/ui/fields/Menu';
 
 
 function Helper() {
+
+  const [showModal, setShowModal] = useState(false);
+  const [count, setCount] = useState(0);
+  const handleClick = () => {
+  setInterval(() => {
+    setCount(prev => {
+      const newCount = prev + 20;
+      console.log(newCount);
+      return newCount;
+    });
+  }, 1000);
+};
+
+
   return (
     <Container className='mb-5'>
       <Row className='justify-content-center'>
@@ -44,7 +58,7 @@ function Helper() {
               <p>Helper is a component that helps you to create a form.</p>
               <Row>
                 {/* Input */}
-                <Col className='mb-5'>
+                <Col xs={12} className='mb-5'>
                   <h2 id='input'>Input</h2>
 
                   {/* Text */}
@@ -71,7 +85,7 @@ function Helper() {
                       {/* DateTime */}
                       <DateTime name='datetime' label='DateTime' inputClass='mb-3' placeholder='YYYY-MM-DD HH:MM:SS' />
                       {/* Custom date */}
-                      <DateInput name='dateInput' onChange={()=>{}} placeholder='YYYY-MM-DD' />
+                      <DateInput name='dateInput' onChange={() => { }} placeholder='YYYY-MM-DD' />
                     </form>
                   </Card>
 
@@ -84,8 +98,8 @@ function Helper() {
                       <Checkbox name='checkbox' label='Checkbox2' checkboxClass='mb-3' value={true} />
                       {/* Switch */}
                       <Label label='Switches' />
-                      <SwitchInput name='switch1' label='Switch input' onChange={()=>{}} status={false} />
-                      <SwitchInput name='switch2' onChange={()=>{}} label='Switch input' className='mb-3' status={true} />
+                      <SwitchInput name='switch1' label='Switch input' onChange={() => { }} status={false} />
+                      <SwitchInput name='switch2' onChange={() => { }} label='Switch input' className='mb-3' status={true} />
                     </form>
                   </Card>
 
@@ -93,7 +107,7 @@ function Helper() {
                   <Card cardClass='my-3' title='List Input'>
                     <form className='form-group'>
                       <Label label='List Group' />
-                      <ListGroup className='mb-3' onClick={()=>{}} active={0} items={[
+                      <ListGroup className='mb-3' onClick={() => { }} active={0} items={[
                         <span className='text-danger'>Element1</span>,
                         <span className='text-success'>Element2</span>,
                         <span className='text-warning'>Element3</span>
@@ -103,7 +117,7 @@ function Helper() {
                 </Col>
 
                 {/* Selectors */}
-                <Col className='mb-5'>
+                <Col xs={12} className='mb-5'>
                   <h2 id='selectors'>Selectors</h2>
                   <Card cardClass='mb-3'>
                     <form className='form-group'>
@@ -119,17 +133,36 @@ function Helper() {
                 </Col>
 
                 {/* Upload */}
-                <Col className='mb-5'>
+                <Col xs={12} className='mb-5'>
                   <h2 id='upload'>Upload</h2>
-                  <Card cardClass='mb-3'>
+                  {/* Documenti */}
+                  <Card cardClass='mb-3' title='Documents Upload'>
                     <form className='form-group'>
-                      <Upload name='upload' label='Upload' className='mb-3' />
+                      <Label label='Upload Multiple Documents' className='mt-3' />
+                      <UploadDocument name='uploadDocument' editable multiple />
+
+                      <Label label='Upload Document not Editable' className='mt-3' />
+                      <UploadDocument name='uploadDocument' />
+                    </form>
+                  </Card>
+
+                  {/* Immagini */}
+                  <Card cardClass='mb-3' title='Images Upload'>
+                    <form className='form-group'>
+                      <Label label='Upload Multiple Images' className='mt-3' />
+                      <UploadImage addButtonPosition='right' name='uploadImage' label='Upload Images' previewWidth={150} previewHeight={150} multiple editable />
+
+                      <Label label='Upload Single Image' className='mt-3' />
+                      <UploadImage name='uploadImage' label='Upload Images' editable />
+
+                      <Label label='Upload Single Image not Editable' className='mt-3' />
+                      <UploadImage name='uploadImage' label='Upload Images' />
                     </form>
                   </Card>
                 </Col>
 
                 {/* Alert */}
-                <Col className='mb-5'>
+                <Col xs={12} className='mb-5'>
                   <h2 id='alert'>Alert</h2>
                   <Card cardClass='mb-3'>
                     <Alert type="info" children="Info" />
@@ -144,7 +177,7 @@ function Helper() {
                 </Col>
 
                 {/* Badge */}
-                <Col className='mb-5'>
+                <Col xs={12} className='mb-5'>
                   <h2 id='badge'>Badge</h2>
                   <Card cardClass='mb-3'>
                     <Row className='gap-2 d-flex justify-content-center'>
@@ -177,7 +210,7 @@ function Helper() {
                 </Col>
 
                 {/* Buttons */}
-                <Col className='mb-5'>
+                <Col xs={12} className='mb-5'>
                   <h2 id='buttons'>Buttons</h2>
                   <Card cardClass='mb-3'>
                     <Row>
@@ -222,7 +255,7 @@ function Helper() {
                         <ReferSite
                           title="OpenAI"
                           url="https://www.openai.com"
-                          imageUrl= {PLACEHOLDER_BRAND}
+                          imageUrl={PLACEHOLDER_BRAND}
                           width={120}
                         />
                       </Col>
@@ -231,7 +264,7 @@ function Helper() {
                 </Col>
 
                 {/* Card */}
-                <Col className='mb-5'>
+                <Col xs={12} className='mb-5'>
                   <h2 id='card'>Card</h2>
                   <Card cardClass='mb-3'>
                     <Card
@@ -255,7 +288,7 @@ function Helper() {
                 </Col>
 
                 {/* Gallery */}
-                <Col className='mb-5'>
+                <Col xs={12} className='mb-5'>
                   <h2 id='gallery'>Gallery</h2>
                   <Card cardClass='mb-3'>
                     <Gallery
@@ -297,7 +330,7 @@ function Helper() {
                 </Col>
 
                 {/* GridSystem */}
-                <Col className='mb-5'>
+                <Col xs={12} className='mb-5'>
                   <h2 id='gridSystem'>GridSystem</h2>
                   <Card cardClass='mb-3'>
                     <Wrapper>
@@ -319,7 +352,7 @@ function Helper() {
                 </Col>
 
                 {/* Images */}
-                <Col className='mb-5'>
+                <Col xs={12} className='mb-5'>
                   <h2 id='images'>Images</h2>
                   <Card cardClass='mb-3' title='Image'>
                     <p>This is the standard HTML tag for displaying an image. It is simple and easy to use, but it doesn’t handle errors, fallbacks, or custom caching. If the image fails to load, the user will see a broken image icon.
@@ -353,7 +386,7 @@ function Helper() {
                 </Col>
 
                 {/* Loader */}
-                <Col className='mb-5'>
+                <Col xs={12} className='mb-5'>
                   <h2 id='loader'>Loader</h2>
                   <Card cardClass='mb-3'>
                     <Loader
@@ -364,36 +397,50 @@ function Helper() {
                 </Col>
 
                 {/* Modal */}
-                {/* <Col className='mb-5'>
-          <h2 id='modal'>Modal</h2>
-          <Card cardClass='mb-3' title=''>
-            <Modal children='content' />
-          </Card>
-        </Col> */}
+                <Col xs={12} className='mb-5'>
+                  <h2 id='modal'>Modal</h2>
+                  <Card cardClass='mb-3' title=''>
+                    <ActionButton label='Open modal' onClick={async () => { setShowModal(true) }} />
+                    {showModal &&
+                      <Modal
+                        title="Modal Title"
+                        header={<span className="text-muted">Header</span>}
+                        footer={<div>Footer with actions.</div>}
+                        wrapClass="my-3"
+                        size="lg"
+                        onClose={() => { setShowModal(false) }}>
+                        <p>Main content.</p>
+                      </Modal>
+                    }
+                  </Card>
+                </Col>
 
                 {/* Percentage */}
-                <Col className='mb-5'>
+                <Col xs={12} className='mb-5'>
                   <h2 id='percentage'>Percentage</h2>
+                  <button onClick={handleClick}>click</button>
+                  <Percentage min={0} max={100} val={count} />
+
                   <Card cardClass='mb-3' title=''>
-                    <Percentage min={0} max={10} val={7} children='Rounded' />
-                    <Percentage min={0} max={10} val={3} children='Progress' styleType='progress' />
+                    <Percentage min={0} max={10} val={7}/>
+                    <Percentage min={0} max={10} val={3} styleType='progress' />
                   </Card>
                 </Col>
 
                 {/* Repeat */}
-                <Col className='mb-5'>
+                <Col xs={12} className='mb-5'>
                   <h2 id='repeat'>Repeat</h2>
                   <Card cardClass='mb-3' title=''>
                     <Repeat>
                       <String name='repeat' label='Repeat 1' inputClass='mb-3' placeholder='Lorem ipsum.' />
                       <String name='repeat' label='Repeat 2' inputClass='mb-3' placeholder='Lorem ipsum.' />
                       <String name='repeat' label='Repeat 3' inputClass='mb-3' placeholder='Lorem ipsum.' />
-                      </Repeat>
+                    </Repeat>
                   </Card>
                 </Col>
 
                 {/* Tab */}
-                <Col className='mb-5'>
+                <Col xs={12} className='mb-5'>
                   <h2 id='tab'>Tab</h2>
                   <Card cardClass='mb-3' title='Dynamic Tabs (Tab)'>
 
@@ -417,7 +464,7 @@ function Helper() {
                 </Col>
 
                 {/* Table */}
-                <Col className='mb-5'>
+                <Col xs={12} className='mb-5'>
                   <h2 id='table'>Table</h2>
                   <Card cardClass='mb-3' title=''>
                     <Table
@@ -438,7 +485,7 @@ function Helper() {
                 </Col>
 
                 {/* Brand */}
-                <Col className='mb-5'>
+                <Col xs={12} className='mb-5'>
                   <h2 id='brand'>Brand</h2>
                   <Card cardClass='mb-3' title=''>
                     <Brand url='https://it.wikipedia.org/wiki/Sicurezza_informatica' src={PLACEHOLDER_BRAND} label='Cyber' />
@@ -446,7 +493,7 @@ function Helper() {
                 </Col>
 
                 {/* Breadcrumbs */}
-                <Col className='mb-5'>
+                <Col xs={12} className='mb-5'>
                   <h2 id='breadcrumb'>Breadcrumbs</h2>
                   <Card cardClass='mb-3' title=''>
                     <Breadcrumbs className="mb-3" pre={<i className="bi bi-house-door-fill" />} />
@@ -454,7 +501,7 @@ function Helper() {
                 </Col>
 
                 {/* Carousel */}
-                <Col className='mb-5'>
+                <Col xs={12} className='mb-5'>
                   <h2 id='carousel'>Carousel</h2>
                   <Card cardClass='mb-3' title=''>
                     <Carousel
@@ -475,7 +522,7 @@ function Helper() {
                 </Col>
 
                 {/* Dropdown */}
-                <Col className='mb-5'>
+                <Col xs={12} className='mb-5'>
                   <h2 id='dropdown'>Dropdown</h2>
                   <Card cardClass='mb-3' title=''>
                     {/* Dropdown Links */}
@@ -505,7 +552,7 @@ function Helper() {
                 </Col>
 
                 {/* Notifications */}
-                <Col className='mb-5'>
+                <Col xs={12} className='mb-5'>
                   <h2 id='notification'>Notifications</h2>
                   <Card cardClass='mb-3' title=''>
                     <Notifications badge={<span className="badge ">3</span>}>
@@ -534,7 +581,7 @@ function Helper() {
                 </Col>
 
                 {/* Search */}
-                <Col className='mb-5'>
+                <Col xs={12} className='mb-5'>
                   <h2 id='search'>Search</h2>
                   <Card cardClass='mb-3' title=''>
                     <Search />
@@ -571,7 +618,7 @@ function Helper() {
                 </Col>
 
                 {/* Grid */}
-                <Col className='mb-5'>
+                <Col xs={12} className='mb-5'>
                   <h2 id='grid'>Grid</h2>
                   <Card cardClass='mb-3' title=''>
                     <Grid
@@ -621,7 +668,7 @@ function Helper() {
                 <Menu context='header' />
 
                 {/* Image Editor -> blocca tutto */}
-                {/*  <Col className='mb-5'>
+                {/*  <Col xs={12} className='mb-5'>
           <h2 id='imageEditor'></h2>
           <Card cardClass='mb-3' title=''>
             <ImageEditor imageUrl='' />
@@ -663,9 +710,9 @@ function Helper() {
             </Col>
           </Row>
         </Col>
-      </Row>
+      </Row >
 
-    </Container>
+    </Container >
   )
 }
 

@@ -6,7 +6,7 @@ import {useTheme} from "../../Theme";
 export interface IButton {
     onClick?: (e: any) => void,
     icon?: string,
-    label?: string,
+    label?: string | React.ReactNode,
     badge?: string,
     pre?: string,
     post?: string,
