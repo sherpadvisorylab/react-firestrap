@@ -134,9 +134,12 @@ const defaultTheme = {
     Dropdown: {
         wrapClass: "",
         className: "",
-        buttonClass: "btn border-0",
-        badgeClass: "menu-badge bg-theme",
-        menuClass: "mt-1 fs-11px w-300px pt-1",
+        buttonClass: "",
+        badgeClass: "position-absolute me-1 top-0 end-0",
+        menuClass: "",
+        menuHeaderClass: "",
+        menuItemClass: "",
+        menuDividerClass: "",
         headerClass: "",
         footerClass: ""
     },
@@ -170,8 +173,24 @@ const defaultTheme = {
     Menu: {
         wrapClass: "",
         className: "nav",
+        headerClass: "",
         itemClass: "nav-item",
-        linkClass: "nav-link"
+        linkClass: "nav-link",
+        iconClass: "me-1",
+        textClass: "",
+        badgeClass: "ms-1",
+        arrowClass: "",
+        submenuClass: "",
+    },
+    Brand: {
+        wrapClass: "",
+        className: "brand",
+        logoClass: "navbar-brand",
+        labelClass: "navbar-text",
+    },
+    SignIn: {
+        className: "d-flex align-items-center",
+        avatarClass: "avatar rounded-circle mx-2",
     }
 }
 

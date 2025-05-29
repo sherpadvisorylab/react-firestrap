@@ -11,21 +11,27 @@ root.render(
         importTheme={() => import((`./theme.js`))}
         LayoutDefault={Default}
         firebaseConfig={{
-            apiKey: "AIzaSyDLAd4hy3naDv7-GFaXjHIzGcuAcf2pzpc",
-            authDomain: "d2unoapp.firebaseapp.com",
-            databaseURL: "https://d2unoapp-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "d2unoapp",
-            storageBucket: "d2unoapp.appspot.com",
-            messagingSenderId: "1024454697499",
-            appId: "1:1024454697499:web:2d40b0a32e76433f908ebe",
-            measurementId: "G-P4780L98J1"
+            apiKey: process.env.REACT_APP_FIREBASE_APIKEY,
+            authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+            databaseURL: process.env.REACT_APP_FIREBASE_DATABASE_URL,
+            projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+            storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+            messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+            appId: process.env.REACT_APP_FIREBASE_APP_ID,
+            measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID
         }}
         oAuth2={{
-            clientId: "1024454697499-rtm2g5nu4h2bal1gumlo46pevl3s2dqb.apps.googleusercontent.com"
+            clientId: process.env.REACT_APP_GOOGLE_CLIENT_ID,
+            scope: process.env.REACT_APP_GOOGLE_SCOPE
         }}
         dropBoxConfig={{
-            clientId: "rxey0c8fxafi93p",
-            rootPath: "/appOrganizer"
+            clientId: process.env.REACT_APP_DROPBOX_CLIENT_ID,
+            rootPath: process.env.REACT_APP_DROPBOX_BASE_PATH
+        }}
+        aiConfig={{
+            geminiApiKey: process.env.REACT_APP_GEMINI_API_KEY,
+            chatGptApiKey: process.env.REACT_APP_CHATGPT_API_KEY,
+            deepSeekApiKey: process.env.REACT_APP_DEEPSEEK_API_KEY,
         }}
         menuConfig={menu}
     />

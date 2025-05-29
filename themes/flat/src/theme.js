@@ -117,10 +117,13 @@ export const theme = {
         wrapClass: "",
         className: "",
         buttonClass: "position-relative btn dropdown-toggle p-0 border-0 arrow-none",
-        badgeClass: "",
+        badgeClass: "position-absolute me-1 top-0 end-0",
         menuClass: "",
+        menuHeaderClass: "",
+        menuItemClass: "",
+        menuDividerClass: "",
         headerClass: "",
-        footerClass: ""
+        footerClass: "",
     },
     Notifications: {
         wrapClass: "",
@@ -152,9 +155,23 @@ export const theme = {
     Menu: {
         wrapClass: "",
         className: "pc-navbar",
+        headerClass: "pc-item pc-caption",
         itemClass: "pc-item",
         linkClass: "pc-link",
-        iconClass: "",
-        headerClass: ""
+        iconClass: "pc-micon me-1",
+        textClass: "pc-mtext",
+        badgeClass: "ms-1",
+        arrowClass: "pc-arrow",
+        submenuClass: "pc-submenu"
+    },
+    Brand: {
+        wrapClass: "",
+        className: "brand",
+        logoClass: "navbar-brand",
+        labelClass: "navbar-text",
+    },
+    SignIn: {
+        className: "d-flex align-items-center",
+        avatarClass: "avatar rounded-circle mx-2",
     }
 }

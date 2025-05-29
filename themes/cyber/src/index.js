@@ -28,6 +28,11 @@ root.render(
             clientId: process.env.REACT_APP_DROPBOX_CLIENT_ID,
             rootPath: process.env.REACT_APP_DROPBOX_BASE_PATH
         }}
+        aiConfig={{
+            geminiApiKey: process.env.REACT_APP_GEMINI_API_KEY,
+            chatGptApiKey: process.env.REACT_APP_CHATGPT_API_KEY,
+            deepSeekApiKey: process.env.REACT_APP_DEEPSEEK_API_KEY,
+        }}
         menuConfig={menu}
     />
 );

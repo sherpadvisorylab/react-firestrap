@@ -143,8 +143,9 @@ const EditFileModal = ({
 
 /* ------------------------ Caricamento documenti ---------------------- */
 
-interface UploadDocumentProps {
+export interface UploadDocumentProps {
     name: string;
+    value?: string;
     onChange?: (e: { target: { name: string; value: DocumentFile[] } }) => void;
     label?: string;
     editable?: boolean;
@@ -163,12 +164,13 @@ type DocumentFile = {
 
 export const UploadDocument = ({
     name,
-    onChange,
-    label,
-    editable = false,
-    multiple = false,
-    className,
-    accept = ".pdf,.doc,.docx,.txt,.iso",
+    value       = undefined,
+    onChange    = undefined,
+    label       = undefined,
+    editable    = false,
+    multiple    = false,
+    className   = undefined,
+    accept      = ".pdf,.doc,.docx,.txt,.iso",
 }: UploadDocumentProps) => {
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const [files, setFiles] = useState<DocumentFile[]>([]);
@@ -284,12 +286,13 @@ export const UploadDocument = ({
 
 /* ------------------------ Caricamento immagini ---------------------- */
 
-interface UploadImageProps {
+export interface UploadImageProps {
     name: string;
+    value?: string;
+    onChange?: (e: { target: { name: string; value: File[] } }) => void;
     editable?: boolean;
     multiple?: boolean;
     extensions?: string[];
-    onChange?: (e: { target: { name: string; value: File[] } }) => void;
     label?: string;
     disabled?: boolean;
     className?: string;
@@ -320,13 +323,14 @@ interface PreviewImage {
 
 export const UploadImage = ({
     name,
-    editable = false,
-    multiple = false,
-    extensions = undefined,
-    onChange = undefined,
-    label = undefined,
-    disabled = false,
-    className = undefined,
+    value       = undefined,
+    onChange    = undefined,
+    editable    = false,
+    multiple    = false,
+    extensions  = undefined,
+    label       = undefined,
+    disabled    = false,
+    className   = undefined,
     addButtonPosition = "left",
     previewHeight = 100,
     previewWidth = 100
@@ -439,7 +443,7 @@ export const UploadImage = ({
                 {previews.map((img, i) => (
                     <div
                         key={i}
-                        className="position-relative rounded-2 overflow-hidden border border-1 border-white"
+                        className="position-relative rounded-2 overflow-hidden border-1 border-white"
                         style={{ width: previewHeight, height: previewWidth }}
                         onMouseEnter={() => setHoveredIndex(i)}
                         onMouseLeave={() => setHoveredIndex(null)}

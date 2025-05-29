@@ -16,6 +16,14 @@
 - npx react-firestrap setup
 - follow the instructions
 
+# Reinstall project after scaffold
+- go in react-firestrap folder
+- npm run build:local
+- go in project folder
+- Copy .env project file out of the project folder
+- npx react-firestrap setup --reset
+- Copy .env file back to project folder
+
 # Create new theme
 - Clean all project folder except package.json, package-lock.json, node_modules
 - Create src and public folders

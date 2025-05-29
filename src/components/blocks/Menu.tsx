@@ -16,8 +16,10 @@ interface MenuProps {
   headerClass?: string;
   itemClass?: string;
   linkClass?: string;
-  textClass?: string;
   iconClass?: string;
+  textClass?: string;
+  badgeClass?: string;
+  arrowClass?: string;
   submenuClass?: string;
 }
 
@@ -32,8 +34,10 @@ export const Menu = ({
   headerClass   = undefined,
   itemClass     = undefined,
   linkClass     = undefined,
-  textClass     = undefined,
   iconClass     = undefined,
+  textClass     = undefined,
+  badgeClass    = undefined,
+  arrowClass    = undefined,
   submenuClass  = undefined,
 }: MenuProps) => {
   const menu = useMenu(context);
@@ -79,7 +83,7 @@ export const Menu = ({
           <span className={textClass || theme.Menu.textClass}>
             {item.title}
             {badges.map((badge, i) => (
-              <Badge key={i} type={badge.type} className="ms-1">
+              <Badge key={i} type={badge.type} className={badgeClass || theme.Menu.badgeClass}>
                 {badge.text}
               </Badge>
             ))}

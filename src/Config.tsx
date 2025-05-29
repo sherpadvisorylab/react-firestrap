@@ -1,6 +1,6 @@
 import React, {createContext, useContext, useState, ReactNode, useRef, useEffect} from 'react';
 import {fetchJson} from "./libs/fetch";
-import {DropdownLink} from "./components/blocks/Dropdown";
+import {DropdownHeader, DropdownItem} from "./components/blocks/Dropdown";
 
 export type FirebaseConfig = {
     apiKey: string;
@@ -43,6 +43,7 @@ export type DropboxConfig = {
 export type AIConfig = {
     geminiApiKey?: string;
     chatGptApiKey?: string;
+    deepSeekApiKey?: string;
 };
 
 export type Config = {
@@ -190,14 +191,14 @@ export const TenantMenu = () => {
 
     return (
         <>
-            <div className="dropdown-header">Projects</div>
+            <DropdownHeader>Projects</DropdownHeader>
             {tenants.map((item) => (
-                <DropdownLink key={item.title} onClick={item.onClick}>
+                <DropdownItem key={item.title} onClick={item.onClick}>
                     <i className={`me-1 ${item.active ? "text-success" : "text-muted"}`}>
                         <i className={`bi bi-${item.icon}`} />
                     </i>
                     {item.title}
-                </DropdownLink>
+                </DropdownItem>
             ))}
             <div className="dropdown-divider" />
         </>

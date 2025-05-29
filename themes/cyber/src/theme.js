@@ -117,8 +117,11 @@ export const theme = {
         wrapClass: "",
         className: "",
         buttonClass: "",
-        badgeClass: "",
+        badgeClass: "position-absolute me-1 top-0 end-0",
         menuClass: "",
+        menuHeaderClass: "",
+        menuItemClass: "",
+        menuDividerClass: "",
         headerClass: "",
         footerClass: ""
     },
@@ -151,12 +154,24 @@ export const theme = {
     },
     Menu: {
         wrapClass: "",
-        className: "menu",
+        className: "menu list-unstyled",
         headerClass: "menu-header",
         itemClass: "menu-item",
         linkClass: "menu-link",
-        iconClass: "menu-icon",
+        iconClass: "menu-icon me-1",
         textClass: "flex-fill",
+        badgeClass: "ms-1",
+        arrowClass: "",
         submenuClass: "nav flex-column ms-4",
+    },
+    Brand: {
+        wrapClass: "",
+        className: "brand",
+        logoClass: "navbar-brand",
+        labelClass: "navbar-text",
+    },
+    SignIn: {
+        className: "d-flex align-items-center",
+        avatarClass: "avatar rounded-circle mx-2",
     }
 }

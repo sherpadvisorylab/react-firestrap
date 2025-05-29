@@ -18,7 +18,7 @@ import Table from "../components/ui/Table";
 import Brand from "../components/blocks/Brand";
 import { Breadcrumbs } from "../components/blocks/Breadcrumbs";
 import Carousel from "../components/blocks/Carousel";
-import { Dropdown, DropdownLink, DropdownButton } from "../components/blocks/Dropdown";
+import {Dropdown, DropdownItem} from "../components/blocks/Dropdown";
 import Image from "../components/ui/Image";
 import Gallery from "../components/ui/Gallery";
 import Loader from "../components/ui/Loader";
@@ -527,26 +527,17 @@ function Helper() {
                   <Card cardClass='mb-3' title=''>
                     {/* Dropdown Links */}
                     <Dropdown
-                      icon="list"
-                      label="Dropdown with Links"
+                      toggleButton={{
+                        icon: "list",
+                        text: "Dropdown with Links"
+                      }}
                       header="Account"
                       footer={<a href="/logout" className="dropdown-item text-danger">Logout</a>}
                       keepDropdownOpen={false}
                     >
-                      <DropdownLink url="/profile">My Profile</DropdownLink>
-                      <DropdownLink url="/settings">Settings</DropdownLink>
-                      <DropdownLink onClick={() => alert("Clicked Help")}>Help</DropdownLink>
-                    </Dropdown>
-
-                    {/* Dropdown Buttons */}
-                    <Dropdown
-                      icon="list"
-                      label="Dropdown with Buttons"
-                      keepDropdownOpen={true} // opzionale
-                    >
-                      <DropdownButton>Download</DropdownButton>
-                      <DropdownButton>Share</DropdownButton>
-                      <DropdownButton>Archive</DropdownButton>
+                      <DropdownItem url="/profile">My Profile</DropdownItem>
+                      <DropdownItem url="/settings">Settings</DropdownItem>
+                      <DropdownItem onClick={() => alert("Clicked Help")}>Help</DropdownItem>
                     </Dropdown>
                   </Card>
                 </Col>

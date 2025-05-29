@@ -1,11 +1,7 @@
 import React, { useState } from 'react';
-import { useMenu, useTheme } from 'react-firestrap';
-import { Link } from "react-router-dom";
+import { Menu } from 'react-firestrap';
 
 const Sidebar = () => {
-    const theme = useTheme("sidebar");
-    const menuSidebar = useMenu("sidebar");
-
     const handleSidebarMobile = () => {
         const appElement = document.getElementById('app');
         appElement.classList.remove('app-sidebar-mobile-toggled');
@@ -15,59 +11,11 @@ const Sidebar = () => {
         <>
             <nav id='sidebar' className='app-sidebar app-sidebar-toggled'>
                 <div className="app-sidebar-content">
-                    <div className="menu">
-                        {menuSidebar.map((item, index) =>
-                            !item.path ? (
-                                <div className="menu-header" key={index}>
-                                    {item.title === "true" ? <hr /> : <label>{item.title}</label>}
-                                </div>
-                            ) : item.submenu ? (
-                                <div className="menu-item has-sub" key={index}>
-                                    <a
-                                        className="menu-link"
-                                        data-bs-toggle="collapse"
-                                        href={`#collapse${index}`}
-                                        role="button"
-                                        aria-expanded="false"
-                                        aria-controls={`collapse${index}`}
-                                    >
-                                        <span className="menu-icon">
-                                            <i className={`${theme.getIcon(item.icon)}`} />
-                                        </span>
-                                        <span className="menu-text">{item.title}</span>
-                                        <span className="menu-caret"><b className="caret"></b></span>
-                                    </a>
-                                    <div className="collapse menu-submenu" id={`collapse${index}`}>
-                                        {item.submenu.map((subitem, i) => (
-                                            <div className="menu-item" key={i}>
-                                                <a href="email_inbox.html" className="menu-link">
-                                                    <span className="menu-text">{subitem.title}</span>
-                                                </a>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            ) : (
-                                <div
-                                    key={index}
-                                    className={"menu-item" + (item.active ? " active" : "")}
-                                    onClick={item.onClick}
-                                >
-                                    <Link to={item.path} className="menu-link">
-                                        <span className="menu-icon">
-                                            <i className={`${theme.getIcon(item.icon)}`} />
-                                        </span>
-                                        <span className="menu-text">{item.title}</span>
-                                        <span className="menu-arrow"></span>
-                                    </Link>
-                                </div>
-                            )
-                        )}
-                    </div>
+                    <Menu context='sidebar' badges={[{type:'warning', text: 'ciao'}]}/>
                 </div>
             </nav>
 
-            <button class="app-sidebar-mobile-backdrop" data-toggle-target=".app" data-toggle-class="app-sidebar-mobile-toggled" onClick={handleSidebarMobile}></button>
+            <button className="app-sidebar-mobile-backdrop" data-toggle-target=".app" data-toggle-class="app-sidebar-mobile-toggled" onClick={handleSidebarMobile}></button>
         </>
     );
 };

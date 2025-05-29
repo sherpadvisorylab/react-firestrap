@@ -32,7 +32,7 @@ interface BaseFormProps {
 }
 interface FormDefaultProps extends BaseFormProps {
     children: React.ReactNode;
-    dataObject?: any;
+    defaultValues?: any;
 }
 
 interface FormModelProps extends BaseFormProps {
@@ -43,10 +43,10 @@ interface FormModelProps extends BaseFormProps {
 interface FormProps extends BaseFormProps {
     model?: ModelProps;
     children?: React.ReactNode | ((fields: FormTree) => React.ReactNode);
-    dataObject?: any;
+    defaultValues?: any;
 }
 function Form(props: FormProps) {
-    const { model, dataObject, children, ...rest } = props;
+    const { model, defaultValues, children, ...rest } = props;
 
     if (model) {
         return (
@@ -57,13 +57,13 @@ function Form(props: FormProps) {
     }
 
     const formChildren = children as React.ReactNode;
-    return dataObject
-        ? <FormData children={formChildren} dataObject={dataObject} {...rest} />
-        : <FormDatabase children={formChildren} dataObject={dataObject} {...rest} />;
+    return defaultValues
+        ? <FormData children={formChildren} defaultValues={defaultValues} {...rest} />
+        : <FormDatabase children={formChildren} defaultValues={defaultValues} {...rest} />;
 }
 
 export function FormDatabase(props: FormDefaultProps) {
-    const { dataStoragePath, dataObject, ...rest } = props;
+    const { dataStoragePath, defaultValues, ...rest } = props;
     const location = useLocation();
 
     const dbStoragePath = props.dataStoragePath ?? trimSlash(location.pathname);
@@ -71,7 +71,7 @@ export function FormDatabase(props: FormDefaultProps) {
 
     useEffect(() => {
         db.read(dbStoragePath).then(data => {
-            setRecord({ ...dataObject, ...data });
+            setRecord({ ...defaultValues, ...data });
         }).catch(error => {
             console.error(error);
             setRecord({});
@@ -82,7 +82,7 @@ export function FormDatabase(props: FormDefaultProps) {
         return <p className={"p-4"}><i className={"spinner-border spinner-border-sm"}></i> Caricamento in corso...</p>;
     }
 
-    return <FormData {...rest} dataObject={record} dataStoragePath={dbStoragePath} />;
+    return <FormData {...rest} defaultValues={record} dataStoragePath={dbStoragePath} />;
 }
 
 type NoticeProps = {
@@ -96,7 +96,7 @@ export function FormData({
     header = undefined,
     footer = undefined,
     dataStoragePath = undefined,
-    dataObject = undefined,
+    defaultValues = undefined,
     onLoad = undefined,
     onInsert = undefined,
     onUpdate = undefined,
@@ -112,7 +112,7 @@ export function FormData({
 }: FormDefaultProps) {
     const theme = useTheme("form");
 
-    const [record, setRecord] = useState<RecordProps | undefined>(dataObject);
+    const [record, setRecord] = useState<RecordProps | undefined>(defaultValues);
     const [notification, setNotification] = useState<NoticeProps | undefined>(undefined);
 
     console.log("FORM", record);
@@ -161,11 +161,11 @@ export function FormData({
         e.preventDefault();
 
         showNotice && setNotification(undefined);
-        dataObject && onInsert && await onInsert(record);
-        !dataObject && onUpdate && await onUpdate(record);
+        defaultValues && onInsert && await onInsert(record);
+        !defaultValues && onUpdate && await onUpdate(record);
         dataStoragePath && await db.set(dataStoragePath, cleanedRecord(record));
 
-        await handleFinally(dataObject ? "update" : "create");
+        await handleFinally(defaultValues ? "update" : "create");
     };
 
     const handleDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -193,20 +193,20 @@ export function FormData({
                 </Alert>
             )}
             <Card
-                header={header || <Breadcrumbs pre={(dataObject ? "Update " : "Insert ")} path={dataStoragePath ?? "Record"} />}
+                header={header || <Breadcrumbs pre={(defaultValues ? "Update " : "Insert ")} path={dataStoragePath ?? "Record"} />}
                 footer={footer !== false && <>
                     {footer}
-                    {(onInsert || dataStoragePath) && !dataObject && <LoadingButton
+                    {(onInsert || dataStoragePath) && !defaultValues && <LoadingButton
                         className={theme.Form.buttonSaveClass}
                         label={"Insert"}
                         onClick={handleSave}
                     />}
-                    {(onUpdate || dataStoragePath) && dataObject && <LoadingButton
+                    {(onUpdate || dataStoragePath) && defaultValues && <LoadingButton
                         className={theme.Form.buttonSaveClass}
                         label={"Update"}
                         onClick={handleSave}
                     />}
-                    {(onDelete || dataStoragePath) && dataObject && <LoadingButton
+                    {(onDelete || dataStoragePath) && defaultValues && <LoadingButton
                         className={theme.Form.buttonDeleteClass}
                         label={"Delete"}
                         onClick={handleDelete}
@@ -262,7 +262,7 @@ export function FormModel({
     }, [model]);
     console.log("formnodel nodes", defaultFormRenderer(fields));
     return (
-        <FormDatabase dataObject={defaults} {...formProps}>
+        <FormDatabase defaultValues={defaults} {...formProps}>
             {defaultFormRenderer(fields)}
         </FormDatabase>
 
