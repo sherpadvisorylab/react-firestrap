@@ -13,7 +13,7 @@
 - npm link react-firestrap
 
 # Scaffold new project
-- npx react-firestrap setup
+- npx react-firestrap create
 - follow the instructions
 
 # Reinstall project after scaffold
@@ -21,7 +21,7 @@
 - npm run build:local
 - go in project folder
 - Copy .env project file out of the project folder
-- npx react-firestrap setup --reset
+- npx react-firestrap create --reset
 - Copy .env file back to project folder
 
 # Create new theme

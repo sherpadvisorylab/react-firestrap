@@ -1,63 +1,97 @@
-import React, {useState} from 'react';
-import {ActionButton} from "./Buttons";
+import React, { useState, Children, ReactElement } from 'react';
+import { Wrapper } from "./GridSystem";
+import { UIProps } from '../..';
 
-interface TabItem {
+interface TabItemProps {
     label: React.ReactNode;
+    children: React.ReactNode;
+}
+
+export const TabItem: React.FC<TabItemProps> = () => null;
+
+interface TabLayoutProps {
+    menu: React.ReactNode;
     content: React.ReactNode;
 }
 
-interface Tab2Props {
-    items: TabItem[];
-    key?: string;
-    activeIndex?: number;
-    onAdd?: () => void;
-    onRemove?: (index: number) => void;
-    className?: string;
+const TabTop = ({menu, content}: TabLayoutProps) => (
+    <>
+        <ul className="nav nav-tabs">{menu}</ul>
+        <div className="tab-content pt-3">{content}</div>
+    </>
+);
+
+const TabLeft = ({menu, content}: TabLayoutProps) => (
+    <div className="d-flex">
+        <ul className="nav nav-tabs flex-column text-nowrap border-end border-bottom-0">{menu}</ul>
+        <div className="tab-content ps-3 pt-3 border-top">{content}</div>
+    </div>
+);
+
+const TabRight = ({menu, content}: TabLayoutProps) => (
+    <div className="d-flex">
+        <div className="tab-content pe-3 pt-3 border-top">{content}</div>
+        <ul className="nav nav-tabs flex-column text-nowrap border-start border-bottom-0">{menu}</ul>
+    </div>
+);
+
+interface Tab2Props extends UIProps {
+    children: ReactElement<TabItemProps> | ReactElement<TabItemProps>[];
+    defaultTab?: number;
+    tabPosition?: "top" | "left" | "right";
 }
 
-const Tab2 = ({
-                  items,
-                  key = "tab",
-                  activeIndex = 0,
-                  onAdd,
-                  onRemove,
-                  className = undefined
-}: Tab2Props) => {
-    const [active, setActive] = useState(activeIndex);
+const Tab2: React.FC<Tab2Props> = ({
+    children,
+    defaultTab = 0,
+    tabPosition = "top",
+    pre = undefined,
+    post = undefined,
+    wrapClass = undefined,
+    className = undefined
+}) => {
+    const [active, setActive] = useState(defaultTab);
+    
+    const items = Children.toArray(children)
+        .filter((child): child is ReactElement<TabItemProps> => 
+            React.isValidElement(child) && 'label' in child.props
+        );
+
+    const TabDisplayed = {
+        top: TabTop,
+        left: TabLeft,
+        right: TabRight
+    }[tabPosition] || TabTop;
 
     return (
-        <div>
-            <ul className="nav nav-tabs">
-                {items.map((item, index) => (
-                    <li key={key + index} className="nav-item me-1">
-                        <a href={`#${key}-${index}`}
-                           onClick={() => setActive(index)}
-                           className={`nav-link ${index === active ? 'active' : ''}`}
-                           data-bs-toggle="tab">
-                            {item.label}
-                            {onRemove && <ActionButton className={"border-0 ms-1"} label={"x"} onClick={() => {
-                                onRemove(index);
-                                setActive(index - 1);
-                            }} />}
-                        </a>
-                    </li>
-                ))}
-                {onAdd && <li key={items.length + 1} className="nav-item me-1">
-                    <button className={`nav-link`} onClick={() => {
-                        onAdd();
-                        setActive(items.length);
-                    }}><i className={"bi bi-plus"} /></button>
-                </li>}
-            </ul>
-            <div className="tab-content pt-3">
-                {items.map((item, index) => (
-                    <div key={key + index} className={`tab-pane fade ${index === active ? 'show active' : ''}`} id={key + "-" + index}>
-                        {item.content}
-                    </div>
-                ))}
+        <Wrapper className={wrapClass}>
+            {pre}
+            <div className={className}>
+                <TabDisplayed
+                    menu={items.map((item, index) => (
+                        <li key={index} className="nav-item me-1">
+                            <a href={`#tab-${index}`}
+                               onClick={() => setActive(index)}
+                               className={`nav-link ${index === active ? 'active' : ''}`}
+                               data-bs-toggle="tab">
+                                {item.props.label}
+                            </a>
+                        </li>
+                    ))}
+                    content={items.map((item, index) => (
+                        <div 
+                            key={index}
+                            className={`tab-pane fade ${index === active ? 'show active' : ''}`}
+                            id={`tab-${index}`}
+                        >
+                            {item.props.children}
+                        </div>
+                    ))}
+                />
             </div>
-        </div>
+            {post}
+        </Wrapper>
     );
-}
+};
 
 export default Tab2;

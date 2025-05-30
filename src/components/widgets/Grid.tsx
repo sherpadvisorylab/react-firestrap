@@ -415,7 +415,7 @@ const GridArray = ({
                 )}
             </>}
             footer={Footer}
-            cardClass={(theme.Grid.Card.cardClass + (sticky ? ' sticky-' + sticky : '')).trim()}
+            className={(theme.Grid.Card.className + (sticky ? ' sticky-' + sticky : '')).trim()}
             headerClass={theme.Grid.Card.headerClass}
             bodyClass={theme.Grid.Card.bodyClass}
             footerClass={theme.Grid.Card.footerClass}

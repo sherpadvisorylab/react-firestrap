@@ -41,20 +41,11 @@ interface FormModelProps extends BaseFormProps {
 }
 
 interface FormProps extends BaseFormProps {
-    model?: ModelProps;
     children?: React.ReactNode | ((fields: FormTree) => React.ReactNode);
     defaultValues?: any;
 }
 function Form(props: FormProps) {
-    const { model, defaultValues, children, ...rest } = props;
-
-    if (model) {
-        return (
-            <FormModel model={model} {...rest}>
-                {typeof children === 'function' ? children : () => <>{children}</>}
-            </FormModel>
-        );
-    }
+    const { defaultValues, children, ...rest } = props;
 
     const formChildren = children as React.ReactNode;
     return defaultValues
@@ -260,10 +251,10 @@ export function FormModel({
         if (!model) return [{}, {}];
         return buildFormFields(model);
     }, [model]);
-    console.log("formnodel nodes", defaultFormRenderer(fields));
+    console.log("formnodel nodes", children && children(fields));
     return (
         <FormDatabase defaultValues={defaults} {...formProps}>
-            {defaultFormRenderer(fields)}
+            {children && children(fields)}
         </FormDatabase>
 
     );

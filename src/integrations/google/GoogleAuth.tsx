@@ -8,7 +8,7 @@ import {useGlobalVars} from "../../Global";
 import {authConfig} from "./auth";
 import TenantMenu from "../../Config";
 import ImageAvatar from "../../components/ui/ImageAvatar";
-import {Menu} from "../../components/blocks/Menu";
+import Menu from "../../components/blocks/Menu";
 
 declare global {
     interface Window {

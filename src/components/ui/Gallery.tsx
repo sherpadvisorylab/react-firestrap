@@ -4,6 +4,7 @@ import Carousel from "../blocks/Carousel";
 import {Wrapper} from "../ui/GridSystem";
 import {converter} from "../../libs/converter";
 import {RecordProps} from "../../integrations/google/firedatabase";
+import { UIProps } from '../..';
 
 type ImageProps = React.ReactElement<HTMLImageElement>;
 type GalleryRecord = RecordProps & {
@@ -19,8 +20,7 @@ type GalleryRecord = RecordProps & {
     name?: string;
 };
 
-
-type GalleryProps = {
+interface GalleryProps extends UIProps {
     body?: GalleryRecord[];
     Header?: string | React.ReactNode;
     Footer?: string | React.ReactNode;
@@ -34,13 +34,12 @@ type GalleryProps = {
     gutterSize?: 0 | 1 | 2 | 3 | 4 | 5;
     rowCols?: 1 | 2 | 3 | 4 | 6;
     groupBy?: string | string[];
-    wrapClass?: string;
     scrollClass?: string;
     headerClass?: string;
     bodyClass?: string;
     footerClass?: string;
     selectedClass?: string;
-};
+}
 
 const Gallery = ({
                    body             = undefined,
@@ -56,9 +55,12 @@ const Gallery = ({
                    gutterSize       = undefined,
                    rowCols          = undefined,
                    groupBy          = undefined,
+                   pre              = undefined,
+                   post             = undefined,
                    wrapClass        = undefined,
-                   scrollClass      = undefined,
+                   className        = undefined,
                    headerClass      = undefined,
+                   scrollClass      = undefined,
                    bodyClass        = undefined,
                    footerClass      = undefined,
                    selectedClass    = undefined
@@ -170,36 +172,40 @@ const Gallery = ({
 
     return (
         <Wrapper className={wrapClass || theme.Gallery.wrapClass}>
-            {Header && <div className={headerClass || theme.Gallery.headerClass}>{Header}</div>}
-            <Wrapper className={scrollClass || theme.Gallery.scrollClass}>
-                <div className={"d-flex flex-wrap text-center align-items-center g-2 row-cols-" + numCols + " " + (bodyClass || theme.Gallery.bodyClass)}>
-                    {renderedBody.map((Component, index) => (
-                        <div key={index} className={"item position-relative p-" + paddingSize}>
-                            {Component}
-                            {itemTopLeft && <div className={"position-absolute start-0 top-0 p-" + paddingSize}>
-                                {itemTopLeft}
-                            </div>}
-                            {itemTopRight && <div className={"position-absolute end-0 top-0 p-" + paddingSize}>
-                                {itemTopRight}
-                            </div>}
-                            {itemBottomLeft && <div className={"position-absolute start-0 bottom-0 p-" + paddingSize}>
-                                {itemBottomLeft}
-                            </div>}
-                            {itemBottomRight && <div className={"position-absolute end-0 bottom-0 p-" + paddingSize}>
-                                {itemBottomRight}
-                            </div>}
-                            {itemMiddleLeft && <div className={"position-absolute top-50 start-0 translate-middle-y p-" + paddingSize}>
-                                {itemMiddleLeft}
-                            </div>}
-                            {itemMiddleRight && <div className={"position-absolute top-50 end-0 translate-middle-y p-" + paddingSize}>
-                                {itemMiddleRight}
-                            </div>}
+            {pre}
+            <Wrapper className={className || theme.Gallery.className}>
+                {Header && <div className={headerClass || theme.Gallery.headerClass}>{Header}</div>}
+                <Wrapper className={scrollClass || theme.Gallery.scrollClass}>
+                    <div className={"d-flex flex-wrap text-center align-items-center g-2 row-cols-" + numCols + " " + (bodyClass || theme.Gallery.bodyClass)}>
+                        {renderedBody.map((Component, index) => (
+                            <div key={index} className={"item position-relative p-" + paddingSize}>
+                                {Component}
+                                {itemTopLeft && <div className={"position-absolute start-0 top-0 p-" + paddingSize}>
+                                    {itemTopLeft}
+                                </div>}
+                                {itemTopRight && <div className={"position-absolute end-0 top-0 p-" + paddingSize}>
+                                    {itemTopRight}
+                                </div>}
+                                {itemBottomLeft && <div className={"position-absolute start-0 bottom-0 p-" + paddingSize}>
+                                    {itemBottomLeft}
+                                </div>}
+                                {itemBottomRight && <div className={"position-absolute end-0 bottom-0 p-" + paddingSize}>
+                                    {itemBottomRight}
+                                </div>}
+                                {itemMiddleLeft && <div className={"position-absolute top-50 start-0 translate-middle-y p-" + paddingSize}>
+                                    {itemMiddleLeft}
+                                </div>}
+                                {itemMiddleRight && <div className={"position-absolute top-50 end-0 translate-middle-y p-" + paddingSize}>
+                                    {itemMiddleRight}
+                                </div>}
 
-                        </div>
-                    ))}
-                </div>
+                            </div>
+                        ))}
+                    </div>
+                </Wrapper>
+                {Footer && <div className={footerClass || theme.Gallery.footerClass}>{Footer}</div>}
             </Wrapper>
-            {Footer && <div className={footerClass || theme.Gallery.footerClass}>{Footer}</div>}
+            {post}
         </Wrapper>)
 }
 

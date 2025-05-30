@@ -25,7 +25,8 @@ const defaultTheme = {
     },
     Grid: {
         Card: {
-            cardClass: "",
+            wrapClass: "",
+            className: "",
             headerClass: "d-flex justify-content-between",
             bodyClass: "p-0",
             footerClass: "",
@@ -42,8 +43,8 @@ const defaultTheme = {
         },
         Gallery: {
             wrapClass: "",
+            className: "",
             scrollClass: "",
-            tableClass: "",
             headerClass: "",
             bodyClass: "",
             footerClass: "",
@@ -72,8 +73,8 @@ const defaultTheme = {
     },
     Gallery: {
         wrapClass: "",
+        className: "",
         scrollClass: "",
-        tableClass: "",
         headerClass: "",
         bodyClass: "",
         footerClass: "",
@@ -89,11 +90,11 @@ const defaultTheme = {
         autoPlay: true,
     },
     Card: {
-        cardClass: "",
+        wrapClass: "",
+        className: "",
         headerClass: "d-flex justify-content-between bg-white bg-opacity-15 fw-400",
         bodyClass: "d-flex flex-column",
         footerClass: "",
-        wrapClass: "",
         showLoader: false,
         showArrow: false
     },

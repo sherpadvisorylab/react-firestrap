@@ -10,11 +10,11 @@ import init from "./firebase";
 type FirebasePrimitive = string | number | boolean | null;
 type FirebaseAny = FirebasePrimitive | object | any[];
 type FirebaseValue<T> =
-    | T                     // es: quando toArray = false
-    | T[]                   // es: array omogeneo di T
-    | (FirebaseAny | T)[]   // es: array eterogeneo
-    | string[]              // es: quando shallow = true
-    | undefined;            // es: nessun valore
+    | T                     // when toArray = false
+    | T[]                   // homogeneous array of T
+    | (FirebaseAny | T)[]   // heterogeneous array
+    | string[]              // when shallow = true
+    | undefined;            // no value
 
 type Operator = "eq" | "lt" | "lte" | "gt" | "gte";
 type Condition = {
@@ -42,7 +42,7 @@ onConfigChange((newConfig: Config) => {
 });
 
 const handleError = (action: string, error: any, exception: boolean) => {
-    const message = `Errore durante ${action}: ${error}`;
+    const message = `Error during ${action}: ${error}`;
     if (exception) {
         throw new Error(message);
     }
@@ -118,25 +118,25 @@ const db = {
                 handleError(`Data not found in Firebase for path ${path}`, null, exception);
             }
         } catch (error) {
-            handleError(`lettura dei dati in Firebase per ${path}`, error, exception);
+            handleError(`reading data in Firebase for ${path}`, error, exception);
         }
     },
     set: async (path: string, data: any, exception: boolean = false): Promise<void> => {
         const dbRef = getDatabase().ref(path);
         try {
             await dbRef.set(data);
-            consoleLog(`Dati aggiornati con successo in Firebase per ${path}`);
+            consoleLog(`Data successfully updated in Firebase for ${path}`);
         } catch (error) {
-            handleError(`aggiornamento dei dati in Firebase per ${path}`, error, exception);
+            handleError(`updating data in Firebase for ${path}`, error, exception);
         }
     },
     remove: async (path: string, exception: boolean = false): Promise<void> => {
         const dbRef = getDatabase().ref(path);
         try {
             await dbRef.remove();
-            consoleLog(`Dati rimossi con successo in Firebase per ${path}`);
+            consoleLog(`Data successfully removed from Firebase for ${path}`);
         } catch (error) {
-            handleError(`rimozione dei dati in Firebase per ${path}`, error, exception);
+            handleError(`removing data from Firebase for ${path}`, error, exception);
         }
     },
     useListener: <T extends RecordProps = RecordProps>(
@@ -148,7 +148,7 @@ const db = {
             onLoad      = undefined
         }: DatabaseOptions<T> = {}
     ) => {
-        const auth = useMemo(() => getAuth(), []); // Ottieni l'oggetto auth una sola volta
+        const auth = useMemo(() => getAuth(), []); // Get auth object once
 
         useEffect(() => {
             if (!path) return;
@@ -208,21 +208,20 @@ const db = {
                 };
             };
 
-
-            // Listener per i cambiamenti di stato dell'autenticazione
+            // Listener for authentication state changes
             const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
                 if (!user) {
-                    // Se l'utente non è autenticato, pulisci i record
+                    // If user is not authenticated, clear records
                     setRecords([]);
                 } else {
-                    // L'utente è autenticato, recupera i dati (se necessario)
+                    // User is authenticated, fetch data (if needed)
                     fetchData();
                 }
             });
 
-            // Cleanup function per rimuovere i listener
+            // Cleanup function to remove listeners
             return () => {
-                unsubscribeAuth(); // Pulisci il listener di autenticazione
+                unsubscribeAuth(); // Clean up authentication listener
             };
         }, [path, setRecords, fieldMap, onLoad, where]);
     }
