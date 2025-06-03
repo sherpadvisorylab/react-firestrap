@@ -53,13 +53,17 @@ const defaultTheme = {
             rowCols: "4"
         },
         Modal: {
-            size: "lg",
+            size: "lg", 
+            display: "center",
             wrapClass: "",
-            modalClass: "",
+            className: "",
             headerClass: "",
             titleClass: "",
+            subTitleClass: "pe-1 text-muted",
             bodyClass: "",
             footerClass: "",
+            iconExpand: "fullscreen",
+            iconCollapse: "fullscreen-exit"
         }
     },
     Table: {
@@ -99,6 +103,8 @@ const defaultTheme = {
         showArrow: false
     },
     Loader: {
+        wrapClass: "",
+        className: "",
         icon: "custom-loader",
         title: "Loading..",
         description: ""
@@ -123,10 +129,12 @@ const defaultTheme = {
     },
     Modal: {
         size: "lg",
+        display: "center",
         wrapClass: "",
-        modalClass: "",
+        className: "",
         headerClass: "",
         titleClass: "",
+        subTitleClass: "pe-1 text-muted",
         bodyClass: "",
         footerClass: "",
         iconExpand: "fullscreen",
@@ -192,6 +200,14 @@ const defaultTheme = {
     SignIn: {
         className: "d-flex align-items-center",
         avatarClass: "avatar rounded-circle mx-2",
+    },
+    Image: {
+        wrapClass: "",
+        className: "",
+    },
+    ImageAvatar: {
+        wrapClass: "",
+        className: "",
     }
 }
 

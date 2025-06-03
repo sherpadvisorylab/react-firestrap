@@ -36,12 +36,16 @@ export const theme = {
         },
         Modal: {
             size: "lg",
+            display: "center",
             wrapClass: "",
-            modalClass: "",
-            headerClass: null,
+            className: "",
+            headerClass: "justify-content-between",
             titleClass: "",
+            subTitleClass: "pe-1 text-muted",
             bodyClass: "",
-            footerClass: ""
+            footerClass: "",
+            iconExpand: "arrows-out",
+            iconCollapse: "arrows-in"
         }
     },
     Table: {
@@ -81,6 +85,8 @@ export const theme = {
         showArrow: true
     },
     Loader: {
+        wrapClass: "",
+        className: "",
         icon: "custom-loader",
         title: "Loading..",
         description: ""
@@ -101,14 +107,16 @@ export const theme = {
         className: "alert-info"
     },
     Badge: {
-        ClassName: ""
+        className: ""
     },
     Modal: {
         size: "lg",
+        display: "center",
         wrapClass: "",
-        modalClass: "",
+        className: "",
         headerClass: "justify-content-between",
         titleClass: "",
+        subTitleClass: "pe-1 text-muted",
         bodyClass: "",
         footerClass: "",
         iconExpand: "arrows-out",
@@ -174,5 +182,13 @@ export const theme = {
     SignIn: {
         className: "d-flex align-items-center",
         avatarClass: "avatar rounded-circle mx-2",
+    },
+    Image: {
+        wrapClass: "",
+        className: "",
+    },
+    ImageAvatar: {
+        wrapClass: "",
+        className: "",
     }
 }

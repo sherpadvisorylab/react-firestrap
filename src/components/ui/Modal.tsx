@@ -1,8 +1,11 @@
 import React, {useState} from 'react';
+import { createPortal } from 'react-dom';
 import {useTheme} from "../../Theme";
 import {ActionButton, LoadingButton} from "./Buttons";
+import { UIProps } from '../..';
+import { Wrapper } from "./GridSystem";
 
-interface ModalProps {
+interface ModalProps extends UIProps {
     children: React.ReactNode;
     title?: string;
     header?: React.ReactNode;
@@ -10,13 +13,12 @@ interface ModalProps {
     onClose?: () => void;
     onSave?: (e: React.MouseEvent<HTMLButtonElement>) => Promise<void>;
     onDelete?: (e: React.MouseEvent<HTMLButtonElement>) => Promise<void>;
-    size?: string;
-    display?: string | null;
-    showFullscreen?: boolean;
-    wrapClass?: string;
-    modalClass?: string;
+    size?: "sm" | "md" | "lg" | "xl" | "fullscreen";
+    display?: "center" | "top" | "left" | "right" | "bottom";
+    buttonFullscreen?: boolean;
     headerClass?: string;
     titleClass?: string;
+    subTitleClass?: string;
     bodyClass?: string;
     footerClass?: string;
 }
@@ -49,38 +51,80 @@ const ModalDefault = ({
                           onDelete          = undefined,
                           size              = undefined,
                           display           = undefined,
-                          showFullscreen    = true,
+                          buttonFullscreen  = true,
+                          pre               = undefined,
+                          post              = undefined,
                           wrapClass         = undefined,
-                          modalClass        = undefined,
+                          className         = undefined,
                           headerClass       = undefined,
                           titleClass        = undefined,
+                          subTitleClass     = undefined,
                           bodyClass         = undefined,
                           footerClass       = undefined
 }: ModalProps) => {
     const theme = useTheme("modal");
 
-    const [fullScreen, setFullScreen] = useState(size === "fullscreen");
+    const [fullScreenClass, setFullScreenClass] = useState(size === "fullscreen" ? " modal-fullscreen" : "");
 
-    let positionClass: string;
-    switch (display || theme.Modal.display) {
-        case "right":
-            positionClass = " position-absolute end-0 bottom-0 top-0";
-            break;
-        case "left":
-            positionClass = ""; // Define what should happen for "left"
-            break;
-        case "top":
-            positionClass = ""; // Define what should happen for "top"
-            break;
-        case "bottom":
-            positionClass = ""; // Define what should happen for "bottom"
-            break;
-        default:
-            positionClass = "";
-            break;
+    const positions = {
+        center: {
+            coverClass: `modal modal-cover fade show d-block`,
+            dialogClass: `modal-dialog modal-${size || theme.Modal.size} ${fullScreenClass} ${wrapClass || theme.Modal.wrapClass}`,
+            contentClass: `modal-content ${className || theme.Modal.className}`,
+            headerClass: `modal-header ${headerClass || theme.Modal.headerClass}`,
+            titleClass: `modal-title ${titleClass || theme.Modal.titleClass}`,
+            subTitleClass: `modal-sub-title ${subTitleClass || theme.Modal.subTitleClass}`,
+            bodyClass: `modal-body ${bodyClass || theme.Modal.bodyClass}`,
+            footerClass: `modal-footer ${footerClass || theme.Modal.footerClass}`,
+            backdropClass: `modal-backdrop fade show`,
+        }, 
+        top: {
+            coverClass: ``,
+            dialogClass: `offcanvas offcanvas-top modal-${size || theme.Modal.size} ${wrapClass || theme.Modal.wrapClass}`,
+            contentClass: ``,
+            headerClass: `offcanvas-header ${headerClass || theme.Modal.headerClass}`,
+            titleClass: `offcanvas-title ${titleClass || theme.Modal.titleClass}`,
+            subTitleClass: `offcanvas-sub-title ${subTitleClass || theme.Modal.subTitleClass}`,
+            bodyClass: `offcanvas-body ${bodyClass || theme.Modal.bodyClass}`,
+            footerClass: `offcanvas-footer ${footerClass || theme.Modal.footerClass}`,
+            backdropClass: `offcanvas-backdrop fade show`,
+        },
+        left: {
+            coverClass: ``,
+            dialogClass: `offcanvas offcanvas-start modal-${size || theme.Modal.size} ${wrapClass || theme.Modal.wrapClass}`,
+            contentClass: ``,
+            headerClass: `offcanvas-header ${headerClass || theme.Modal.headerClass}`,
+            titleClass: `offcanvas-title ${titleClass || theme.Modal.titleClass}`,
+            subTitleClass: "offcanvas-sub-title " + (subTitleClass || theme.Modal.subTitleClass),
+            bodyClass: `offcanvas-body ${bodyClass || theme.Modal.bodyClass}`,
+            footerClass: `offcanvas-footer ${footerClass || theme.Modal.footerClass}`,
+            backdropClass: `offcanvas-backdrop fade show`,
+        },
+        right: {
+            coverClass: ``,
+            dialogClass: `offcanvas offcanvas-end modal-${size || theme.Modal.size} ${wrapClass || theme.Modal.wrapClass}`,
+            contentClass: ``,
+            headerClass: `offcanvas-header ${headerClass || theme.Modal.headerClass}`,
+            titleClass: `offcanvas-title ${titleClass || theme.Modal.titleClass}`,
+            subTitleClass: "offcanvas-sub-title " + (subTitleClass || theme.Modal.subTitleClass),
+            bodyClass: `offcanvas-body ${bodyClass || theme.Modal.bodyClass}`,
+            footerClass: `offcanvas-footer ${footerClass || theme.Modal.footerClass}`,
+            backdropClass: `offcanvas-backdrop fade show`,
+        },
+        bottom: {
+            coverClass: ``,
+            dialogClass: `offcanvas offcanvas-bottom modal-${size || theme.Modal.size} ${wrapClass || theme.Modal.wrapClass}`,
+            contentClass: ``,
+            headerClass: `offcanvas-header ${headerClass || theme.Modal.headerClass}`,
+            titleClass: `offcanvas-title ${titleClass || theme.Modal.titleClass}`,
+            subTitleClass: "offcanvas-sub-title " + (subTitleClass || theme.Modal.subTitleClass),
+            bodyClass: `offcanvas-body ${bodyClass || theme.Modal.bodyClass}`,
+            footerClass: `offcanvas-footer ${footerClass || theme.Modal.footerClass}`,
+            backdropClass: `offcanvas-backdrop fade show`,
+        }
     }
 
-    const fullScreenClass = fullScreen ? " modal-fullscreen" : "";
+    const position = positions[fullScreenClass ? "center" : (display || theme.Modal.display) as keyof typeof positions];
 
     window.document.body.style.overflow = "hidden";
     const handleClose = () => {
@@ -88,67 +132,65 @@ const ModalDefault = ({
         onClose && onClose();
     }
 
-    return (<>
-      <div
-        className={"modal modal-cover fade show d-block"}
-        role="dialog"
-      >
-        <div className={"modal-dialog " + (wrapClass || theme.Modal.wrapClass) + " modal-" + (size || theme.Modal.size) + positionClass + fullScreenClass}>
-          <div className={"modal-content " + (modalClass || theme.Modal.modalClass)}>
-              <div className={"modal-header " + (headerClass || theme.Modal.headerClass)}>
-                  {title ?
-                      <h3 className={"modal-title text-nowrap " + (titleClass || theme.Modal.titleClass)}>{title}</h3> : ""}
-                  {!title && header}
-                  <div>
-                      {(showFullscreen || fullScreen) && <ActionButton
-                          icon={fullScreen ? theme.Modal.iconCollapse : theme.Modal.iconExpand}
-                          className={"btn border-0 p-0"}
-                          onClick={(e) => {
-                              e.preventDefault();
-                              setFullScreen(!fullScreen)}
-                          }
-                      />}
-                      {onClose && (
-                          <LoadingButton
-                              className="btn-close"
-                              onClick={handleClose}
-                          />
-                      )}
-                  </div>
-              </div>
-              {header && title && <div className="modal-sub-header">{header}</div>}
-              <div className={"modal-body " + (bodyClass || theme.Modal.bodyClass)}>{children}</div>
-              {footer !== false && <div className={"modal-footer " + (footerClass || theme.Modal.footerClass)}>
-                  {footer}
-                  {onSave && <LoadingButton
-                      className="btn-primary"
-                      label={"Save"}
-                      onClick={async (e) => {
-                          e.preventDefault();
-                          await onSave(e);
-                          handleClose()
-                      }}
-                  />}
-                  {onDelete && <LoadingButton
-                      className="btn-danger"
-                      label={"Delete"}
-                      onClick={async (e) => {
-                          e.preventDefault();
-                          await onDelete(e);
-                          handleClose()
-                        }}
-                  />}
-                  {onClose && <LoadingButton
-                      className="btn-link"
-                      label={"Cancel"}
-                      onClick={handleClose}
-                  />}
-              </div>}
-          </div>
-        </div>
-      </div>
-        <div className="modal-backdrop fade show"/>
-    </>);
+    return createPortal(<>
+        <Wrapper className={position.coverClass}>
+            <div className={position.dialogClass}>
+                {pre}
+                <Wrapper className={position.contentClass}>
+                    {(header || title || buttonFullscreen || onClose) && <div className={position.headerClass}>
+                        <div>
+                            {title && <h3 className={position.titleClass}>{title}</h3>}
+                            {(title && header) && <div className={position.subTitleClass}>{header}</div>}
+                            {!title && header}
+                        </div>
+                        {(buttonFullscreen || onClose) && <div>
+                            {buttonFullscreen && <ActionButton
+                                icon={fullScreenClass ? theme.Modal.iconCollapse : theme.Modal.iconExpand}
+                                className={"btn border-0 p-0"}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    setFullScreenClass((prev) => prev === " modal-fullscreen" ? "" : " modal-fullscreen")
+                                }}
+                            />}
+                            {onClose && <LoadingButton
+                                className="btn-close"
+                                onClick={handleClose}
+                            />}
+                        </div>}
+                    </div>}
+                    <div className={position.bodyClass}>{children}</div>
+                    {(footer || onSave || onDelete || onClose) && <div className={position.footerClass}>
+                        {footer}
+                        {onSave && <LoadingButton
+                            className="btn-primary"
+                            label={"Save"}
+                            onClick={async (e) => {
+                                e.preventDefault();
+                                await onSave(e);
+                                handleClose()
+                            }}
+                        />}
+                        {onDelete && <LoadingButton
+                            className="btn-danger"
+                            label={"Delete"}
+                            onClick={async (e) => {
+                                e.preventDefault();
+                                await onDelete(e);
+                                handleClose()
+                            }}
+                        />}
+                        {onClose && <LoadingButton
+                            className="btn-link"
+                            label={"Cancel"}
+                            onClick={handleClose}
+                        />}
+                    </div>}
+                </Wrapper>
+                {post}
+            </div>
+        </Wrapper>
+        <Wrapper className={position.backdropClass}/>
+    </>, document.body);
 };
 
 export const ModalYesNo = ({
@@ -160,7 +202,7 @@ export const ModalYesNo = ({
 }: ModalYesNoProps) => {
     return <ModalDefault
         title={title}
-        showFullscreen={false}
+        buttonFullscreen={false}
         onClose={onClose}
         footer={<>
             {onYes && <LoadingButton
@@ -194,7 +236,7 @@ export const ModalOk = ({
                         }: ModalOkProps) => {
     return <ModalDefault
         title={title}
-        showFullscreen={false}
+        buttonFullscreen={false}
         onClose={onClose}
         footer={<>
             <LoadingButton className="btn-primary" label={"Ok"} onClick={onClose} />
@@ -203,7 +245,5 @@ export const ModalOk = ({
         {children}
     </ModalDefault>
 }
-
-
 
 export default Modal;

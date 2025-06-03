@@ -36,17 +36,21 @@ export const theme = {
         },
         Modal: {
             size: "lg",
+            display: "center",
             wrapClass: "",
-            modalClass: "",
+            className: "",
             headerClass: "",
             titleClass: "",
+            subTitleClass: "pe-1 text-muted",
             bodyClass: "",
             footerClass: "",
+            iconExpand: "fullscreen",
+            iconCollapse: "fullscreen-exit"
         }
     },
     Table: {
         wrapClass: "bootstrap-table",
-        scrollClass: null,
+        scrollClass: "",
         tableClass: "table-striped",
         headerClass: "",
         bodyClass: "",
@@ -81,6 +85,8 @@ export const theme = {
         showArrow: true
     },
     Loader: {
+        wrapClass: "",
+        className: "",
         icon: "custom-loader",
         title: "Loading..",
         description: ""
@@ -98,21 +104,23 @@ export const theme = {
         className: "btn-link"
     },
     Alert: {
-        ClassName: ""
+        className: ""
     },
     Badge: {
-        ClassName: ""
+        className: ""
     },
     Modal: {
         size: "lg",
+        display: "center",
         wrapClass: "",
-        modalClass: "",
+        className: "",
         headerClass: "",
         titleClass: "",
+        subTitleClass: "pe-1 text-muted",
         bodyClass: "",
         footerClass: "",
-        iconExpand: "arrows-out",
-        iconCollapse: "arrows-in"
+        iconExpand: "fullscreen",
+        iconCollapse: "fullscreen-exit"
     },
     Dropdown: {
         wrapClass: "",
@@ -174,5 +182,13 @@ export const theme = {
     SignIn: {
         className: "d-flex align-items-center",
         avatarClass: "avatar rounded-circle mx-2",
+    },
+    Image: {
+        wrapClass: "",
+        className: "",
+    },
+    ImageAvatar: {
+        wrapClass: "",
+        className: "",
     }
 }

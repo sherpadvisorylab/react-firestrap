@@ -405,11 +405,11 @@ function Helper() {
                     {showModal &&
                       <Modal
                         title="Modal Title"
-                        header={<span className="text-muted">Header</span>}
+                        header={"Header Subtitle"}
                         footer={<div>Footer with actions.</div>}
-                        wrapClass="my-3"
                         size="lg"
-                        onClose={() => { setShowModal(false) }}>
+                        onClose={() => { setShowModal(false) }}
+                      >
                         <p>Main content.</p>
                       </Modal>
                     }
