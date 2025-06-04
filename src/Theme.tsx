@@ -1,3 +1,4 @@
+import { Percentage } from 'components';
 import React, {createContext, useContext, useEffect, useState, ReactNode} from 'react';
 
 interface Theme {
@@ -34,11 +35,11 @@ const defaultTheme = {
         },
         Table: {
             wrapClass: "",
-            scrollClass: "fixed-table-container",
-            tableClass: "table-striped",
+            className: "table-striped",
             headerClass: "",
             bodyClass: "",
             footerClass: "",
+            scrollClass: "fixed-table-container",
             selectedClass: "table-info"
         },
         Gallery: {
@@ -68,11 +69,11 @@ const defaultTheme = {
     },
     Table: {
         wrapClass: "bootstrap-table",
-        scrollClass: "fixed-table-container",
-        tableClass: "table-striped",
+        className: "table-striped",
         headerClass: "",
         bodyClass: "",
         footerClass: "",
+        scrollClass: "fixed-table-container",
         selectedClass: "table-info"
     },
     Gallery: {
@@ -206,6 +207,14 @@ const defaultTheme = {
         className: "",
     },
     ImageAvatar: {
+        wrapClass: "",
+        className: "",
+    },
+    Percentage: {
+        wrapClass: "",
+        className: "",
+    },
+    Tab: {
         wrapClass: "",
         className: "",
     }

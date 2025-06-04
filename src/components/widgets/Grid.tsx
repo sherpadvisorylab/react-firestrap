@@ -392,11 +392,11 @@ const GridArray = ({
                     body={body}
                     onClick={(onClick || canEdit) ? handleClick : undefined}
                     wrapClass={theme.Grid.Table.wrapperClass}
-                    scrollClass={theme.Grid.Table.scrollClass}
-                    tableClass={theme.Grid.Table.tableClass}
+                    className={theme.Grid.Table.className}
                     headerClass={theme.Grid.Table.headerClass}
                     bodyClass={theme.Grid.Table.bodyClass}
                     footerClass={theme.Grid.Table.footerClass}
+                    scrollClass={theme.Grid.Table.scrollClass}
                     selectedClass={!canEdit && (theme.Grid.Table.selectedClass)}
                 />;
         }

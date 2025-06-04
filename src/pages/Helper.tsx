@@ -12,8 +12,8 @@ import Badge from "../components/ui/Badge";
 import Notifications from "../components/blocks/Notifications";
 import Search from "../components/blocks/Search";
 import Form from "../components/widgets/Form";
-import Tab from "../components/ui/Tab";
-import Tab2, { TabItem } from "../components/ui/Tab2";
+import Tab2 from "../components/ui/Tab2";
+import Tab, { TabItem } from "../components/ui/Tab";
 import Table from "../components/ui/Table";
 import Brand from "../components/blocks/Brand";
 import { Breadcrumbs } from "../components/blocks/Breadcrumbs";
@@ -36,17 +36,7 @@ import Menu from '../components/blocks/Menu';
 function Helper() {
 
   const [showModal, setShowModal] = useState(false);
-  const [count, setCount] = useState(0);
-  const handleClick = () => {
-  setInterval(() => {
-    setCount(prev => {
-      const newCount = prev + 20;
-      console.log(newCount);
-      return newCount;
-    });
-  }, 1000);
-};
-
+  
 
   return (
     <Container className='mb-5'>
@@ -58,62 +48,99 @@ function Helper() {
               <p>Helper is a component that helps you to create a form.</p>
               <Row>
                 {/* Input */}
-                <Col xs={12} className='mb-5'>
-                  <h2 id='input'>Input</h2>
+                <Col lg={5}>
+                  <Form dataStoragePath='' header="Input">
+                    {/* String */}
+                    <String name='text' label='Text input' placeholder='Lorem ipsum.' />
+                    {/* Number */}
+                    <Number name='number' label='Number input' value={10} />
+                    {/* Email */}
+                    <Email name='email' label='Email input' placeholder='test@example.com' />
+                    {/* TextArea */}
+                    <TextArea name='textarea' label='Text area' placeholder='Lorem ipsum.' />
+                  </Form>
+                </Col>
+                <Col lg={7}>
+                  <code style={{whiteSpace: 'pre-wrap'}}>
+{`
+<Form dataStoragePath='' header="Input">
 
-                  {/* Text */}
-                  <Card className='my-3' title='Text Input'>
-                    <form className='form-group'>
-                      {/* String */}
-                      <String name='text' label='Text input' inputClass='mb-3' placeholder='Lorem ipsum.' />
-                      {/* Number */}
-                      <Number name='number' label='Number input' inputClass='mb-3' value={10} />
-                      {/* Email */}
-                      <Email name='email' label='Email input' inputClass='mb-3' placeholder='test@example.com' />
-                      {/* TextArea */}
-                      <TextArea name='textarea' label='Text area' className='mb-3' placeholder='Lorem ipsum.' />
-                    </form>
-                  </Card>
+  {/* String */}
+  <String name='text' label='Text input' placeholder='Lorem ipsum.' />
 
+  {/* Number */}
+  <Number name='number' label='Number input' value={10} />
+
+  {/* Email */}
+  <Email name='email' label='Email input' placeholder='test@example.com' />
+
+  {/* TextArea */}
+  <TextArea name='textarea' label='Text area' placeholder='Lorem ipsum.' />
+
+</Form>
+`}
+                  </code>
+                </Col>
+              </Row>
+              <Row>
+                <Col lg={5}>
                   {/* Date */}
-                  <Card className='my-3' title='Date Input'>
-                    <form className='form-group'>
-                      {/* Date */}
-                      <Date name='date' label='Date' inputClass='mb-3' placeholder='YYYY-MM-DD' />
-                      {/* Time */}
-                      <Time name='time' label='Time' inputClass='mb-3' placeholder='HH:MM:SS' />
-                      {/* DateTime */}
-                      <DateTime name='datetime' label='DateTime' inputClass='mb-3' placeholder='YYYY-MM-DD HH:MM:SS' />
-                      {/* Custom date */}
-                      <DateInput name='dateInput' onChange={() => { }} placeholder='YYYY-MM-DD' />
-                    </form>
-                  </Card>
+                  <Form dataStoragePath='' header="Date Input">
+                    {/* Date */}
+                    <Date name='date' label='Date' inputClass='mb-3' placeholder='YYYY-MM-DD' />
+                    {/* Time */}
+                    <Time name='time' label='Time' inputClass='mb-3' placeholder='HH:MM:SS' />
+                    {/* DateTime */}
+                    <DateTime name='datetime' label='DateTime' inputClass='mb-3' placeholder='YYYY-MM-DD HH:MM:SS' />
+                    {/* Custom date */}
+                    <DateInput name='dateInput' placeholder='YYYY-MM-DD' />
+                  </Form>
+                </Col>
+                <Col lg={7}>
+                  <code style={{whiteSpace: 'pre-wrap'}}>
+{`
+<Form dataStoragePath='' header="Date Input">
 
+  {/* Date */}
+  <Date name='date' label='Date' inputClass='mb-3' placeholder='YYYY-MM-DD' />
+
+  {/* Time */}
+  <Time name='time' label='Time' inputClass='mb-3' placeholder='HH:MM:SS' />
+
+  {/* DateTime */}
+  <DateTime name='datetime' label='DateTime' inputClass='mb-3' placeholder='YYYY-MM-DD HH:MM:SS' />
+
+  {/* Custom date */}
+  <DateInput name='dateInput' placeholder='YYYY-MM-DD' />
+
+</Form>
+`}
+                  </code>
+                </Col>
+              </Row>
+              <Row>
+                <Col lg={5}>
                   {/* Boolean */}
-                  <Card className='my-3' title='Boolean Input'>
-                    <form className='form-group'>
-                      {/* Checkbox */}
-                      <Label label='Checkboxes' />
-                      <Checkbox name='checkbox' label='Checkbox1' />
-                      <Checkbox name='checkbox' label='Checkbox2' checkboxClass='mb-3' value={true} />
-                      {/* Switch */}
-                      <Label label='Switches' />
-                      <SwitchInput name='switch1' label='Switch input' onChange={() => { }} status={false} />
-                      <SwitchInput name='switch2' onChange={() => { }} label='Switch input' className='mb-3' status={true} />
-                    </form>
-                  </Card>
+                  <Form dataStoragePath='' header="Boolean Input">
+                    {/* Checkbox */}
+                    <Label label='Checkboxes' />
+                    <Checkbox name='checkbox' label='Checkbox1' />
+                    <Checkbox name='checkbox' label='Checkbox2' checkboxClass='mb-3' value={true} />
+                    {/* Switch */}
+                    <Label label='Switches' />
+                    <SwitchInput name='switch1' label='Switch input' onChange={() => { }} status={false} />
+                    <SwitchInput name='switch2' onChange={() => { }} label='Switch input' className='mb-3' status={true} />
+                  </Form>
 
                   {/* List -> Select? */}
-                  <Card className='my-3' title='List Input'>
-                    <form className='form-group'>
-                      <Label label='List Group' />
+                  <Form dataStoragePath='' header="List Input">
+                    <Label label='List Group' />
                       <ListGroup className='mb-3' onClick={() => { }} active={0} items={[
                         <span className='text-danger'>Element1</span>,
                         <span className='text-success'>Element2</span>,
                         <span className='text-warning'>Element3</span>
                       ]} />
-                    </form>
-                  </Card>
+                  </Form>
                 </Col>
 
                 {/* Selectors */}
@@ -134,31 +161,22 @@ function Helper() {
 
                 {/* Upload */}
                 <Col xs={12} className='mb-5'>
-                  <h2 id='upload'>Upload</h2>
+                  <h2>Upload</h2>
                   {/* Documenti */}
-                  <Card className='mb-3' title='Documents Upload'>
-                    <form className='form-group'>
-                      <Label label='Upload Multiple Documents' className='mt-3' />
-                      <UploadDocument name='uploadDocument' editable multiple />
+                  <Form dataStoragePath='' header="Documents Upload">
+                    <UploadDocument name='uploadDocument' label="Upload Multiple Documents" editable multiple />
 
-                      <Label label='Upload Document not Editable' className='mt-3' />
-                      <UploadDocument name='uploadDocument' />
-                    </form>
-                  </Card>
+                    <UploadDocument name='uploadDocument' label="Upload Document not Editable" />
+                  </Form>
 
                   {/* Immagini */}
-                  <Card className='mb-3' title='Images Upload'>
-                    <form className='form-group'>
-                      <Label label='Upload Multiple Images' className='mt-3' />
-                      <UploadImage addButtonPosition='right' name='uploadImage' label='Upload Images' previewWidth={150} previewHeight={150} multiple editable />
+                  <Form dataStoragePath='' header="Images Upload">
+                    <UploadImage addButtonPosition='right' name='uploadImage' label='Upload Multiple Images' previewWidth={150} previewHeight={150} multiple editable />
 
-                      <Label label='Upload Single Image' className='mt-3' />
-                      <UploadImage name='uploadImage' label='Upload Images' editable />
+                      <UploadImage name='uploadImage' label='Upload Single Image' editable />
 
-                      <Label label='Upload Single Image not Editable' className='mt-3' />
-                      <UploadImage name='uploadImage' label='Upload Images' />
-                    </form>
-                  </Card>
+                    <UploadImage name='uploadImage' label='Upload Single Image not Editable Images' />
+                  </Form>
                 </Col>
 
                 {/* Alert */}
@@ -356,7 +374,7 @@ function Helper() {
                 <Col xs={12} className='mb-5'>
                   <h2 id='images'>Images</h2>
                   <Card className='mb-3' title='Image'>
-                    <p>This is the standard HTML tag for displaying an image. It is simple and easy to use, but it doesn’t handle errors, fallbacks, or custom caching. If the image fails to load, the user will see a broken image icon.
+                    <p>This is the standard HTML tag for displaying an image. It is simple and easy to use, but it doesn't handle errors, fallbacks, or custom caching. If the image fails to load, the user will see a broken image icon.
 
                     </p>
                     <Image
@@ -418,13 +436,20 @@ function Helper() {
 
                 {/* Percentage */}
                 <Col xs={12} className='mb-5'>
-                  <h2 id='percentage'>Percentage</h2>
-                  <button onClick={handleClick}>click</button>
-                  <Percentage min={0} max={100} val={count} />
-
-                  <Card className='mb-3' title=''>
-                    <Percentage min={0} max={10} val={7}/>
-                    <Percentage min={0} max={10} val={3} styleType='progress' />
+                  <Card className='mb-3' header='Percentage'>
+                    <div className='mb-2'>
+                      <Percentage className='me-2' min={0} max={100} val={30} shape='circle' />  
+                      <Percentage className='me-2' min={0} max={100} val={40} shape='circle' size={100} thickness={15} type='success' />
+                      <Percentage className='me-2' min={0} max={100} val={50} shape='circle' size={80} thickness={20} type='danger' />
+                      <Percentage className='me-2' min={0} max={100} val={60} shape='circle' size={60} thickness={25} type='warning' showText={false} />
+                      <Percentage className='me-2' min={0} max={100} val={70} shape='circle' size={40} thickness={30} type='info' showText={false} />
+                    </div>
+                    
+                    <Percentage className='mb-2' min={0} max={10} val={3} shape='bar' size={40} thickness={30} type='info' />
+                    <Percentage className='mb-2' min={0} max={10} val={4} shape='bar' size={60} thickness={25} type='warning'  />
+                    <Percentage className='mb-2' min={0} max={10} val={5} shape='bar' size={80} thickness={20} type='danger' />
+                    <Percentage className='mb-2' min={0} max={10} val={6} shape='bar' size={100} thickness={15} type='success' showText={false} />
+                    <Percentage className='mb-2' min={0} max={10} val={7} shape='bar' thickness={2} showText={false} />
                   </Card>
                 </Col>
 
@@ -446,27 +471,61 @@ function Helper() {
                   <Card className='mb-3' title='Dynamic Tabs (Tab)'>
 
                     <Label label='Tab Top' />
-                    <Tab children='Lorem ipsum.' min={3} label='Tab' />
+                    <Tab2 children='Lorem ipsum.' min={3} label='Tab' />
 
                     <Label label='Tab Left' className='mt-3' />
-                    <Tab children='Lorem ipsum.' min={3} label='Tab' tabPosition='left' />
+                    <Tab2 children='Lorem ipsum.' min={3} label='Tab' tabPosition='left' />
 
                     <Label label='Tab Right' className='mt-3' />
-                    <Tab children='Lorem ipsum.' min={3} label='Tab' tabPosition='right' />
+                    <Tab2 children='Lorem ipsum.' min={3} label='Tab' tabPosition='right' />
 
                   </Card>
-                  <Card className='mb-3' title='Simple Tabs (Tab2)'>
-                    <Tab2>
+                  <Card className='mb-3' title='Tabs'>
+                    <Tab>
                       <TabItem label='Tab1'>
-                        <p>Lorem ipsum.</p>
+                        <p>Lorem ipsum. Content 1 or Component Nested 1</p>
                       </TabItem>
                       <TabItem label='Tab2'>
-                        <p>Lorem ipsum.</p>
+                        <p>Lorem ipsum. Content 2 or Component Nested 2</p>
                       </TabItem>
                       <TabItem label='Tab3'>
-                        <p>Lorem ipsum.</p>
+                        <p>Lorem ipsum. Content 3 or Component Nested 3</p>
                       </TabItem>
-                    </Tab2>
+                    </Tab>
+                    <Tab tabPosition='left'>
+                      <TabItem label='Tab1'>
+                        <p>Lorem ipsum. Content 1 or Component Nested 1</p>
+                      </TabItem>
+                      <TabItem label='Tab2'>
+                        <p>Lorem ipsum. Content 2 or Component Nested 2</p>
+                      </TabItem>
+                      <TabItem label='Tab3'>
+                        <p>Lorem ipsum. Content 3 or Component Nested 3</p>
+                      </TabItem>
+                    </Tab>
+                    <Tab tabPosition='right'>
+                    <TabItem label='Tab1'>
+                        <p>Lorem ipsum. Content 1 or Component Nested 1</p>
+                      </TabItem>
+                      <TabItem label='Tab2'>
+                        <p>Lorem ipsum. Content 2 or Component Nested 2</p>
+                      </TabItem>
+                      <TabItem label='Tab3'>
+                        <p>Lorem ipsum. Content 3 or Component Nested 3</p>
+                      </TabItem>
+                    </Tab>
+                    <Tab tabPosition='bottom'>
+                      <TabItem label='Tab1'>
+                        <p>Lorem ipsum. Content 1 or Component Nested 1</p>
+                      </TabItem>
+                      <TabItem label='Tab2'>
+                        <p>Lorem ipsum. Content 2 or Component Nested 2</p>
+                      </TabItem>
+                      <TabItem label='Tab3'>
+                        <p>Lorem ipsum. Content 3 or Component Nested 3</p>
+                      </TabItem>
+                    </Tab>
+
                   </Card>
                 </Col>
 
@@ -487,6 +546,9 @@ function Helper() {
                         { id: 4, name: 'Bob Johnson', email: 'bob@johnson.com' },
                         { id: 5, name: 'Charlie Brown', email: 'charlie@brown.com' }
                       ]}
+                      onClick={(index) => {
+                        console.log(index);
+                      }}
                     />
                   </Card>
                 </Col>

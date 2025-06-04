@@ -2,6 +2,7 @@ import React from 'react';
 import {useTheme} from "../../Theme";
 import {Wrapper} from "./GridSystem";
 import {RecordArray, RecordProps} from "../../integrations/google/firedatabase";
+import { UIProps } from 'components';
 
 export type TableHeaderProp = {
     key: string,
@@ -10,17 +11,15 @@ export type TableHeaderProp = {
     sort?: boolean
 };
 
-type TableProps = {
+interface TableProps extends UIProps {
     header: TableHeaderProp[],
     body?: RecordArray,
     Footer?: string | React.ReactNode,
     onClick?: (index: number) => void;
-    wrapClass?: string,
-    scrollClass?: string,
-    tableClass?: string,
     headerClass?: string,
     bodyClass?: string,
     footerClass?: string,
+    scrollClass?: string,
     selectedClass?: string
 };
 
@@ -29,12 +28,14 @@ function Table({
                    body             = undefined,
                    Footer           = undefined,
                    onClick          = undefined,
+                   pre              = undefined,
+                   post             = undefined,
                    wrapClass        = undefined,
-                   scrollClass      = undefined,
-                   tableClass       = undefined,
+                   className        = undefined,
                    headerClass      = undefined,
                    bodyClass        = undefined,
                    footerClass      = undefined,
+                   scrollClass      = undefined,
                    selectedClass    = undefined
 } : TableProps) {
     const theme = useTheme("table");
@@ -82,7 +83,8 @@ function Table({
         <div className={"table-responsive " + (wrapClass || theme.Table.wrapClass)}>
             <Wrapper className={scrollClass || theme.Table.scrollClass}>
                 <div className={"fixed-table-container"}>
-                    <table className={"table " + (tableClass || theme.Table.tableClass)}>
+                    {pre}
+                    <table className={"table " + (className || theme.Table.className)}>
                         <thead className={headerClass || theme.Table.headerClass}>
                         <tr>
                             {headers.map((hdr) => (
@@ -117,6 +119,7 @@ function Table({
                         </tbody>
                         {Footer && <tfoot className={footerClass || theme.Table.footerClass}>{Footer}</tfoot>}
                     </table>
+                    {post}
                 </div>
             </Wrapper>
         </div>

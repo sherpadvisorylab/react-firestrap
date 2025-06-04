@@ -16,11 +16,11 @@ export const theme = {
         },
         Table: {
             wrapClass: "bootstrap-table",
-            scrollClass: "",
-            tableClass: "table-striped",
+            className: "table-striped",
             headerClass: "",
             bodyClass: "",
             footerClass: "",
+            scrollClass: "",
             selectedClass: "table-info"
         },
         Gallery: {
@@ -50,11 +50,11 @@ export const theme = {
     },
     Table: {
         wrapClass: "bootstrap-table",
-        scrollClass: "",
-        tableClass: "table-striped",
+        className: "table-striped",
         headerClass: "",
         bodyClass: "",
         footerClass: "",
+        scrollClass: "",
         selectedClass: "table-info"
     },
     Gallery: {
@@ -188,6 +188,14 @@ export const theme = {
         className: "",
     },
     ImageAvatar: {
+        wrapClass: "",
+        className: "",
+    },
+    Percentage: {
+        wrapClass: "",
+        className: "",
+    },
+    Tab: {
         wrapClass: "",
         className: "",
     }

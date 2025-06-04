@@ -15,7 +15,7 @@ import Breadcrumbs from "../blocks/Breadcrumbs";
 
 interface BaseFormProps {
     header?: React.ReactNode;
-    footer?: React.ReactNode | false;
+    footer?: React.ReactNode;
     dataStoragePath?: string;
     onLoad?: () => void;
     onInsert?: (record: any) => Promise<void>;
@@ -185,7 +185,7 @@ export function FormData({
             )}
             <Card
                 header={header || <Breadcrumbs pre={(defaultValues ? "Update " : "Insert ")} path={dataStoragePath ?? "Record"} />}
-                footer={footer !== false && <>
+                footer={(footer || dataStoragePath ||onInsert || onUpdate || onDelete || showBack) && <>
                     {footer}
                     {(onInsert || dataStoragePath) && !defaultValues && <LoadingButton
                         className={theme.Form.buttonSaveClass}
