@@ -189,7 +189,6 @@ To use ChatGPT, you must configure a valid OpenAI API key.
         content: promptAssign(role, promptOptions),
     }));
 
-    const prompt = promptAssign(PROMPTS[strategy], promptOptions);
     const body = {
         model: model || CHATGPT_MODEL,
         messages: [
