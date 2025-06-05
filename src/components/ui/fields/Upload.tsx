@@ -143,7 +143,7 @@ const EditFileModal = ({
 
 /* ------------------------ Caricamento documenti ---------------------- */
 
-interface UploadDocumentProps {
+export interface UploadDocumentProps {
     name: string;
     onChange?: (e: { target: { name: string; value: DocumentFile[] } }) => void;
     label?: string;
@@ -284,7 +284,7 @@ export const UploadDocument = ({
 
 /* ------------------------ Caricamento immagini ---------------------- */
 
-interface UploadImageProps {
+export interface UploadImageProps {
     name: string;
     editable?: boolean;
     multiple?: boolean;

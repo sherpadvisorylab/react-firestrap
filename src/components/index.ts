@@ -27,6 +27,7 @@ export * from './ui/fields/Input';
 export * from './ui/fields/Select';
 export * from './ui/fields/Upload';
 export * from './ui/fields/Crop';
+export * from './ui/fields/AssistantAI';
 export * from './blocks/Menu';
 
 export { default as Form } from './widgets/Form';
