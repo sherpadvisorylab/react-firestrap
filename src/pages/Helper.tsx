@@ -12,23 +12,24 @@ import Badge from "../components/ui/Badge";
 import Notifications from "../components/blocks/Notifications";
 import Search from "../components/blocks/Search";
 import Form from "../components/widgets/Form";
-import Tab from "../components/ui/Tab";
 import Tab2 from "../components/ui/Tab2";
+import Tab, { TabItem } from "../components/ui/Tab";
 import Table from "../components/ui/Table";
 import Brand from "../components/blocks/Brand";
 import { Breadcrumbs } from "../components/blocks/Breadcrumbs";
 import Carousel from "../components/blocks/Carousel";
-import { Dropdown, DropdownLink, DropdownButton } from "../components/blocks/Dropdown";
+import {Dropdown, DropdownItem} from "../components/blocks/Dropdown";
 import Image from "../components/ui/Image";
 import Gallery from "../components/ui/Gallery";
 import Loader from "../components/ui/Loader";
 import Percentage from "../components/ui/Percentage";
 import Repeat from "../components/ui/Repeat";
 import Component from "../components/Component";
-import Modal from "../components/ui/Modal";
+import Modal from "../components/ui/Modal"; 
 import ImageEditor from "../components/widgets/ImageEditor";
 import { PLACEHOLDER_BRAND, PLACEHOLDER_IMAGE } from '../Theme';
-import { Menu } from '../components/blocks/Menu';
+import Menu from '../components/blocks/Menu';
+import Code from '../components/ui/Code';
 
 
 
@@ -36,17 +37,7 @@ import { Menu } from '../components/blocks/Menu';
 function Helper() {
 
   const [showModal, setShowModal] = useState(false);
-  const [count, setCount] = useState(0);
-  const handleClick = () => {
-  setInterval(() => {
-    setCount(prev => {
-      const newCount = prev + 20;
-      console.log(newCount);
-      return newCount;
-    });
-  }, 1000);
-};
-
+  
 
   return (
     <Container className='mb-5'>
@@ -56,70 +47,103 @@ function Helper() {
             <Col xl={9}>
               <h1>Helper</h1>
               <p>Helper is a component that helps you to create a form.</p>
-              <Row>
+              <Row className='pb-3'>
                 {/* Input */}
-                <Col xs={12} className='mb-5'>
-                  <h2 id='input'>Input</h2>
+                <Col lg={5}>
+                  <Form dataStoragePath='' header="Input">
+                    {/* String */}
+                    <String name='text' label='Text input' placeholder='Lorem ipsum.' />
+                    {/* Number */}
+                    <Number name='number' label='Number input' value={10} />
+                    {/* Email */}
+                    <Email name='email' label='Email input' placeholder='test@example.com' />
+                    {/* TextArea */}
+                    <TextArea name='textarea' label='Text area' placeholder='Lorem ipsum.' />
+                  </Form>
+                </Col>
+                <Col lg={7}>
+                  <Code language='jsx' className='h-100 d-flex flex-grow-1 m-0'>
+{`<Form dataStoragePath='' header="Input">
 
-                  {/* Text */}
-                  <Card cardClass='my-3' title='Text Input'>
-                    <form className='form-group'>
-                      {/* String */}
-                      <String name='text' label='Text input' inputClass='mb-3' placeholder='Lorem ipsum.' />
-                      {/* Number */}
-                      <Number name='number' label='Number input' inputClass='mb-3' value={10} />
-                      {/* Email */}
-                      <Email name='email' label='Email input' inputClass='mb-3' placeholder='test@example.com' />
-                      {/* TextArea */}
-                      <TextArea name='textarea' label='Text area' className='mb-3' placeholder='Lorem ipsum.' />
-                    </form>
-                  </Card>
+  {/* String */}
+  <String name='text' label='Text input' placeholder='Lorem ipsum.' />
 
+  {/* Number */}
+  <Number name='number' label='Number input' value={10} />
+
+  {/* Email */}
+  <Email name='email' label='Email input' placeholder='test@example.com' />
+
+  {/* TextArea */}
+  <TextArea name='textarea' label='Text area' placeholder='Lorem ipsum.' />
+
+</Form>`}
+                  </Code>
+                </Col>
+              </Row>
+              <Row className='pb-3'>
+                <Col lg={5}>
                   {/* Date */}
-                  <Card cardClass='my-3' title='Date Input'>
-                    <form className='form-group'>
-                      {/* Date */}
-                      <Date name='date' label='Date' inputClass='mb-3' placeholder='YYYY-MM-DD' />
-                      {/* Time */}
-                      <Time name='time' label='Time' inputClass='mb-3' placeholder='HH:MM:SS' />
-                      {/* DateTime */}
-                      <DateTime name='datetime' label='DateTime' inputClass='mb-3' placeholder='YYYY-MM-DD HH:MM:SS' />
-                      {/* Custom date */}
-                      <DateInput name='dateInput' onChange={() => { }} placeholder='YYYY-MM-DD' />
-                    </form>
-                  </Card>
+                  <Form dataStoragePath='' header="Date Input">
+                    {/* Date */}
+                    <Date name='date' label='Date' inputClass='mb-3' placeholder='YYYY-MM-DD' />
+                    {/* Time */}
+                    <Time name='time' label='Time' inputClass='mb-3' placeholder='HH:MM:SS' />
+                    {/* DateTime */}
+                    <DateTime name='datetime' label='DateTime' inputClass='mb-3' placeholder='YYYY-MM-DD HH:MM:SS' />
+                    {/* Custom date */}
+                    <DateInput name='dateInput' placeholder='YYYY-MM-DD' />
+                  </Form>
+                </Col>
+                <Col lg={7}>
+                  <Code language='jsx' className='h-100 d-flex flex-grow-1 m-0'>
+{`<Form dataStoragePath='' header="Date Input">
 
+  {/* Date */}
+  <Date name='date' label='Date' inputClass='mb-3' placeholder='YYYY-MM-DD' />
+
+  {/* Time */}
+  <Time name='time' label='Time' inputClass='mb-3' placeholder='HH:MM:SS' />
+
+  {/* DateTime */}
+  <DateTime name='datetime' label='DateTime' inputClass='mb-3' placeholder='YYYY-MM-DD HH:MM:SS' />
+
+  {/* Custom date */}
+  <DateInput name='dateInput' placeholder='YYYY-MM-DD' />
+
+</Form>`}
+                  </Code>
+                </Col>
+              </Row>
+              <Row>
+                <Col lg={5}>
                   {/* Boolean */}
-                  <Card cardClass='my-3' title='Boolean Input'>
-                    <form className='form-group'>
-                      {/* Checkbox */}
-                      <Label label='Checkboxes' />
-                      <Checkbox name='checkbox' label='Checkbox1' />
-                      <Checkbox name='checkbox' label='Checkbox2' checkboxClass='mb-3' value={true} />
-                      {/* Switch */}
-                      <Label label='Switches' />
-                      <SwitchInput name='switch1' label='Switch input' onChange={() => { }} status={false} />
-                      <SwitchInput name='switch2' onChange={() => { }} label='Switch input' className='mb-3' status={true} />
-                    </form>
-                  </Card>
+                  <Form dataStoragePath='' header="Boolean Input">
+                    {/* Checkbox */}
+                    <Label label='Checkboxes' />
+                    <Checkbox name='checkbox' label='Checkbox1' />
+                    <Checkbox name='checkbox' label='Checkbox2' checkboxClass='mb-3' value={true} />
+                    {/* Switch */}
+                    <Label label='Switches' />
+                    <SwitchInput name='switch1' label='Switch input' onChange={() => { }} status={false} />
+                    <SwitchInput name='switch2' onChange={() => { }} label='Switch input' className='mb-3' status={true} />
+                  </Form>
 
                   {/* List -> Select? */}
-                  <Card cardClass='my-3' title='List Input'>
-                    <form className='form-group'>
-                      <Label label='List Group' />
+                  <Form dataStoragePath='' header="List Input">
+                    <Label label='List Group' />
                       <ListGroup className='mb-3' onClick={() => { }} active={0} items={[
                         <span className='text-danger'>Element1</span>,
                         <span className='text-success'>Element2</span>,
                         <span className='text-warning'>Element3</span>
                       ]} />
-                    </form>
-                  </Card>
+                  </Form>
                 </Col>
 
                 {/* Selectors */}
                 <Col xs={12} className='mb-5'>
                   <h2 id='selectors'>Selectors</h2>
-                  <Card cardClass='mb-3'>
+                  <Card className='mb-3'>
                     <form className='form-group'>
                       {/* Select  */}
                       <Select name='select' label='Select' className='mb-3' value={'Option1'} options={['Option1', 'Option2', 'Option3']} />
@@ -134,37 +158,28 @@ function Helper() {
 
                 {/* Upload */}
                 <Col xs={12} className='mb-5'>
-                  <h2 id='upload'>Upload</h2>
+                  <h2>Upload</h2>
                   {/* Documenti */}
-                  <Card cardClass='mb-3' title='Documents Upload'>
-                    <form className='form-group'>
-                      <Label label='Upload Multiple Documents' className='mt-3' />
-                      <UploadDocument name='uploadDocument' editable multiple />
+                  <Form dataStoragePath='' header="Documents Upload">
+                    <UploadDocument name='uploadDocument' label="Upload Multiple Documents" editable multiple />
 
-                      <Label label='Upload Document not Editable' className='mt-3' />
-                      <UploadDocument name='uploadDocument' />
-                    </form>
-                  </Card>
+                    <UploadDocument name='uploadDocument' label="Upload Document not Editable" />
+                  </Form>
 
                   {/* Immagini */}
-                  <Card cardClass='mb-3' title='Images Upload'>
-                    <form className='form-group'>
-                      <Label label='Upload Multiple Images' className='mt-3' />
-                      <UploadImage addButtonPosition='right' name='uploadImage' label='Upload Images' previewWidth={150} previewHeight={150} multiple editable />
+                  <Form dataStoragePath='' header="Images Upload">
+                    <UploadImage addButtonPosition='right' name='uploadImage' label='Upload Multiple Images' previewWidth={150} previewHeight={150} multiple editable />
 
-                      <Label label='Upload Single Image' className='mt-3' />
-                      <UploadImage name='uploadImage' label='Upload Images' editable />
+                      <UploadImage name='uploadImage' label='Upload Single Image' editable />
 
-                      <Label label='Upload Single Image not Editable' className='mt-3' />
-                      <UploadImage name='uploadImage' label='Upload Images' />
-                    </form>
-                  </Card>
+                    <UploadImage name='uploadImage' label='Upload Single Image not Editable Images' />
+                  </Form>
                 </Col>
 
                 {/* Alert */}
                 <Col xs={12} className='mb-5'>
                   <h2 id='alert'>Alert</h2>
-                  <Card cardClass='mb-3'>
+                  <Card className='mb-3'>
                     <Alert type="info" children="Info" />
                     <Alert type="success" children="Success" />
                     <Alert type="warning" children="Warning" />
@@ -179,7 +194,7 @@ function Helper() {
                 {/* Badge */}
                 <Col xs={12} className='mb-5'>
                   <h2 id='badge'>Badge</h2>
-                  <Card cardClass='mb-3'>
+                  <Card className='mb-3'>
                     <Row className='gap-2 d-flex justify-content-center'>
                       <Col sm={5}>
                         <Badge type="info" children="Info" className='mb-3 w-100' />
@@ -212,7 +227,7 @@ function Helper() {
                 {/* Buttons */}
                 <Col xs={12} className='mb-5'>
                   <h2 id='buttons'>Buttons</h2>
-                  <Card cardClass='mb-3'>
+                  <Card className='mb-3'>
                     <Row>
                       <Col className='d-flex gap-3 mb-3'>
                         {/* Loading Button */}
@@ -266,15 +281,16 @@ function Helper() {
                 {/* Card */}
                 <Col xs={12} className='mb-5'>
                   <h2 id='card'>Card</h2>
-                  <Card cardClass='mb-3'>
+                  <Card className='mb-3'>
                     <Card
+                      className="shadow-sm"
+                      wrapClass="my-3"
                       title="Card Title"
                       header={<span className="text-muted">Header</span>}
                       footer={<div>Footer with actions.</div>}
                       showLoader={false}
                       showArrow={true}
-                      cardClass="shadow-sm"
-                      wrapClass="my-3"
+                      
                     >
                       <p>Main content.</p>
                     </Card>
@@ -290,7 +306,7 @@ function Helper() {
                 {/* Gallery */}
                 <Col xs={12} className='mb-5'>
                   <h2 id='gallery'>Gallery</h2>
-                  <Card cardClass='mb-3'>
+                  <Card className='mb-3'>
                     <Gallery
                       body={
                         [
@@ -332,7 +348,7 @@ function Helper() {
                 {/* GridSystem */}
                 <Col xs={12} className='mb-5'>
                   <h2 id='gridSystem'>GridSystem</h2>
-                  <Card cardClass='mb-3'>
+                  <Card className='mb-3'>
                     <Wrapper>
                       <Container>
                         <Row>
@@ -354,8 +370,8 @@ function Helper() {
                 {/* Images */}
                 <Col xs={12} className='mb-5'>
                   <h2 id='images'>Images</h2>
-                  <Card cardClass='mb-3' title='Image'>
-                    <p>This is the standard HTML tag for displaying an image. It is simple and easy to use, but it doesn’t handle errors, fallbacks, or custom caching. If the image fails to load, the user will see a broken image icon.
+                  <Card className='mb-3' title='Image'>
+                    <p>This is the standard HTML tag for displaying an image. It is simple and easy to use, but it doesn't handle errors, fallbacks, or custom caching. If the image fails to load, the user will see a broken image icon.
 
                     </p>
                     <Image
@@ -366,7 +382,7 @@ function Helper() {
                     />
                   </Card>
                   {/* ImageAvatar */}
-                  <Card cardClass='mb-3' title='Image Avatar'>
+                  <Card className='mb-3' title='Image Avatar'>
                     <p>ImageAvatar is a React component that:
                       <ul>
                         <li>Displays a default placeholder if the image fails to load</li>
@@ -388,7 +404,7 @@ function Helper() {
                 {/* Loader */}
                 <Col xs={12} className='mb-5'>
                   <h2 id='loader'>Loader</h2>
-                  <Card cardClass='mb-3'>
+                  <Card className='mb-3'>
                     <Loader
                       children="Loading..."
                       show={true}
@@ -399,16 +415,16 @@ function Helper() {
                 {/* Modal */}
                 <Col xs={12} className='mb-5'>
                   <h2 id='modal'>Modal</h2>
-                  <Card cardClass='mb-3' title=''>
+                  <Card className='mb-3' title=''>
                     <ActionButton label='Open modal' onClick={async () => { setShowModal(true) }} />
                     {showModal &&
                       <Modal
                         title="Modal Title"
-                        header={<span className="text-muted">Header</span>}
+                        header={"Header Subtitle"}
                         footer={<div>Footer with actions.</div>}
-                        wrapClass="my-3"
                         size="lg"
-                        onClose={() => { setShowModal(false) }}>
+                        onClose={() => { setShowModal(false) }}
+                      >
                         <p>Main content.</p>
                       </Modal>
                     }
@@ -417,20 +433,27 @@ function Helper() {
 
                 {/* Percentage */}
                 <Col xs={12} className='mb-5'>
-                  <h2 id='percentage'>Percentage</h2>
-                  <button onClick={handleClick}>click</button>
-                  <Percentage min={0} max={100} val={count} />
-
-                  <Card cardClass='mb-3' title=''>
-                    <Percentage min={0} max={10} val={7}/>
-                    <Percentage min={0} max={10} val={3} styleType='progress' />
+                  <Card className='mb-3' header='Percentage'>
+                    <div className='mb-2'>
+                      <Percentage className='me-2' min={0} max={100} val={30} shape='circle' label='Circle' />  
+                      <Percentage className='me-2' min={0} max={100} val={40} shape='circle' size={100} thickness={15} type='success' />
+                      <Percentage className='me-2' min={0} max={100} val={50} shape='circle' size={80} thickness={20} type='danger' />
+                      <Percentage className='me-2' min={0} max={100} val={60} shape='circle' size={60} thickness={25} type='warning' showText={false} />
+                      <Percentage className='me-2' min={0} max={100} val={70} shape='circle' size={40} thickness={30} type='info' showText={false} />
+                    </div>
+                    
+                    <Percentage label='Bar' className='mb-2' min={0} max={10} val={3} shape='bar' size={40} thickness={30} type='info' />
+                    <Percentage className='mb-2' min={0} max={10} val={4} shape='bar' size={60} thickness={25} type='warning'  />
+                    <Percentage className='mb-2' min={0} max={10} val={5} shape='bar' size={80} thickness={20} type='danger' />
+                    <Percentage className='mb-2' min={0} max={10} val={6} shape='bar' size={100} thickness={15} type='success' showText={false} />
+                    <Percentage className='mb-2' min={0} max={10} val={7} shape='bar' thickness={2} showText={false} />
                   </Card>
                 </Col>
 
                 {/* Repeat */}
                 <Col xs={12} className='mb-5'>
                   <h2 id='repeat'>Repeat</h2>
-                  <Card cardClass='mb-3' title=''>
+                  <Card className='mb-3' title=''>
                     <Repeat>
                       <String name='repeat' label='Repeat 1' inputClass='mb-3' placeholder='Lorem ipsum.' />
                       <String name='repeat' label='Repeat 2' inputClass='mb-3' placeholder='Lorem ipsum.' />
@@ -442,31 +465,71 @@ function Helper() {
                 {/* Tab */}
                 <Col xs={12} className='mb-5'>
                   <h2 id='tab'>Tab</h2>
-                  <Card cardClass='mb-3' title='Dynamic Tabs (Tab)'>
+                  <Card className='mb-3' title='Dynamic Tabs (Tab)'>
 
                     <Label label='Tab Top' />
-                    <Tab children='Lorem ipsum.' min={3} label='Tab' />
+                    <Tab2 children='Lorem ipsum.' min={3} label='Tab' />
 
                     <Label label='Tab Left' className='mt-3' />
-                    <Tab children='Lorem ipsum.' min={3} label='Tab' tabPosition='left' />
+                    <Tab2 children='Lorem ipsum.' min={3} label='Tab' tabPosition='left' />
 
                     <Label label='Tab Right' className='mt-3' />
-                    <Tab children='Lorem ipsum.' min={3} label='Tab' tabPosition='right' />
+                    <Tab2 children='Lorem ipsum.' min={3} label='Tab' tabPosition='right' />
 
                   </Card>
-                  <Card cardClass='mb-3' title='Simple Tabs (Tab2)'>
-                    <Tab2 items={[
-                      { content: 'Lorem ipsum.', label: 'Tab1' },
-                      { content: 'Lorem ipsum.', label: 'Tab2' },
-                      { content: 'Lorem ipsum.', label: 'Tab3' },
-                    ]} />
+                  <Card className='mb-3' title='Tabs'>
+                    <Tab>
+                      <TabItem label='Tab1'>
+                        <p>Lorem ipsum. Content 1 or Component Nested 1</p>
+                      </TabItem>
+                      <TabItem label='Tab2'>
+                        <p>Lorem ipsum. Content 2 or Component Nested 2</p>
+                      </TabItem>
+                      <TabItem label='Tab3'>
+                        <p>Lorem ipsum. Content 3 or Component Nested 3</p>
+                      </TabItem>
+                    </Tab>
+                    <Tab tabPosition='left'>
+                      <TabItem label='Tab1'>
+                        <p>Lorem ipsum. Content 1 or Component Nested 1</p>
+                      </TabItem>
+                      <TabItem label='Tab2'>
+                        <p>Lorem ipsum. Content 2 or Component Nested 2</p>
+                      </TabItem>
+                      <TabItem label='Tab3'>
+                        <p>Lorem ipsum. Content 3 or Component Nested 3</p>
+                      </TabItem>
+                    </Tab>
+                    <Tab tabPosition='right'>
+                    <TabItem label='Tab1'>
+                        <p>Lorem ipsum. Content 1 or Component Nested 1</p>
+                      </TabItem>
+                      <TabItem label='Tab2'>
+                        <p>Lorem ipsum. Content 2 or Component Nested 2</p>
+                      </TabItem>
+                      <TabItem label='Tab3'>
+                        <p>Lorem ipsum. Content 3 or Component Nested 3</p>
+                      </TabItem>
+                    </Tab>
+                    <Tab tabPosition='bottom'>
+                      <TabItem label='Tab1'>
+                        <p>Lorem ipsum. Content 1 or Component Nested 1</p>
+                      </TabItem>
+                      <TabItem label='Tab2'>
+                        <p>Lorem ipsum. Content 2 or Component Nested 2</p>
+                      </TabItem>
+                      <TabItem label='Tab3'>
+                        <p>Lorem ipsum. Content 3 or Component Nested 3</p>
+                      </TabItem>
+                    </Tab>
+
                   </Card>
                 </Col>
 
                 {/* Table */}
                 <Col xs={12} className='mb-5'>
                   <h2 id='table'>Table</h2>
-                  <Card cardClass='mb-3' title=''>
+                  <Card className='mb-3' title=''>
                     <Table
                       header={[
                         { label: 'ID', key: 'id' },
@@ -480,6 +543,9 @@ function Helper() {
                         { id: 4, name: 'Bob Johnson', email: 'bob@johnson.com' },
                         { id: 5, name: 'Charlie Brown', email: 'charlie@brown.com' }
                       ]}
+                      onClick={(index) => {
+                        console.log(index);
+                      }}
                     />
                   </Card>
                 </Col>
@@ -487,7 +553,7 @@ function Helper() {
                 {/* Brand */}
                 <Col xs={12} className='mb-5'>
                   <h2 id='brand'>Brand</h2>
-                  <Card cardClass='mb-3' title=''>
+                  <Card className='mb-3' title=''>
                     <Brand url='https://it.wikipedia.org/wiki/Sicurezza_informatica' src={PLACEHOLDER_BRAND} label='Cyber' />
                   </Card>
                 </Col>
@@ -495,7 +561,7 @@ function Helper() {
                 {/* Breadcrumbs */}
                 <Col xs={12} className='mb-5'>
                   <h2 id='breadcrumb'>Breadcrumbs</h2>
-                  <Card cardClass='mb-3' title=''>
+                  <Card className='mb-3' title=''>
                     <Breadcrumbs className="mb-3" pre={<i className="bi bi-house-door-fill" />} />
                   </Card>
                 </Col>
@@ -503,7 +569,7 @@ function Helper() {
                 {/* Carousel */}
                 <Col xs={12} className='mb-5'>
                   <h2 id='carousel'>Carousel</h2>
-                  <Card cardClass='mb-3' title=''>
+                  <Card className='mb-3' title=''>
                     <Carousel
                       showIndicators={true}
                       showControls={true}
@@ -524,29 +590,20 @@ function Helper() {
                 {/* Dropdown */}
                 <Col xs={12} className='mb-5'>
                   <h2 id='dropdown'>Dropdown</h2>
-                  <Card cardClass='mb-3' title=''>
+                  <Card className='mb-3' title=''>
                     {/* Dropdown Links */}
                     <Dropdown
-                      icon="list"
-                      label="Dropdown with Links"
+                      toggleButton={{
+                        icon: "list",
+                        text: "Dropdown with Links"
+                      }}
                       header="Account"
                       footer={<a href="/logout" className="dropdown-item text-danger">Logout</a>}
                       keepDropdownOpen={false}
                     >
-                      <DropdownLink url="/profile">My Profile</DropdownLink>
-                      <DropdownLink url="/settings">Settings</DropdownLink>
-                      <DropdownLink onClick={() => alert("Clicked Help")}>Help</DropdownLink>
-                    </Dropdown>
-
-                    {/* Dropdown Buttons */}
-                    <Dropdown
-                      icon="list"
-                      label="Dropdown with Buttons"
-                      keepDropdownOpen={true} // opzionale
-                    >
-                      <DropdownButton>Download</DropdownButton>
-                      <DropdownButton>Share</DropdownButton>
-                      <DropdownButton>Archive</DropdownButton>
+                      <DropdownItem url="/profile">My Profile</DropdownItem>
+                      <DropdownItem url="/settings">Settings</DropdownItem>
+                      <DropdownItem onClick={() => alert("Clicked Help")}>Help</DropdownItem>
                     </Dropdown>
                   </Card>
                 </Col>
@@ -554,7 +611,7 @@ function Helper() {
                 {/* Notifications */}
                 <Col xs={12} className='mb-5'>
                   <h2 id='notification'>Notifications</h2>
-                  <Card cardClass='mb-3' title=''>
+                  <Card className='mb-3' title=''>
                     <Notifications badge={<span className="badge ">3</span>}>
                       {[
                         {
@@ -583,7 +640,7 @@ function Helper() {
                 {/* Search */}
                 <Col xs={12} className='mb-5'>
                   <h2 id='search'>Search</h2>
-                  <Card cardClass='mb-3' title=''>
+                  <Card className='mb-3' title=''>
                     <Search />
                   </Card>
                 </Col>
@@ -591,7 +648,7 @@ function Helper() {
                 {/* Form */}
                 <Col className="mb-5">
                   <h2 id='form'>Form</h2>
-                  <Card cardClass="mb-3" title="Basic Form with Manual Fields">
+                  <Card className="mb-3" title="Basic Form with Manual Fields">
                     <p className="text-muted">
                       A simple form manually composed using standard field components. Suitable when you need full control over layout and fields.
                     </p>
@@ -601,26 +658,19 @@ function Helper() {
                       <TextArea name="notes" label="Notes" />
                     </Form>
                   </Card>
-                  {/* Form Composer */}
-                  <Card cardClass="mb-3" title="Dynamic Form via Form using model">
+                  {/* Form Template */}
+                  <Card className="mb-3" title="Dynamic Form via Form using model">
                     <p className="text-muted">
                       Automatically generates form fields from a model object. Ideal for dynamic UIs, low-code interfaces, or admin panels.
                     </p>
-                    <Form
-                      dataStoragePath="/demo/form/composer"
-                      model={{
-                        fullName: Component.input.string(),
-                        birthDate: Component.input.date({ value: "ciao" }),
-                        email: Component.input.email({ value: "ciao" }),
-                      }}
-                    />
+                    Work in progress...
                   </Card>
                 </Col>
 
                 {/* Grid */}
                 <Col xs={12} className='mb-5'>
                   <h2 id='grid'>Grid</h2>
-                  <Card cardClass='mb-3' title=''>
+                  <Card className='mb-3' title=''>
                     <Grid
                       dataArray={[
                         {
@@ -670,7 +720,7 @@ function Helper() {
                 {/* Image Editor -> blocca tutto */}
                 {/*  <Col xs={12} className='mb-5'>
           <h2 id='imageEditor'></h2>
-          <Card cardClass='mb-3' title=''>
+          <Card className='mb-3' title=''>
             <ImageEditor imageUrl='' />
           </Card>
         </Col> */}

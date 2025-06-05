@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import path from "../../libs/path";
-import {PLACEHOLDER_USER} from "../../Theme";
+import {PLACEHOLDER_USER, useTheme} from "../../Theme";
+import { UIProps } from '../..';
+import { Wrapper } from "./GridSystem";
 
-interface ImageAvatarProps {
+interface ImageAvatarProps extends UIProps {
     src: string;
     width?: number;
     height?: number;
-    className?: string;
     title?: string;
     alt?: string;
     cacheKey?: string;
@@ -16,10 +17,14 @@ const ImageAvatar = ({
     src,
     width      = undefined,
     height     = undefined,
-    className  = undefined,
     title      = undefined,
-    alt        = undefined
+    alt        = undefined,
+    pre        = undefined,
+    post       = undefined,
+    wrapClass  = undefined,
+    className  = undefined,
 }: ImageAvatarProps) => {
+    const theme = useTheme("image");
     const [imgSrc, setImgSrc] = useState(PLACEHOLDER_USER);
 
     const storageKey = `avatar::${src}`;
@@ -56,16 +61,20 @@ const ImageAvatar = ({
     }, [src, storageKey]);
 
     return (
-        <img
-            key={imgSrc}
-            src={imgSrc}
-            alt={resolvedAlt}
-            width={width}
-            height={height}
-            className={className}
-            title={title}
-            onError={() => setImgSrc(PLACEHOLDER_USER)}
-        />
+        <Wrapper className={wrapClass || theme.ImageAvatar.wrapClass}>
+            {pre}
+            <img
+                key={imgSrc}
+                src={imgSrc}
+                alt={resolvedAlt}
+                width={width}
+                height={height}
+                className={className}
+                title={title}
+                onError={() => setImgSrc(PLACEHOLDER_USER)}
+            />
+            {post}
+        </Wrapper>
     );
 };
 

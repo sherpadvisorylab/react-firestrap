@@ -6,6 +6,8 @@ import Badge from "../Badge";
 import Table from "../Table";
 import Percentage from "../Percentage";
 import { CropImage, FileNameEditor } from "./Crop";
+import { Label } from "./Input";
+import { Wrapper } from "../GridSystem";
 
 
 /* ------------------------ Pulsanti modifica ed eliminazione ---------------------- */
@@ -32,7 +34,7 @@ const EditDeleteButtons = ({
 
 type FileOrPreview = DocumentFile | PreviewImage;
 
-interface AddFileInputProps {
+interface FileInputProps {
     multiple?: boolean;
     elements: FileOrPreview[];
     triggerUpload: () => void;
@@ -43,7 +45,7 @@ interface AddFileInputProps {
     widthButton?: number;
 }
 
-const AddFileInput = ({
+const FileInput = ({
     multiple = false,
     elements,
     triggerUpload,
@@ -52,12 +54,12 @@ const AddFileInput = ({
     handleFileChange,
     heightButton = 100,
     widthButton = 100
-}: AddFileInputProps) => {
+}: FileInputProps) => {
     const max = multiple ? 100 : 1;
     return (
         <>
             {elements.length < max && <ActionButton
-                label={<img width={widthButton} height={heightButton} src={PLACEHOLDER_IMAGE} />}
+                label={<img width={widthButton} height={heightButton} src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz48IS0tIFVwbG9hZGVkIHRvOiBTVkcgUmVwbywgd3d3LnN2Z3JlcG8uY29tLCBHZW5lcmF0b3I6IFNWRyBSZXBvIE1peGVyIFRvb2xzIC0tPgo8c3ZnIHdpZHRoPSI4MDBweCIgaGVpZ2h0PSI4MDBweCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPg0KPHBhdGggZD0iTTQgMTVWMThIMjBWMTUiIHN0cm9rZT0iIzMzMzMzMyIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4NCjxwYXRoIGQ9Ik0xMiA2TDEyIDE0IiBzdHJva2U9IiMzMzMzMzMiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+DQo8cGF0aCBkPSJNMTIgNkwxNSA4LjUiIHN0cm9rZT0iIzMzMzMzMyIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4NCjxwYXRoIGQ9Ik0xMiA2TDkgOC41IiBzdHJva2U9IiMzMzMzMzMiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+DQo8L3N2Zz4=" />}
                 onClick={triggerUpload}
                 className="p-0"
             />}
@@ -110,7 +112,7 @@ const EditFileModal = ({
         };
     }>(null);
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (cropRef.current) {
             const { originalFileName, crops, cropDetails } = cropRef.current.triggerSave();
             onSave?.(originalFileName, crops, cropDetails);
@@ -122,8 +124,9 @@ const EditFileModal = ({
     return (
         <Modal
             title={title}
-            onSave={async () => { handleSave() }}
-            onDelete={async () => { onClose() }}
+            onSave={handleSave}
+            onClose={onClose}
+            size="fullscreen"
         >
             {type === 'document' &&
                 <FileNameEditor
@@ -145,8 +148,10 @@ const EditFileModal = ({
 
 export interface UploadDocumentProps {
     name: string;
+    value?: string;
     onChange?: (e: { target: { name: string; value: DocumentFile[] } }) => void;
     label?: string;
+    required?: boolean;
     editable?: boolean;
     multiple?: boolean;
     className?: string;
@@ -163,12 +168,14 @@ type DocumentFile = {
 
 export const UploadDocument = ({
     name,
-    onChange,
-    label,
-    editable = false,
-    multiple = false,
-    className,
-    accept = ".pdf,.doc,.docx,.txt,.iso",
+    value       = undefined,
+    onChange    = undefined,
+    label       = undefined,
+    required    = false,
+    editable    = false,
+    multiple    = false,
+    className   = undefined,
+    accept      = ".pdf,.doc,.docx,.txt,.iso",
 }: UploadDocumentProps) => {
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const [files, setFiles] = useState<DocumentFile[]>([]);
@@ -238,7 +245,7 @@ export const UploadDocument = ({
 
     return (
         <div className={className}>
-            {label && <label>{label}</label>}
+            {label && <Label label={label} required={required} />}
 
             <Table
                 header={[
@@ -248,7 +255,11 @@ export const UploadDocument = ({
                 ]}
                 body={files.map((file, i) => ({
                     name: file.fileName,
-                    kilobyte: (file.progress === 100 ? (file.size / 1024).toFixed(2) + ' KB' : <Percentage max={100} min={0} val={file.progress} styleType="progress" />),
+                    kilobyte: (
+                        file.progress === 100 
+                        ? (file.size / 1024).toFixed(2) + ' KB' 
+                        : <Percentage max={100} min={0} val={file.progress} shape="bar" />
+                    ),
                     actions: (
                         <EditDeleteButtons
                             editAction={() => setEditingIndex(i)}
@@ -259,7 +270,7 @@ export const UploadDocument = ({
                 }))}
             />
 
-            <AddFileInput
+            <FileInput
                 multiple={multiple}
                 elements={files}
                 triggerUpload={triggerUpload}
@@ -286,12 +297,13 @@ export const UploadDocument = ({
 
 export interface UploadImageProps {
     name: string;
+    value?: string;
+    onChange?: (e: { target: { name: string; value: File[] } }) => void;
+    label?: string;
     editable?: boolean;
     multiple?: boolean;
     extensions?: string[];
-    onChange?: (e: { target: { name: string; value: File[] } }) => void;
-    label?: string;
-    disabled?: boolean;
+    required?: boolean;
     className?: string;
     addButtonPosition?: "left" | "right";
     previewHeight?: number;
@@ -320,13 +332,14 @@ interface PreviewImage {
 
 export const UploadImage = ({
     name,
-    editable = false,
-    multiple = false,
-    extensions = undefined,
-    onChange = undefined,
-    label = undefined,
-    disabled = false,
-    className = undefined,
+    value       = undefined,
+    onChange    = undefined,
+    label       = undefined,
+    editable    = false,
+    multiple    = false,
+    extensions  = undefined,
+    required    = false,
+    className   = undefined,
     addButtonPosition = "left",
     previewHeight = 100,
     previewWidth = 100
@@ -414,32 +427,29 @@ export const UploadImage = ({
     };
 
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-
+    const fileInput = <FileInput
+        multiple={multiple}
+        elements={previews}
+        triggerUpload={triggerUpload}
+        accept={extensions && extensions.length > 0
+            ? extensions.map(ext => (ext.startsWith('.') ? ext : '.' + ext)).join(',')
+            : "image/*"
+        }
+        fileInputRef={fileInputRef}
+        handleFileChange={handleFileChange}
+        heightButton={previewHeight}
+        widthButton={previewWidth}
+    />  
     return (
-        <div className="d-flex gap-3 align-items-center">
-            {/* aggiunta immagini */}
-            <div className={addButtonPosition === "left" ? "order-0" : "order-2"}>
-                <AddFileInput
-                    multiple={multiple}
-                    elements={previews}
-                    triggerUpload={triggerUpload}
-                    accept={extensions && extensions.length > 0
-                        ? extensions.map(ext => (ext.startsWith('.') ? ext : '.' + ext)).join(',')
-                        : "image/*"
-                    }
-                    fileInputRef={fileInputRef}
-                    handleFileChange={handleFileChange}
-                    heightButton={previewHeight}
-                    widthButton={previewWidth}
-                />
-            </div>
-
+        <Wrapper className={className}>
+            {label && <Label label={label} required={required} />}
             {/* anteprime */}
-            <div className="d-flex gap-2 flex-wrap order-1">
+            <div className="d-flex gap-2 flex-wrap">
+                {addButtonPosition === "left" && fileInput}
                 {previews.map((img, i) => (
                     <div
                         key={i}
-                        className="position-relative rounded-2 overflow-hidden border border-1 border-white"
+                        className="position-relative overflow-hidden"
                         style={{ width: previewHeight, height: previewWidth }}
                         onMouseEnter={() => setHoveredIndex(i)}
                         onMouseLeave={() => setHoveredIndex(null)}
@@ -450,8 +460,7 @@ export const UploadImage = ({
                                 <img
                                     src={img.original.url}
                                     alt={`preview-${i}`}
-                                    className="w-100 h-100"
-                                    style={{ objectFit: "contain" }}
+                                    className="img-thumbnail"
                                 />
 
                                 {/* badge */}
@@ -470,10 +479,13 @@ export const UploadImage = ({
                                 </div>
                             </>
                         ) : (
-                            <Percentage max={100} min={0} val={img.progress} styleType="progress" />
+                            <Percentage max={100} min={0} val={img.progress} shape="bar" />
                         )}
                     </div>
                 ))}
+                {addButtonPosition === "right" && fileInput}
+                {/* aggiunta immagini */}
+                
             </div>
 
             {/* modale modifica */}
@@ -486,6 +498,6 @@ export const UploadImage = ({
                     onClose={() => setEditingIndex(null)}
                 />
             }
-        </div>
+        </Wrapper>
     );
 };

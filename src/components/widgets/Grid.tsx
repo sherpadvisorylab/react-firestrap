@@ -392,11 +392,11 @@ const GridArray = ({
                     body={body}
                     onClick={(onClick || canEdit) ? handleClick : undefined}
                     wrapClass={theme.Grid.Table.wrapperClass}
-                    scrollClass={theme.Grid.Table.scrollClass}
-                    tableClass={theme.Grid.Table.tableClass}
+                    className={theme.Grid.Table.className}
                     headerClass={theme.Grid.Table.headerClass}
                     bodyClass={theme.Grid.Table.bodyClass}
                     footerClass={theme.Grid.Table.footerClass}
+                    scrollClass={theme.Grid.Table.scrollClass}
                     selectedClass={!canEdit && (theme.Grid.Table.selectedClass)}
                 />;
         }
@@ -415,7 +415,7 @@ const GridArray = ({
                 )}
             </>}
             footer={Footer}
-            cardClass={(theme.Grid.Card.cardClass + (sticky ? ' sticky-' + sticky : '')).trim()}
+            className={(theme.Grid.Card.className + (sticky ? ' sticky-' + sticky : '')).trim()}
             headerClass={theme.Grid.Card.headerClass}
             bodyClass={theme.Grid.Card.bodyClass}
             footerClass={theme.Grid.Card.footerClass}
@@ -430,7 +430,7 @@ const GridArray = ({
                 onSave={handleSave}
                 onDelete={record.key && (!allowedActions || allowedActions.includes("delete")) ? handleDelete : undefined}
                 wrapClass={theme.Grid.Modal.wrapClass}
-                modalClass={theme.Grid.Modal.modalClass}
+                className={theme.Grid.Modal.className}
                 headerClass={theme.Grid.Modal.headerClass}
                 titleClass={theme.Grid.Modal.titleClass}
                 bodyClass={theme.Grid.Modal.bodyClass}

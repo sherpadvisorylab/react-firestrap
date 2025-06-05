@@ -1,11 +1,8 @@
 import React, { CSSProperties, ReactNode } from 'react';
 
 type ContainerProps = {
-    children: ReactNode;
+    children?: ReactNode;
     className?: string;
-};
-
-type RowProps = ContainerProps & {
     style?: CSSProperties;
 };
 
@@ -20,44 +17,47 @@ type ColProps = ContainerProps & {
 };
 
 export const Wrapper = ({
-                            children,
-                            className = undefined
+                            children    = undefined,
+                            className   = undefined,
+                            style       = undefined
 } : ContainerProps) => {
     return className
-        ? <div className={className}>{children}</div>
+        ? <div className={className} style={style}>{children}</div>
         : <>{children}</>;
 };
 
 
 export const Container = ({
-                                                   children,
-                                                   className = undefined
+                            children    = undefined,
+                            className   = undefined,
+                            style       = undefined
 }: ContainerProps) => {
     const fullClassName = className ? `container ${className}` : 'container';
 
-    return (<div className={fullClassName}>{children}</div>);
+    return (<div className={fullClassName} style={style}>{children}</div>);
 };
 
 export const Row = ({
-                        children,
-                        className   = undefined,
-                        style       = undefined
-}: RowProps) => {
+                            children    = undefined,
+                            className   = undefined,
+                            style       = undefined
+}: ContainerProps) => {
     const fullClassName = className ? `row ${className}` : 'row';
 
     return (<div className={fullClassName} style={style}>{children}</div>);
 };
 
 export const Col = ({
-                        children,
-                        className   = undefined,
-                        xxl         = undefined,
-                        xl          = undefined,
-                        lg          = undefined,
-                        md          = undefined,
-                        sm          = undefined,
-                        xs          = undefined,
-                    }: ColProps) => {
+                            children    = undefined,
+                            className   = undefined,
+                            style       = undefined,
+                            xxl         = undefined,
+                            xl          = undefined,
+                            lg          = undefined,
+                            md          = undefined,
+                            sm          = undefined,
+                            xs          = undefined
+}: ColProps) => {
     const entries = (
         [
             ["", xs],
@@ -79,5 +79,5 @@ export const Col = ({
 
     const fullClassName = (classParts.join(" ") || `col`) + (className ? ` ${className}` : "");
 
-    return <div className={fullClassName}>{children}</div>;
+    return <div className={fullClassName} style={style}>{children}</div>;
 };

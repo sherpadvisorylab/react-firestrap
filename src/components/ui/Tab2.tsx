@@ -1,63 +1,204 @@
 import React, {useState} from 'react';
 import {ActionButton} from "./Buttons";
+import ComponentEnhancer from "../ComponentEnhancer";
+import {converter} from "../../libs/converter";
+import {RecordArray, RecordProps} from "../../integrations/google/firedatabase";
 
-interface TabItem {
-    label: React.ReactNode;
+interface TabLayoutProps {
+    menu: React.ReactNode;
     content: React.ReactNode;
 }
 
-interface Tab2Props {
-    items: TabItem[];
-    key?: string;
+interface TabProps {
+    children: React.ReactNode;
+    name?: string;
+    onChange?: (e: { target: { name: string; value: any[] } }) => void;
+    value?: any[];
+    label?: string;
+    min?: number;
+    max?: number;
     activeIndex?: number;
+    title?: string;
     onAdd?: () => void;
     onRemove?: (index: number) => void;
-    className?: string;
+    readOnly?: boolean;
+    tabPosition?: "top" | "left" | "right";
 }
 
+
+const TabTop = ({menu, content}: TabLayoutProps) => (
+    <>
+        <ul className="nav nav-tabs">{menu}</ul>
+        <div className="tab-content pt-3">{content}</div>
+    </>
+);
+
+
+const TabLeft = ({menu, content}: TabLayoutProps) => (
+    <div className="d-flex">
+        <ul className="nav nav-tabs flex-column text-nowrap border-end border-bottom-0">{menu}</ul>
+        <div className="tab-content ps-3 pt-3 border-top">{content}</div>
+    </div>
+);
+
+const TabRight = ({menu, content}: TabLayoutProps) => (
+    <div className="d-flex">
+        <div className="tab-content pe-3 pt-3 border-top">{content}</div>
+        <ul className="nav nav-tabs flex-column text-nowrap border-start border-bottom-0">{menu}</ul>
+    </div>
+);
+
 const Tab2 = ({
-                  items,
-                  key = "tab",
-                  activeIndex = 0,
-                  onAdd,
-                  onRemove,
-                  className = undefined
-}: Tab2Props) => {
+                 children,
+                 name           = undefined,
+                 onChange       = undefined,
+                 value          = undefined,
+                 label          = "Tab",
+                 min            = 1,
+                 max            = undefined,
+                 activeIndex    = 0,
+                 title          = undefined,
+                 onAdd          = undefined,
+                 onRemove       = undefined,
+                 readOnly       = false,
+                 tabPosition    = "top"
+}: TabProps) => {
+    // const recordEmpty = propsComponentEnhancer(children);
     const [active, setActive] = useState(activeIndex);
+    const [uniqueKey, setUniqueKey] = useState(0);
+
+    const [records, setRecords] = useState<RecordArray>(() => {
+        if (!value) {
+            value = [];
+        }
+
+        if (min && value.length < min) {
+            for (let i = value.length; i < min; i++) {
+                value.push({});
+            }
+        }
+        return value;
+    });
+
+    const [components, setComponents] = useState(() => {
+        return records.map((record, index) =>
+            <ComponentEnhancer
+                components={children}
+                record={record}
+                handleChange={(e) => handleChange(e, index)}
+            />
+        );
+    });
+
+    const addComponent = (index: number, record: RecordProps) => {
+        return (<ComponentEnhancer
+            components={children}
+            record={record}
+            handleChange={(e) => handleChange(e, index)}
+        />)
+    }
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, index: number) => {
+        setRecords(prevRecords => {
+            const newRecords = [...prevRecords];
+            newRecords[index] = {...newRecords[index], [e.target.name]: e.target.value};
+
+            if(onChange && name) {
+                setTimeout(() => {
+                    onChange({target: {name, value: newRecords}});
+                }, 0);
+            }
+            console.log("TAB CHANGE", records, newRecords);
+            return newRecords;
+        });
+    };
+
+    const handleAdd = () => {
+        const updatedRecords = [...records, {} as RecordProps];
+        const lastIndex = updatedRecords.length - 1;
+
+        setRecords(updatedRecords);
+        setComponents(prevComponents => {
+            return [...prevComponents, addComponent(lastIndex, updatedRecords[lastIndex])];
+        });
+        setActive(lastIndex);
+
+        console.log("tagAdd", records, updatedRecords);
+    };
+
+
+    const handleRemove = (index: number) => {
+        setRecords(prevRecords => {
+            const updatedRecords = [...prevRecords];
+            updatedRecords.splice(index, 1);
+
+            if (onChange && name) {
+                setTimeout(() => {
+                    onChange({target: {name, value: updatedRecords}});
+                }, 0);
+            }
+            setUniqueKey(uniqueKey + 1);
+            if (index > updatedRecords.length - 1) {
+                setActive(updatedRecords.length - 1);
+            }
+
+            setComponents(updatedRecords.map((record, index) =>
+                <ComponentEnhancer
+                    components={children}
+                    record={record}
+                    handleChange={(e) => handleChange(e, index)}
+                />
+            ));
+
+            console.log("tabRemove", records, updatedRecords);
+            return updatedRecords;
+        });
+    }
+    const setLabel = (index: number) => {
+        return (label.includes("{")
+            ? converter.parse(records[index], label) || "New " + (index + 1)
+            : label + " " + (index + 1)
+        );
+    }
+
+    const domKey = name || "Tab";
+    const TabDisplayed = {
+        top:    TabTop,
+        left:   TabLeft,
+        right:  TabRight
+    }[tabPosition] || TabTop;
 
     return (
         <div>
-            <ul className="nav nav-tabs">
-                {items.map((item, index) => (
-                    <li key={key + index} className="nav-item me-1">
-                        <a href={`#${key}-${index}`}
-                           onClick={() => setActive(index)}
-                           className={`nav-link ${index === active ? 'active' : ''}`}
-                           data-bs-toggle="tab">
-                            {item.label}
-                            {onRemove && <ActionButton className={"border-0 ms-1"} label={"x"} onClick={() => {
-                                onRemove(index);
-                                setActive(index - 1);
-                            }} />}
-                        </a>
-                    </li>
-                ))}
-                {onAdd && <li key={items.length + 1} className="nav-item me-1">
-                    <button className={`nav-link`} onClick={() => {
-                        onAdd();
-                        setActive(items.length);
-                    }}><i className={"bi bi-plus"} /></button>
-                </li>}
-            </ul>
-            <div className="tab-content pt-3">
-                {items.map((item, index) => (
-                    <div key={key + index} className={`tab-pane fade ${index === active ? 'show active' : ''}`} id={key + "-" + index}>
-                        {item.content}
+            {title && <h3>{title}</h3>}
+            <TabDisplayed
+                menu={<>
+                    {components.map((_, index) => (
+                        <li key={domKey + index + uniqueKey} className="nav-item me-1 position-relative">
+                            <a href={`#${domKey}-${index}`}
+                               onClick={() => setActive(index)}
+                               className={`nav-link ${index === active ? 'active' : ''}`}
+                               data-bs-toggle="tab">
+                                {setLabel(index)}
+                            </a>
+                            {(!readOnly && index === active) &&
+                                <ActionButton className="position-absolute top-0 end-0 p-0 me-1" post="x"
+                                              onClick={() => handleRemove(index)}/>}
+                        </li>
+                    ))}
+                    {!readOnly && <li key={records.length + 1} className="nav-item me-1">
+                        <ActionButton className="nav-link" icon="plus" onClick={handleAdd} />
+                    </li>}
+                </>}
+                content={components.map((component, index) => (
+                    <div key={domKey + index + uniqueKey} className={`tab-pane fade ${index === active ? 'show active' : ''}`} id={domKey + "-" + index}>
+                        {component}
                     </div>
                 ))}
-            </div>
+            />
         </div>
     );
 }
 
+Tab2.enhance = true;
 export default Tab2;

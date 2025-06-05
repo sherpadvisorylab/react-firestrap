@@ -9,6 +9,9 @@ type ComponentSpec = {
     tag: keyof ComponentFormFieldsMap;
     props?: Record<string, any>;
 };
+type FormFieldsMap = Record<string, ComponentSpec>;
+type FieldBucketsMap = Record<string, FormFieldsMap>;
+
 
 // Cache
 const templateCache = new Map<string, React.ReactElement>();
@@ -21,32 +24,31 @@ class Template {
     htmlString      : string;
     formFields      : Record<string, React.ReactNode> = {};
     defaultValues   : Record<string, any> = {};
-    cacheFieldsKey  : string = "";
 
-    public static async loadFromDatabase(path: string) {
-        const { html, ...buckets } =  await db.read(path);
-        const entries = Object.entries(buckets ?? {}) as [string, Record<string, ComponentSpec>][];
-        if (entries.length === 0) {
-            throw new Error(`[Template] No valid field buckets found in "${path}"`);
+    public static async loadFromDatabase(path: string, bucket?: string): Promise<Template> {
+        const result = await db.read(path);
+        const html: string = typeof result.html === 'string' ? result.html : '';
+        const fieldBuckets: FieldBucketsMap = typeof result.fields === 'object' && result.fields !== null
+            ? result.fields
+            : {};
+
+        if (!result.html) {
+            console.warn(`[Template] Attempted to load 'html' from database at path "${path}", but it was not found.`);
+        }
+        if (!result.fields) {
+            console.warn(`[Template] Attempted to load 'fields' from database at path "${path}", but they were not found.`);
         }
 
-        const [firstBucketKey, firstFields] = entries[0];
-        const template = new Template(html).setFields(firstFields, firstBucketKey);
-
-        for (let i = 1; i < entries.length; i++) {
-            const [bucketKey, fields] = entries[i];
-            template.setFields(fields, bucketKey);
-        }
-
-        return template;
+        return new Template(html, fieldBuckets).use(bucket);
     }
 
-    constructor(htmlString: string = "", bucket?: string) {
+    constructor(htmlString: string = "", fieldBuckets?: FieldBucketsMap) {
         this.htmlString         = htmlString;
-        if(bucket && fieldCache.has(bucket)) {
-            const { formFields, defaultValues } = fieldCache.get(bucket)!;
-            this.formFields     = formFields;
-            this.defaultValues  = defaultValues;
+
+        if (fieldBuckets) {
+            Object.entries(fieldBuckets).forEach(([bucketKey, fields]) => {
+                this.setFields(fields, bucketKey);
+            });
         }
     }
 
@@ -54,39 +56,50 @@ class Template {
         this.htmlString = html;
         return this;
     }
+    public use(bucket?: string): this {
+        if (bucket && !this.useFields(bucket)) {
+            console.warn(`[Template] Bucket Fields "${bucket}" not found`);
+        }
 
-    public setFields(fields: Record<string, ComponentSpec>, bucket?: string): Template {
-        this.cacheFieldsKey = bucket ?? this.getCacheKey(fields);
-
-        if (fieldCache.has(this.cacheFieldsKey)) {
-            const { formFields, defaultValues } = fieldCache.get(this.cacheFieldsKey)!;
+        return this;
+    }
+    private useFields(bucket: string): boolean {
+        if (fieldCache.has(bucket)) {
+            const { formFields, defaultValues } = fieldCache.get(bucket)!;
             this.formFields     = formFields;
             this.defaultValues  = defaultValues;
-            return this;
+            return true;
+        } else {
+            this.formFields     = {};
+            this.defaultValues  = {};
+            return false;
         }
+    }
 
-        const buildFormField = (tag: keyof ComponentFormFieldsMap, props: any = {}) => {
-            const factory = componentFormFields[tag];
-            return factory ? factory(props) : null;
-        };
-
-        for (const [key, {tag, props = {}}] of Object.entries(fields)) {
-            const field = buildFormField(tag, props);
-            if (!field) {
-                console.warn(`[Template] Tipo di input non riconosciuto: "${tag}" per la variabile "${key}"`);
-                continue;
+    private buildFormField(tag: keyof ComponentFormFieldsMap, props: any = {}) {
+        const factory = componentFormFields[tag];
+        return factory ? factory(props) : null;
+    }
+    public setFields(fields: FormFieldsMap, bucket: string, reset: boolean = false): Template {
+        if (reset || !this.useFields(bucket)) {
+            for (const [key, {tag, props = {}}] of Object.entries(fields)) {
+                const field = this.buildFormField(tag, props);
+                if (!field) {
+                    console.warn(`[Template] Tipo di input non riconosciuto: "${tag}" per la variabile "${key}"`);
+                    continue;
+                }
+                this.formFields[key] = field.renderForm(key);
+                Object.assign(this.defaultValues, field.getDefaults(key));
             }
-            this.formFields[key] = field.renderForm(key);
-            Object.assign(this.defaultValues, field.getDefaults(key));
+
+            fieldCache.set(bucket, {
+                formFields: this.formFields,
+                defaultValues: this.defaultValues
+            });
         }
-
-        fieldCache.set(this.cacheFieldsKey, {
-            formFields: this.formFields,
-            defaultValues: this.defaultValues
-        });
-
         return this
     }
+
     public toJSX(): React.ReactElement {
         if (!templateCache.has(this.htmlString)) {
             templateCache.set(this.htmlString, this.parseXmlToReactTree());
@@ -95,27 +108,12 @@ class Template {
         return templateCache.get(this.htmlString)!;
     }
 
-    public getDefaults() {
+    public getDefaultValues() {
         return this.defaultValues;
     }
 
     public getFields() {
         return this.formFields;
-    }
-
-    private getCacheKey(fields: Record<string, ComponentSpec>): string {
-        let key = '';
-        for (const fieldKey in fields) {
-            const def = fields[fieldKey];
-            key += fieldKey + ':' + def.tag + ':';
-            if (def.props) {
-                for (const propKey in def.props) {
-                    key += propKey + '=' + String(def.props[propKey]) + ',';
-                }
-            }
-            key += '|';
-        }
-        return key;
     }
 
     private convertJsxAttrsToXml(input: string): string {
@@ -124,10 +122,7 @@ class Template {
         });
     }
 
-    private parseTextToFragments(
-        text: string,
-        formFields: Record<string, React.ReactNode>
-    ): React.ReactNode[] {
+    private parseTextToFragments(text: string): React.ReactNode[] {
         const fragments: React.ReactNode[] = [];
         let lastIndex = 0;
         let match: RegExpExecArray | null;
@@ -143,7 +138,7 @@ class Template {
             }
             lastIndex = index + match[0].length;
 
-            const component = formFields[varName];
+            const component = this.formFields[varName];
             if (component !== undefined) {
                 fragments.push(component);
             } else {
@@ -163,7 +158,7 @@ class Template {
         switch (node.nodeType) {
             case Node.TEXT_NODE: {
                 const text = node.textContent;
-                return text && text.trim() ? this.parseTextToFragments(text, this.formFields) : [];
+                return text && text.trim() ? this.parseTextToFragments(text) : [];
             }
 
             case Node.ELEMENT_NODE: {
@@ -202,20 +197,20 @@ export function FormTemplate({
                                  dataStoragePath
                              }: {
     htmlString: string;
-    components: Record<string, ComponentSpec>;
+    components: FormFieldsMap;
     dataStoragePath: string;
 }) {
     const Compiled = useMemo(() => {
-        const template = new Template(htmlString).setFields(components);
+        const template = new Template(htmlString).setFields(components, "default");
 
         return {
             RenderComponent: template.toJSX(),
-            defaults: template.getDefaults()
+            defaultValues: template.getDefaultValues()
         };
     }, [htmlString, components]);
 
     return (
-        <FormDatabase dataStoragePath={dataStoragePath} dataObject={Compiled.defaults}>
+        <FormDatabase dataStoragePath={dataStoragePath} defaultValues={Compiled.defaultValues}>
             {Compiled.RenderComponent}
         </FormDatabase>
     );
@@ -223,39 +218,43 @@ export function FormTemplate({
 
 
 export function FormTemplate2({
-                                  tplStoragePath,
-                                  dataStoragePath,
+                                  template,
+                                  fieldBucketKey,
+                                  dataSource,
                               }: {
-    tplStoragePath: string;
-    dataStoragePath: string;
+    template: string;
+    fieldBucketKey: string;
+    dataSource?: string;
 }) {
-    const [compiled, setCompiled] = useState<{
-        RenderComponent: React.ReactElement;
-        defaults: Record<string, any>;
+    const [form, setForm] = useState<{
+        children: React.ReactElement;
+        defaultValues: Record<string, any>;
     } | null>(null);
 
     useEffect(() => {
         const controller = new AbortController();
 
-        Template.loadFromDatabase(tplStoragePath).then((template) => {
+        Template.loadFromDatabase(template, fieldBucketKey).then((template) => {
             if (!controller.signal.aborted) {
-                setCompiled({
-                    RenderComponent: template.toJSX(),
-                    defaults: template.getDefaults(),
+                setForm({
+                    children: template.toJSX(),
+                    defaultValues: template.getDefaultValues(),
                 });
             }
         });
 
         return () => {
-            controller.abort(); // disattiva effetto in corso
+            controller.abort();
         };
-    }, [tplStoragePath]);
+    }, [template]);
 
-    if (!compiled) return null;
+    if (!form) {
+        return <p className={"p-4"}><i className={"spinner-border spinner-border-sm"}></i> Caricamento in corso...</p>;
+    }
 
     return (
-        <FormDatabase dataStoragePath={dataStoragePath} dataObject={compiled.defaults}>
-            {compiled.RenderComponent}
+        <FormDatabase dataStoragePath={dataSource} defaultValues={form.defaultValues}>
+            {form.children}
         </FormDatabase>
     );
 }

@@ -7,7 +7,8 @@ export const theme = {
     },
     Grid: {
         Card: {
-            cardClass: "",
+            wrapClass: "",
+            className: "",
             headerClass: "d-flex justify-content-between",
             bodyClass: "p-0",
             footerClass: "",
@@ -15,17 +16,17 @@ export const theme = {
         },
         Table: {
             wrapClass: "bootstrap-table",
-            scrollClass: "",
-            tableClass: "table-striped",
+            className: "table-striped",
             headerClass: "",
             bodyClass: "",
             footerClass: "",
+            scrollClass: "",
             selectedClass: "table-info"
         },
         Gallery: {
             wrapClass: "",
+            className: "",
             scrollClass: "",
-            tableClass: "",
             headerClass: "",
             bodyClass: "",
             footerClass: "",
@@ -35,27 +36,31 @@ export const theme = {
         },
         Modal: {
             size: "lg",
+            display: "center",
             wrapClass: "",
-            modalClass: "",
+            className: "",
             headerClass: "",
             titleClass: "",
+            subTitleClass: "pe-1 text-muted",
             bodyClass: "",
             footerClass: "",
+            iconExpand: "fullscreen",
+            iconCollapse: "fullscreen-exit"
         }
     },
     Table: {
         wrapClass: "bootstrap-table",
-        scrollClass: null,
-        tableClass: "table-striped",
+        className: "table-striped",
         headerClass: "",
         bodyClass: "",
         footerClass: "",
+        scrollClass: "",
         selectedClass: "table-info"
     },
     Gallery: {
         wrapClass: "",
+        className: "",
         scrollClass: "",
-        tableClass: "",
         headerClass: "",
         bodyClass: "",
         footerClass: "",
@@ -70,16 +75,18 @@ export const theme = {
         layoutDark: false,
         autoPlay: true,
     },
-    Card: {
-        cardClass: "",
+    Card: { 
+        wrapClass: "",
+        className: "",
         headerClass: "d-flex justify-content-between bg-white bg-opacity-15 fw-400",
         bodyClass: "d-flex flex-column",
         footerClass: "",
-        wrapClass: "",
         showLoader: false,
         showArrow: true
     },
     Loader: {
+        wrapClass: "",
+        className: "",
         icon: "custom-loader",
         title: "Loading..",
         description: ""
@@ -97,28 +104,33 @@ export const theme = {
         className: "btn-link"
     },
     Alert: {
-        ClassName: ""
+        className: ""
     },
     Badge: {
-        ClassName: ""
+        className: ""
     },
     Modal: {
         size: "lg",
+        display: "center",
         wrapClass: "",
-        modalClass: "",
+        className: "",
         headerClass: "",
         titleClass: "",
+        subTitleClass: "pe-1 text-muted",
         bodyClass: "",
         footerClass: "",
-        iconExpand: "arrows-out",
-        iconCollapse: "arrows-in"
+        iconExpand: "fullscreen",
+        iconCollapse: "fullscreen-exit"
     },
     Dropdown: {
         wrapClass: "",
         className: "",
         buttonClass: "",
-        badgeClass: "",
+        badgeClass: "position-absolute me-1 top-0 end-0",
         menuClass: "",
+        menuHeaderClass: "",
+        menuItemClass: "",
+        menuDividerClass: "",
         headerClass: "",
         footerClass: ""
     },
@@ -151,12 +163,44 @@ export const theme = {
     },
     Menu: {
         wrapClass: "",
-        className: "menu",
+        className: "menu list-unstyled",
         headerClass: "menu-header",
         itemClass: "menu-item",
         linkClass: "menu-link",
-        iconClass: "menu-icon",
+        iconClass: "menu-icon me-1",
         textClass: "flex-fill",
+        badgeClass: "ms-1",
+        arrowClass: "",
         submenuClass: "nav flex-column ms-4",
+    },
+    Brand: {
+        wrapClass: "",
+        className: "brand",
+        logoClass: "navbar-brand",
+        labelClass: "navbar-text",
+    },
+    SignIn: {
+        className: "d-flex align-items-center",
+        avatarClass: "avatar rounded-circle mx-2",
+    },
+    Image: {
+        wrapClass: "",
+        className: "",
+    },
+    ImageAvatar: {
+        wrapClass: "",
+        className: "",
+    },
+    Percentage: {
+        wrapClass: "",
+        className: "",
+    },
+    Tab: {
+        wrapClass: "",
+        className: "",
+    },
+    Code: {
+        wrapClass: "",
+        className: "",
     }
 }

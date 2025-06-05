@@ -1,6 +1,6 @@
 import React from "react";
 import {getAuth, GoogleAuthProvider, signInWithCredential, getAdditionalUserInfo, signOut} from 'firebase/auth';
-import {Dropdown, DropdownButton, DropdownLink} from "../../components/blocks/Dropdown";
+import {Dropdown, DropdownDivider, DropdownItem} from "../../components/blocks/Dropdown";
 import {useMenu} from "../../App";
 import {decodeJWT, loadScripts} from "../../libs/utils";
 import {PLACEHOLDER_USER, useTheme} from "../../Theme";
@@ -8,6 +8,7 @@ import {useGlobalVars} from "../../Global";
 import {authConfig} from "./auth";
 import TenantMenu from "../../Config";
 import ImageAvatar from "../../components/ui/ImageAvatar";
+import Menu from "../../components/blocks/Menu";
 
 declare global {
     interface Window {
@@ -50,6 +51,8 @@ interface ProfileItemProps {
 interface GoogleAuthProps {
     scope: string;
     iconLogout: string;
+    className?: string;
+    avatarClass?: string;
 }
 
 interface TokenResponse {
@@ -85,17 +88,18 @@ const ProfileItem = ({
 
 const GoogleAuthFallback = () => (
     <div className="menu-item dropdown dropdown-mobile-full" title="⚠️ Google OAuth2 config missing">
-        <DropdownButton>
-            <div className="menu-img offline">
-                <img
-                    src={PLACEHOLDER_USER}
-                    alt="No Config"
-                    height="36"
-                    className="avatar rounded-circle ms-2"
-                />
-            </div>
-        </DropdownButton>
-        <Dropdown className="me-lg-3">
+        <Dropdown className="me-lg-3"
+            toggleButton={
+                <div className="menu-img offline">
+                    <img
+                        src={PLACEHOLDER_USER}
+                        alt="No Config"
+                        height="36"
+                        className="avatar rounded-circle ms-2"
+                    />
+                </div>
+            }
+        >
             <div className="text-danger p-2 small" style={{ maxWidth: 300, whiteSpace: "normal" }}>
                 ⚠️ Google Single Sign-On is not configured.<br />
                 Please make sure the <code>oAuth2.clientId</code> value is correctly set in your tenant configuration.
@@ -119,8 +123,11 @@ const GoogleAuthFallback = () => (
 
 const GoogleAuth = ({
                         scope,
-                        iconLogout
+                        iconLogout,
+                        className = undefined,
+                        avatarClass = undefined
 }: GoogleAuthProps) => {
+    const theme = useTheme("auth");
     const menuAuth = useMenu("profile");
     const [ user, setUser, removeUser ] = useGlobalVars("user");
     const userProfile = user?.profile || {};
@@ -214,19 +221,16 @@ const GoogleAuth = ({
 
 
 
-            { <div className="menu-item dropdown dropdown-mobile-full">
-                <DropdownButton>
-                    <div className="menu-img online">
-                        <ImageAvatar
-                            src={userProfile.picture}
-                            title={userProfile.name}
-                            height={36}
-                            className={"avatar rounded-circle ms-2"} />
-                    </div>
-                </DropdownButton>
-                <Dropdown className="me-lg-3">
+            { <div className={className || theme.SignIn.className}>
+                <Dropdown toggleButton={<ImageAvatar
+                        src={userProfile.picture}
+                        title={userProfile.name}
+                        height={36}
+                        className={avatarClass || theme.SignIn.avatarClass}
+                    />}
+                >
                     {!user && <div>
-                        <DropdownLink key={"g_id_signin"}>
+                        <DropdownItem key={"g_id_signin"}>
                             <div className="g_id_signin"
                                  data-type="standard"
                                  data-shape="pill"
@@ -235,15 +239,18 @@ const GoogleAuth = ({
                                  data-size="large"
                                  data-logo_alignment="left">
                             </div>
-                        </DropdownLink>
-                        <div className="dropdown-divider"/>
+                        </DropdownItem>
+                        <DropdownDivider />
                     </div>}
                     <TenantMenu />
+                    <Menu context={"profile"}
+                        linkClass={"dropdown-item"}
+                    />
                     {menuAuth.map((item) => {
                         return (item.path
-                                ? <DropdownLink key={item.title} url={item.path}>
-                                    <ProfileItem label={item.title} icon={item.icon}/>
-                                </DropdownLink>
+                                ? <DropdownItem key={item.title} url={item.path}>
+                                    <ProfileItem label={item.title} icon={item.icon} />
+                                </DropdownItem>
                                 : (!item.title || item.title === '---'
                                         ? <hr key={"---"} />
                                         : <div key={item.title} className="dropdown-header">{item.title}</div>
@@ -252,10 +259,10 @@ const GoogleAuth = ({
                     })}
 
                     {user && <div>
-                        <div className="dropdown-divider" />
-                        <DropdownLink onClick={handleGoogleSignOut}>
+                        <DropdownDivider />
+                        <DropdownItem onClick={handleGoogleSignOut}>
                             <ProfileItem label={"LOGOUT"} icon={iconLogout}/>
-                        </DropdownLink>
+                        </DropdownItem>
                     </div>}
                 </Dropdown>
             </div>}

@@ -20,6 +20,55 @@ const applyOnChangeRecursive = ({
                                     children,
                                     record,
                                     handleChange,
+                                }: ApplyOnChangeParams): React.ReactNode => {
+    return React.Children.map(children, (child) => {
+        console.log("SIAMO TUTTI", child);
+
+        if (!React.isValidElement(child)) return child;
+
+        const {type, props} = child;
+        const name = props.name;
+        const onChange = handleChange && ((event: React.ChangeEvent<any>) => {
+            props.onChange?.(event);
+            handleChange?.(event);
+        });
+
+
+        if (props.children) {
+            return React.cloneElement(child as any, {
+                children: applyOnChangeRecursive({
+                    children: props.children,
+                    record,
+                    handleChange,
+                }),
+            });
+        }
+
+        if (name && record?.[name] === undefined) {
+            console.warn(`The property "${name}" is not present in the record`, child);
+        }
+        if (name) {
+            console.log("CE IL NAMEEEE", props);
+        } else {
+            console.log("non ce il nNANAANANN", props);
+        }
+        return React.cloneElement(child as any, props.onChange || name
+            ? {
+                wrapClass: `mb-3${props.wrapClass ? ' ' + props.wrapClass : ''}`,
+                value: record?.[name] ?? props.value ?? '',
+                onChange,
+            }
+            : {
+                className: `mb-3${props.className ? ' ' + props.className : ''}`,
+            });
+    });
+};
+
+
+const applyOnChangeRecursive2 = ({
+                                    children,
+                                    record,
+                                    handleChange,
                                     onEnhance,
                                 }: ApplyOnChangeParams): React.ReactNode => {
     return React.Children.map(children, (child) => {
@@ -29,7 +78,6 @@ const applyOnChangeRecursive = ({
         const isFragment = type === React.Fragment;
         const isCustomComponent = typeof type !== 'string';
         const name = props.name;
-        console.log(name, "component enanchger", props, isFragment, isCustomComponent);
         const onChange = handleChange && ((event: React.ChangeEvent<any>) => {
             props.onChange?.(event);
             handleChange?.(event);
@@ -63,11 +111,19 @@ const applyOnChangeRecursive = ({
         }
 
         if (onEnhance && isCustomComponent && name) {
+            console.log("onEnhance222222222222222222r", child);
+            onEnhance(child);
+            return child;
+        }
+        if (onEnhance && name) {
+            console.log("onEnhance<dasdsdasd>", child);
             onEnhance(child);
             return child;
         }
 
         if (isCustomComponent && record?.[name] === undefined) {
+            console.log("onEnhance<as>", child);
+
             console.warn(`The property "${name}" is not present in the record`, child);
         }
 
@@ -88,7 +144,6 @@ const ComponentEnhancer = ({
                                record,
                                handleChange
 }: ComponentEnhancerProps ) => {
-    console.log("ENANGHER", components, record);
     const children = Array.isArray(components) ? components : [components];
     return (
         <>

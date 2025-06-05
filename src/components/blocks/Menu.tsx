@@ -16,12 +16,14 @@ interface MenuProps {
   headerClass?: string;
   itemClass?: string;
   linkClass?: string;
-  textClass?: string;
   iconClass?: string;
+  textClass?: string;
+  badgeClass?: string;
+  arrowClass?: string;
   submenuClass?: string;
 }
 
-export const Menu = ({
+const Menu = ({
   context,
   Type          = 'ul',
   badges        = [],
@@ -32,8 +34,10 @@ export const Menu = ({
   headerClass   = undefined,
   itemClass     = undefined,
   linkClass     = undefined,
-  textClass     = undefined,
   iconClass     = undefined,
+  textClass     = undefined,
+  badgeClass    = undefined,
+  arrowClass    = undefined,
   submenuClass  = undefined,
 }: MenuProps) => {
   const menu = useMenu(context);
@@ -58,7 +62,7 @@ export const Menu = ({
       return (
         <li key={index} className={headerClass || theme.Menu.headerClass}>
           {item.icon && <Icon />}
-          <span>{item.title}</span>
+          {item.title && (/^-+$/.test(item.title) ? <hr className={"m-0"} /> : <span>{item.title}</span>)}
         </li>
       );
     }
@@ -79,7 +83,7 @@ export const Menu = ({
           <span className={textClass || theme.Menu.textClass}>
             {item.title}
             {badges.map((badge, i) => (
-              <Badge key={i} type={badge.type} className="ms-1">
+              <Badge key={i} type={badge.type} className={badgeClass || theme.Menu.badgeClass}>
                 {badge.text}
               </Badge>
             ))}
@@ -110,3 +114,5 @@ export const Menu = ({
     </Wrapper>
   );
 };
+
+export default Menu;

@@ -1,5 +1,5 @@
 import React from "react";
-import {Dropdown, DropdownLink} from "./Dropdown";
+import {Dropdown, DropdownItem} from "./Dropdown";
 import {useTheme} from "../../Theme";
 import {Wrapper} from "../ui/GridSystem";
 
@@ -26,10 +26,12 @@ function Notifications({
   return (
       <Wrapper className={wrapClass || theme.Notifications.wrapClass}>
           <Dropdown
+              toggleButton={{
+                icon: "bell",
+              }}
               className={theme.Notifications.Dropdown.className}
               buttonClass={theme.Notifications.Dropdown.buttonClass}
               menuClass={theme.Notifications.Dropdown.menuClass}
-              icon={"bell"}
               badge={badge}
               header="NOTIFICATIONS"
               footer="SEE ALL"
@@ -38,7 +40,7 @@ function Notifications({
                   const iconClass = index === 0 ? "fs-20px" : "fs-20px w-20px";
 
                   return (
-                      <DropdownLink
+                      <DropdownItem
                           key={index}
                           className="py-10px text-wrap"
                           url={notify.url}
@@ -53,7 +55,7 @@ function Notifications({
                           <div className="ps-2 fs-16px">
                               <i className={theme.getIcon("chevron-right")}/>
                           </div>
-                      </DropdownLink>
+                      </DropdownItem>
                   );
               })}
           </Dropdown>
