@@ -8,6 +8,7 @@ import Percentage from "../Percentage";
 import { CropImage, FileNameEditor } from "./Crop";
 import { Label } from "./Input";
 import { Wrapper } from "../GridSystem";
+import { UIProps } from "../..";
 
 
 /* ------------------------ Pulsanti modifica ed eliminazione ---------------------- */
@@ -35,42 +36,53 @@ const EditDeleteButtons = ({
 type FileOrPreview = DocumentFile | PreviewImage;
 
 interface FileInputProps {
+    name: string;
+    label?: string;
+    icon?: string;
+    required?: boolean;
     multiple?: boolean;
     elements: FileOrPreview[];
     triggerUpload: () => void;
     accept: string;
     fileInputRef: React.RefObject<HTMLInputElement>;
-    handleFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    heightButton?: number;
-    widthButton?: number;
+    onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    height?: number;
+    width?: number;
 }
 
 const FileInput = ({
+    name,
+    label = undefined,
+    icon = undefined,
+    required = false,
     multiple = false,
     elements,
     triggerUpload,
     accept,
     fileInputRef,
-    handleFileChange,
-    heightButton = 100,
-    widthButton = 100
+    onChange,
+    height = undefined,
+    width = undefined
 }: FileInputProps) => {
     const max = multiple ? 100 : 1;
     return (
         <>
             {elements.length < max && <ActionButton
-                label={<img width={widthButton} height={heightButton} src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz48IS0tIFVwbG9hZGVkIHRvOiBTVkcgUmVwbywgd3d3LnN2Z3JlcG8uY29tLCBHZW5lcmF0b3I6IFNWRyBSZXBvIE1peGVyIFRvb2xzIC0tPgo8c3ZnIHdpZHRoPSI4MDBweCIgaGVpZ2h0PSI4MDBweCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPg0KPHBhdGggZD0iTTQgMTVWMThIMjBWMTUiIHN0cm9rZT0iIzMzMzMzMyIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4NCjxwYXRoIGQ9Ik0xMiA2TDEyIDE0IiBzdHJva2U9IiMzMzMzMzMiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+DQo8cGF0aCBkPSJNMTIgNkwxNSA4LjUiIHN0cm9rZT0iIzMzMzMzMyIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4NCjxwYXRoIGQ9Ik0xMiA2TDkgOC41IiBzdHJva2U9IiMzMzMzMzMiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+DQo8L3N2Zz4=" />}
+                icon={icon}
+                label={label}
                 onClick={triggerUpload}
-                className="p-0"
+                style={{height: height, width: width}}
             />}
 
             <input
+                name={name}
                 type="file"
                 accept={accept}
                 ref={fileInputRef}
                 multiple={multiple}
+                required={required}
                 className="d-none"
-                onChange={handleFileChange}
+                onChange={onChange}
             />
         </>
     );
@@ -145,18 +157,22 @@ const EditFileModal = ({
 
 
 /* ------------------------ Caricamento documenti ---------------------- */
-
-export interface UploadDocumentProps {
+export interface UploadDocumentProps extends UIProps {
     name: string;
     value?: string;
-    onChange?: (e: { target: { name: string; value: DocumentFile[] } }) => void;
+    onChange?: (e: { target: { name: string; value: File[] } }) => void;
     label?: string;
     required?: boolean;
     editable?: boolean;
     multiple?: boolean;
-    className?: string;
     accept?: string;
 }
+
+export interface UploadImageProps extends UploadDocumentProps {
+    previewHeight?: number;
+    previewWidth?: number;
+}
+
 
 type DocumentFile = {
     key: string;
@@ -174,8 +190,11 @@ export const UploadDocument = ({
     required    = false,
     editable    = false,
     multiple    = false,
-    className   = undefined,
     accept      = ".pdf,.doc,.docx,.txt,.iso",
+    pre         = undefined,
+    post        = undefined,
+    wrapClass   = undefined,
+    className   = undefined,
 }: UploadDocumentProps) => {
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const [files, setFiles] = useState<DocumentFile[]>([]);
@@ -244,71 +263,64 @@ export const UploadDocument = ({
     };
 
     return (
-        <div className={className}>
-            {label && <Label label={label} required={required} />}
+        <Wrapper className={wrapClass}>
+            {pre}
+            <div className={className}>
+                <div className="d-flex justify-content-between align-items-center">
+                    {label && <Label label={label} required={required} />}
+                    <FileInput
+                        name={name}
+                        label={"Upload"}
+                        icon={"upload"}
+                        required={required}
+                        multiple={multiple}
+                        elements={files}
+                        triggerUpload={triggerUpload}
+                        accept={accept}
+                        fileInputRef={fileInputRef}
+                        onChange={handleFileChange}
+                    />
+                </div>
+                {files.length > 0 && <Table
+                    header={[
+                        { label: 'Name', key: 'name' },
+                        { label: 'Kilobyte', key: 'kilobyte' },
+                        { label: 'Actions', key: 'actions' }
+                    ]}
+                    body={files.map((file, i) => ({
+                        name: file.fileName,
+                        kilobyte: (
+                            file.progress === 100 
+                            ? (file.size / 1024).toFixed(2) + ' KB' 
+                            : <Percentage max={100} min={0} val={file.progress} shape="bar" />
+                        ),
+                        actions: (
+                            <EditDeleteButtons
+                                editAction={() => setEditingIndex(i)}
+                                deleteAction={() => handleRemove(i)}
+                                editable={editable}
+                            />
+                        )
+                    }))}
+                />}
 
-            <Table
-                header={[
-                    { label: 'Name', key: 'name' },
-                    { label: 'Kilobyte', key: 'kilobyte' },
-                    { label: 'Actions', key: 'actions' }
-                ]}
-                body={files.map((file, i) => ({
-                    name: file.fileName,
-                    kilobyte: (
-                        file.progress === 100 
-                        ? (file.size / 1024).toFixed(2) + ' KB' 
-                        : <Percentage max={100} min={0} val={file.progress} shape="bar" />
-                    ),
-                    actions: (
-                        <EditDeleteButtons
-                            editAction={() => setEditingIndex(i)}
-                            deleteAction={() => handleRemove(i)}
-                            editable={editable}
-                        />
-                    )
-                }))}
-            />
-
-            <FileInput
-                multiple={multiple}
-                elements={files}
-                triggerUpload={triggerUpload}
-                accept={accept}
-                fileInputRef={fileInputRef}
-                handleFileChange={handleFileChange}
-            />
-
-            {editable && editingIndex !== null && (
-                <EditFileModal
-                    title="Editor Document"
-                    file={files[editingIndex]}
-                    type="document"
-                    onSave={(result) => handleFileRename(result)}
-                    onClose={() => setEditingIndex(null)}
-                />
-            )}
-        </div>
+                {editable && editingIndex !== null && (
+                    <EditFileModal
+                        title="Editor Document"
+                        file={files[editingIndex]}
+                        type="document"
+                        onSave={(result) => handleFileRename(result)}
+                        onClose={() => setEditingIndex(null)}
+                    />
+                )}
+            </div>
+            {post}
+        </Wrapper>
     );
 };
 
 
 /* ------------------------ Caricamento immagini ---------------------- */
-
-export interface UploadImageProps {
-    name: string;
-    value?: string;
-    onChange?: (e: { target: { name: string; value: File[] } }) => void;
-    label?: string;
-    editable?: boolean;
-    multiple?: boolean;
-    extensions?: string[];
-    required?: boolean;
-    className?: string;
-    addButtonPosition?: "left" | "right";
-    previewHeight?: number;
-    previewWidth?: number;
-}
 
 type ImageData = {
     fileName: string;
@@ -332,17 +344,19 @@ interface PreviewImage {
 
 export const UploadImage = ({
     name,
-    value       = undefined,
-    onChange    = undefined,
-    label       = undefined,
-    editable    = false,
-    multiple    = false,
-    extensions  = undefined,
-    required    = false,
-    className   = undefined,
-    addButtonPosition = "left",
-    previewHeight = 100,
-    previewWidth = 100
+    value           = undefined,
+    onChange        = undefined,
+    label           = undefined,
+    editable        = false,
+    multiple        = false,
+    accept          = "image/*",
+    required        = false,
+    previewHeight   = 100,
+    previewWidth    = 100,
+    pre             = undefined,
+    post            = undefined,
+    wrapClass       = undefined,
+    className       = undefined,
 }: UploadImageProps) => {
 
     const fileInputRef = useRef<HTMLInputElement | null>(null); // riferimento all'input file
@@ -427,66 +441,68 @@ export const UploadImage = ({
     };
 
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-    const fileInput = <FileInput
-        multiple={multiple}
-        elements={previews}
-        triggerUpload={triggerUpload}
-        accept={extensions && extensions.length > 0
-            ? extensions.map(ext => (ext.startsWith('.') ? ext : '.' + ext)).join(',')
-            : "image/*"
-        }
-        fileInputRef={fileInputRef}
-        handleFileChange={handleFileChange}
-        heightButton={previewHeight}
-        widthButton={previewWidth}
-    />  
-    return (
-        <Wrapper className={className}>
-            {label && <Label label={label} required={required} />}
-            {/* anteprime */}
-            <div className="d-flex gap-2 flex-wrap">
-                {addButtonPosition === "left" && fileInput}
-                {previews.map((img, i) => (
-                    <div
-                        key={i}
-                        className="position-relative overflow-hidden"
-                        style={{ width: previewHeight, height: previewWidth }}
-                        onMouseEnter={() => setHoveredIndex(i)}
-                        onMouseLeave={() => setHoveredIndex(null)}
-                    >
-                        {img.progress === 100 ? (
-                            <>
-                                {/* anteprima img */}
-                                <img
-                                    src={img.original.url}
-                                    alt={`preview-${i}`}
-                                    className="img-thumbnail"
-                                />
 
-                                {/* badge */}
-                                {editable && Object.keys(img.crops) &&
-                                    <div className="position-absolute bottom-0 start-0 w-100 p-1 d-flex align-items-center justify-content-between">
-                                        {Object.keys(img.crops)
-                                            .map((scale) => (
-                                                <Badge key={scale}>{scale}</Badge>
-                                            ))
-                                        }
+    return (
+        <Wrapper className={wrapClass}>
+            {pre}
+            <Wrapper className={className}>
+                {label && <Label label={label} required={required} />}
+                <div className="d-flex gap-2 flex-wrap">
+                    {/* anteprime */}
+                    {previews.map((img, i) => (
+                        <div
+                            key={i}
+                            className="position-relative overflow-hidden"
+                            style={{ width: previewHeight, height: previewWidth }}
+                            onMouseEnter={() => setHoveredIndex(i)}
+                            onMouseLeave={() => setHoveredIndex(null)}
+                        >
+                            {img.progress === 100 ? (
+                                <>
+                                    {/* anteprima img */}
+                                    <img
+                                        src={img.original.url}
+                                        alt={`preview-${i}`}
+                                        className="img-thumbnail"
+                                    />
+
+                                    {/* badge */}
+                                    {editable && Object.keys(img.crops) &&
+                                        <div className="position-absolute bottom-0 start-0 w-100 p-1 d-flex align-items-center justify-content-between">
+                                            {Object.keys(img.crops)
+                                                .map((scale) => (
+                                                    <Badge key={scale}>{scale}</Badge>
+                                                ))
+                                            }
+                                        </div>
+                                    }
+                                    {/* pulsanti modifica/elimina */}
+                                    <div className="actions position-absolute top-0 start-0 w-100 justify-content-end" style={{ display: hoveredIndex === i ? "flex" : "none" }}>
+                                        <EditDeleteButtons editAction={() => setEditingIndex(i)} deleteAction={() => handleRemove(i)} editable={editable} />
                                     </div>
-                                }
-                                {/* pulsanti modifica/elimina */}
-                                <div className="actions position-absolute top-0 start-0 w-100 justify-content-end" style={{ display: hoveredIndex === i ? "flex" : "none" }}>
-                                    <EditDeleteButtons editAction={() => setEditingIndex(i)} deleteAction={() => handleRemove(i)} editable={editable} />
-                                </div>
-                            </>
-                        ) : (
-                            <Percentage max={100} min={0} val={img.progress} shape="bar" />
-                        )}
-                    </div>
-                ))}
-                {addButtonPosition === "right" && fileInput}
-                {/* aggiunta immagini */}
-                
-            </div>
+                                </>
+                            ) : (
+                                <Percentage max={100} min={0} val={img.progress} shape="bar" />
+                            )}
+                        </div>
+                    ))}
+
+                    {/* aggiunta immagini */}
+                    <FileInput
+                        name={name}
+                        icon={"upload"}
+                        required={required}
+                        multiple={multiple}
+                        elements={previews}
+                        triggerUpload={triggerUpload}
+                        accept={accept}
+                        fileInputRef={fileInputRef}
+                        onChange={handleFileChange}
+                        height={previewHeight}
+                            width={previewWidth}
+                        />
+                </div>
+            </Wrapper>
 
             {/* modale modifica */}
             {editable && editingIndex !== null &&
@@ -498,6 +514,7 @@ export const UploadImage = ({
                     onClose={() => setEditingIndex(null)}
                 />
             }
+            {post}
         </Wrapper>
     );
 };

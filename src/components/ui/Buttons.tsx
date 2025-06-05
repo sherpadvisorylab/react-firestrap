@@ -15,6 +15,7 @@ export interface IButton extends UIProps {
     badgeClass?: string;
     toggle?: string;
     target?: string;
+    style?: React.CSSProperties;
 }
 
 export const LoadingButton = ({
@@ -29,7 +30,8 @@ export const LoadingButton = ({
     post            = undefined,
     wrapClass       = undefined,
     className       = undefined,
-    badgeClass      = undefined
+    badgeClass      = undefined,
+    style           = undefined
 }: IButton = {}) => {
     const [loader, setLoader] = useState(showLoader);
     const [disable, setDisable] = useState(disabled);
@@ -45,6 +47,7 @@ export const LoadingButton = ({
             <button
                 title={title}
                 className={"btn " + (className || theme.LoadingButton.className) + (badge ? " position-relative" : "")}
+                style={style}
                 disabled={disable || loader}
                 onClick={async (e) => {
                     e.stopPropagation();
@@ -78,7 +81,8 @@ export const ActionButton = ({
     post            = undefined,
     wrapClass       = undefined,
     className       = undefined,
-    badgeClass      = undefined
+    badgeClass      = undefined,
+    style           = undefined
 }: IButton = {}) => {
     const theme = useTheme("button");
 
@@ -88,6 +92,7 @@ export const ActionButton = ({
             <button
                 title={title}
                 className={"btn " + (className || theme.ActionButton.className) + (badge ? " position-relative" : "")}
+                style={style}
                 data-bs-toggle={toggle}
                 data-bs-target={target}
                 disabled={disabled}
@@ -97,7 +102,7 @@ export const ActionButton = ({
                     onClick?.(e);
                 }}
             >
-                {icon && <i className={theme.getIcon(icon)}></i>}
+                {icon && <i className={(label ? "me-1 " : "") + theme.getIcon(icon)}></i>}
                 {label}
                 {badge && <span className={"position-absolute badge " + (badgeClass || theme.ActionButton.badgeClass)}>{badge}</span>}
             </button>
