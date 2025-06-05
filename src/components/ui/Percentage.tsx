@@ -1,5 +1,5 @@
 import React from "react";
-import { UIProps } from '../..';
+import { Label, UIProps } from '../..';
 import { useTheme } from "../../Theme";
 import { Wrapper } from "./GridSystem";
 
@@ -37,6 +37,7 @@ interface PercentageProps extends UIProps {
   showText?: boolean;
   size?: number;
   circleOptions?: CircleOptions;
+  label?: string;
 }
 
 const DEFAULT_CIRCLE_OPTIONS: CircleOptions = {
@@ -149,6 +150,7 @@ const Percentage = ({
   showText = true,
   size = DEFAULT_SIZE,
   circleOptions = DEFAULT_CIRCLE_OPTIONS,
+  label = undefined,
   pre = undefined,
   post = undefined,
   wrapClass = undefined,
@@ -161,6 +163,7 @@ const Percentage = ({
   return (
     <Wrapper className={wrapClass || theme.Percentage?.wrapClass}>
       {pre}
+      {label && <Label label={label} />}
       {shape === "bar" ? (
         <PercentageBar
           progress={progress}

@@ -19,7 +19,7 @@ export const theme = {
             className: "table-hover m-0",
             headerClass: "",
             bodyClass: "",
-            footerClass: "",
+            footerClass: "",    
             scrollClass: "app-scroll simplebar-scrollable-y",
             selectedClass: "table-info"
         },
@@ -196,6 +196,10 @@ export const theme = {
         className: "",
     },
     Tab: {
+        wrapClass: "",
+        className: "",
+    },
+    Code: {
         wrapClass: "",
         className: "",
     }

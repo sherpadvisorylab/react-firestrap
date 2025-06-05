@@ -198,5 +198,9 @@ export const theme = {
     Tab: {
         wrapClass: "",
         className: "",
+    },
+    Code: {
+        wrapClass: "",
+        className: "",
     }
 }

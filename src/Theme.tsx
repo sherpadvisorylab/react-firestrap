@@ -217,6 +217,10 @@ const defaultTheme = {
     Tab: {
         wrapClass: "",
         className: "",
+    },
+    Code: {
+        wrapClass: "",
+        className: "",
     }
 }
 

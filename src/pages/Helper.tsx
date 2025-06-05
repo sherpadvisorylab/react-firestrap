@@ -25,10 +25,11 @@ import Loader from "../components/ui/Loader";
 import Percentage from "../components/ui/Percentage";
 import Repeat from "../components/ui/Repeat";
 import Component from "../components/Component";
-import Modal from "../components/ui/Modal";
+import Modal from "../components/ui/Modal"; 
 import ImageEditor from "../components/widgets/ImageEditor";
 import { PLACEHOLDER_BRAND, PLACEHOLDER_IMAGE } from '../Theme';
 import Menu from '../components/blocks/Menu';
+import Code from '../components/ui/Code';
 
 
 
@@ -46,7 +47,7 @@ function Helper() {
             <Col xl={9}>
               <h1>Helper</h1>
               <p>Helper is a component that helps you to create a form.</p>
-              <Row>
+              <Row className='pb-3'>
                 {/* Input */}
                 <Col lg={5}>
                   <Form dataStoragePath='' header="Input">
@@ -61,9 +62,8 @@ function Helper() {
                   </Form>
                 </Col>
                 <Col lg={7}>
-                  <code style={{whiteSpace: 'pre-wrap'}}>
-{`
-<Form dataStoragePath='' header="Input">
+                  <Code language='jsx' className='h-100 d-flex flex-grow-1 m-0'>
+{`<Form dataStoragePath='' header="Input">
 
   {/* String */}
   <String name='text' label='Text input' placeholder='Lorem ipsum.' />
@@ -77,12 +77,11 @@ function Helper() {
   {/* TextArea */}
   <TextArea name='textarea' label='Text area' placeholder='Lorem ipsum.' />
 
-</Form>
-`}
-                  </code>
+</Form>`}
+                  </Code>
                 </Col>
               </Row>
-              <Row>
+              <Row className='pb-3'>
                 <Col lg={5}>
                   {/* Date */}
                   <Form dataStoragePath='' header="Date Input">
@@ -97,9 +96,8 @@ function Helper() {
                   </Form>
                 </Col>
                 <Col lg={7}>
-                  <code style={{whiteSpace: 'pre-wrap'}}>
-{`
-<Form dataStoragePath='' header="Date Input">
+                  <Code language='jsx' className='h-100 d-flex flex-grow-1 m-0'>
+{`<Form dataStoragePath='' header="Date Input">
 
   {/* Date */}
   <Date name='date' label='Date' inputClass='mb-3' placeholder='YYYY-MM-DD' />
@@ -113,9 +111,8 @@ function Helper() {
   {/* Custom date */}
   <DateInput name='dateInput' placeholder='YYYY-MM-DD' />
 
-</Form>
-`}
-                  </code>
+</Form>`}
+                  </Code>
                 </Col>
               </Row>
               <Row>
@@ -438,14 +435,14 @@ function Helper() {
                 <Col xs={12} className='mb-5'>
                   <Card className='mb-3' header='Percentage'>
                     <div className='mb-2'>
-                      <Percentage className='me-2' min={0} max={100} val={30} shape='circle' />  
+                      <Percentage className='me-2' min={0} max={100} val={30} shape='circle' label='Circle' />  
                       <Percentage className='me-2' min={0} max={100} val={40} shape='circle' size={100} thickness={15} type='success' />
                       <Percentage className='me-2' min={0} max={100} val={50} shape='circle' size={80} thickness={20} type='danger' />
                       <Percentage className='me-2' min={0} max={100} val={60} shape='circle' size={60} thickness={25} type='warning' showText={false} />
                       <Percentage className='me-2' min={0} max={100} val={70} shape='circle' size={40} thickness={30} type='info' showText={false} />
                     </div>
                     
-                    <Percentage className='mb-2' min={0} max={10} val={3} shape='bar' size={40} thickness={30} type='info' />
+                    <Percentage label='Bar' className='mb-2' min={0} max={10} val={3} shape='bar' size={40} thickness={30} type='info' />
                     <Percentage className='mb-2' min={0} max={10} val={4} shape='bar' size={60} thickness={25} type='warning'  />
                     <Percentage className='mb-2' min={0} max={10} val={5} shape='bar' size={80} thickness={20} type='danger' />
                     <Percentage className='mb-2' min={0} max={10} val={6} shape='bar' size={100} thickness={15} type='success' showText={false} />
