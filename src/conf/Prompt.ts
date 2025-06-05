@@ -112,6 +112,41 @@ export const PROMPTS = {
         Avoid self-reference and the inclusion of explanatory notes, crafting outlines that speak directly to the essence of the blog post.
         ${PROMPT_NO_REFERENCE}
     `,
+/*   GENERATE_BLOG_POST_OUTLINE_OLD: `
+        ${PROMPT_CLEANUP}
+        You are an expert copywriter who creates content outlines. 
+        You have a {voice} tone of voice. 
+        You have a {style} writing style. 
+        Create {limit} alternative long form content outlines in the {language} language for the blog post titled {search}.  
+        Each outline should include a minimum of 3-4 headings, and each heading should have 4-5 subheadings. 
+        Each outline should be extensive and should cover the entire topic. 
+        Create detailed subheadings that are engaging and catchy. 
+        Do not write the blog post, only the outlines. 
+        Write the output as an array of outlines, where each outline is an array of sections.
+        The response should have this exact structure:
+        [
+          {
+            "outline": [
+              {
+                "headline": "First Section Title",
+                "subheadings": ["Point 1", "Point 2", "Point 3", "Point 4"]
+              },
+              {
+                "headline": "Second Section Title",
+                "subheadings": ["Point 1", "Point 2", "Point 3", "Point 4"]
+              }
+            ]
+          },
+          {
+            "outline": [
+              // next alternative outline sections...
+            ]
+          }
+        ]
+        Each outline array should contain 3-4 different sections.
+        Avoid self-reference and the inclusion of explanatory notes, crafting outlines that speak directly to the essence of the blog post.
+        ${PROMPT_NO_REFERENCE}
+    `,
   /*   GENERATE_BLOG_POST_OUTLINE_OLD: `
           ${PROMPT_CLEANUP}
           You are an expert copywriter who creates content outlines. 
