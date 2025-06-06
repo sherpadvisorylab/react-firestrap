@@ -6,6 +6,7 @@ import fetchAI from '../../../integrations/ai';
 import ComponentEnhancer from '../../ComponentEnhancer';
 import Loader from '../Loader';
 import Carousel from '../../blocks/Carousel';
+import Card from '../Card';
 
 type PromptKey = keyof typeof PROMPTS;
 
@@ -26,7 +27,9 @@ const AssistantAI = ({
     initialValue,
     handleOutput,
     children,
-    viewMode = 'list'
+    viewMode = 'list',
+    autoStart = false,
+    onReset,
 }: {
     name: string;
     promptTopic: PromptKey;
@@ -35,48 +38,66 @@ const AssistantAI = ({
     handleOutput: (e: any) => void;
     children?: React.ReactNode;
     viewMode?: 'list' | 'carousel' | 'tab';
+    autoStart?: boolean;
+    onReset?: () => void;
 }) => {
     const { prompt, label } = getPrompt(promptTopic);
     const [userInput, setUserInput] = useState<string>(initialValue ?? '');
     const [responses, setResponses] = useState<ResponseItem[]>([]);
     const [selectedResponse, setSelectedResponse] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
 
     const fetch = fetchAI();
 
     useEffect(() => {
-        initialValue && handleInput();
+        if (initialValue && autoStart) {
+            handleInput();
+        }
     }, [initialValue])
 
-    // ritorna un array di oggetti con la struttura: { Outline: 'testo' }
     const handleInput = async () => {
         setResponses([]);
         setSelectedResponse('');
-        setIsLoading(true)
-        const finalPrompt = setPrompt(prompt, configVariables, userInput);
-        const response = await fetch(finalPrompt, promptTopic, {
-            model: 'gpt-4',
-            temperature: promptTopic === 'GENERATE_BLOG_POST_OUTLINE' ? 0.5 : 0.7
-        });
-        setIsLoading(false)
-        console.log(response)
-        let outputArray = [];
+        setIsLoading(true);
+        setError(null);
+        onReset?.();
+        
+        try {
+            const finalPrompt = setPrompt(prompt, configVariables, userInput);
+            const response = await fetch(finalPrompt, promptTopic, {
+                model: 'gpt-4',
+                temperature: promptTopic === 'GENERATE_BLOG_POST_OUTLINE' ? 0.5 : 0.7
+            });
 
-        if (Array.isArray(response?.output)) {
-            outputArray = response.output;
-        } else if (response?.output && typeof response.output === 'object') {
-            outputArray = [response.output];
-        } else if (Array.isArray(response)) {
-            outputArray = response;
-        } else if (response && typeof response === 'object') {
-            outputArray = [response];
-            setSelectedResponse(response);
-            handleOutput(response);
-            return;
+            if (!response) {
+                throw new Error('Failed to get response');
+            }
+
+            let outputArray: any[] = [];
+
+            // Handle single object response
+            if (!Array.isArray(response) && typeof response === 'object') {
+                if (response.output) {
+                    outputArray = Array.isArray(response.output) ? response.output : [response.output];
+                } else {
+                    setSelectedResponse(response);
+                    handleOutput(response);
+                    setIsLoading(false);
+                    return;
+                }
+            } else {
+                // Handle array response
+                outputArray = Array.isArray(response) ? response : [response];
+            }
+
+            setResponses(outputArray);
+        } catch (err) {
+            setError('Failed to generate content. Please try again.');
+            console.error('AI Error:', err);
+        } finally {
+            setIsLoading(false);
         }
-
-        console.log(outputArray);
-        setResponses(outputArray);
     }
 
     const handleResponse = (e: React.MouseEvent, index?: number) => {
@@ -100,12 +121,22 @@ const AssistantAI = ({
     }
 
     return (
-        <>
+        <Card
+            title={name}
+            className='my-3'
+            header={
+                <div className='d-flex justify-content-end align-items-center gap-2'>
+                    {isLoading && <Loader>Thinking...</Loader>}
+                    {error && <span className='text-danger'>{error}</span>}
+                    {(selectedResponse || responses.length > 0 || error) && <ActionButton icon='arrow-clockwise' onClick={handleInput} />}
+                </div>
+            }
+        >
 
-            {!initialValue && !selectedResponse && <TextArea
+            {(!autoStart || !initialValue) && !selectedResponse && !error && <TextArea
                 name='inputUser'
                 label={label}
-                value={typeof selectedResponse === 'string' ? selectedResponse : userInput}
+                value={initialValue ?? userInput}
                 onChange={(e) => setUserInput(e.target.value)}
                 post={<ActionButton
                     icon='robot'
@@ -114,14 +145,8 @@ const AssistantAI = ({
                 />}
                 wrapClass='my-3'
             />}
-            {(selectedResponse || responses.length > 0) &&
-                <div className='d-flex justify-content-end mt-3'>
-                    <ActionButton icon='arrow-clockwise' onClick={handleInput} />
-                </div>
-            }
-            {!selectedResponse && <Label label={name} />}
-            {isLoading && <Loader>Thinking...</Loader>}
-            {responses?.length > 0 && !selectedResponse && (
+
+            {responses?.length > 0 && !selectedResponse && !error && (
                 viewMode === 'carousel' ?
                     <Carousel>
                         {responses.map((response, index) => {
@@ -152,9 +177,7 @@ const AssistantAI = ({
                                 </div>
                             );
                         })}
-
                     </Carousel>
-
                     :
                     <ListGroup
                         items={responses.map((response, index) => {
@@ -164,14 +187,13 @@ const AssistantAI = ({
                         onClick={handleResponse}
                     />
             )}
-            {selectedResponse &&
+            {selectedResponse && !error &&
                 <ComponentEnhancer
                     components={children}
                     record={{ [name]: selectedResponse }}
                 />
             }
-
-        </>
+        </Card>
     )
 }
 
