@@ -322,7 +322,7 @@ export const ListGroup = ({
                     <a
                         key={generateUniqueId()}
                         onClick={(e) => {
-                            if (e.currentTarget.tagName.toLowerCase() !== 'a' && !isLoading) {
+                            if (!isLoading) {
                                 onClick?.(e, index);
                             }
                         }}

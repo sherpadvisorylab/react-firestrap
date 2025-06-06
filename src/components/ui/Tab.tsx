@@ -43,7 +43,7 @@ const TabBottom = ({menu, content}: TabLayoutProps) => (
 );
 
 interface TabProps extends UIProps {
-    children: ReactElement<TabItemProps> | ReactElement<TabItemProps>[];
+    children: React.ReactNode;
     defaultTab?: number;
     tabPosition?: "top" | "left" | "right" | "bottom";
 }
@@ -61,7 +61,7 @@ const Tab: React.FC<TabProps> = ({
     
     const items = Children.toArray(children)
         .filter((child): child is ReactElement<TabItemProps> => 
-            React.isValidElement(child) && 'label' in child.props
+            React.isValidElement(child) && child.type === TabItem
         );
 
     const TabDisplayed = {

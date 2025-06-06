@@ -6,7 +6,7 @@ import { Wrapper } from "./GridSystem";
 type ColorType = "info" | "success" | "warning" | "danger" | "primary" | "secondary" | "light" | "dark";
 type ShapeType = "bar" | "circle";
 
-interface BasePercentageProps {
+interface PercentageBarProps {
   progress: number;
   type: ColorType;
   className: string;
@@ -14,17 +14,9 @@ interface BasePercentageProps {
   showText: boolean;
   background: ColorType;
   size: number;
-}
-
-interface CircleOptions {
   fontSize: number;
 }
 
-interface PercentageBarProps extends BasePercentageProps {}
-
-interface PercentageCircleProps extends BasePercentageProps {
-  options: CircleOptions;
-}
 
 interface PercentageProps extends UIProps {
   val?: number;
@@ -36,25 +28,19 @@ interface PercentageProps extends UIProps {
   thickness?: number;
   showText?: boolean;
   size?: number;
-  circleOptions?: CircleOptions;
+  fontSize?: number;
   label?: string;
 }
 
-const DEFAULT_CIRCLE_OPTIONS: CircleOptions = {
-  fontSize: 18
-};
-
-const DEFAULT_THICKNESS = 10;
-const DEFAULT_SIZE = 100;
-
 const PercentageBar: React.FC<PercentageBarProps> = ({ 
   progress, 
-  type, 
-  className, 
+  type,  
   thickness,
   showText,
   background,
-  size
+  size,
+  fontSize,
+  className
 }) => {
   return (
     <div 
@@ -68,7 +54,7 @@ const PercentageBar: React.FC<PercentageBarProps> = ({
       <div
         className={`progress-bar bg-${type}`}
         role="progressbar"
-        style={{ width: `${progress}%` }}
+        style={{ width: `${progress}%`, fontSize: `${fontSize}px` }}
         aria-valuenow={progress}
         aria-valuemin={0}
         aria-valuemax={100}
@@ -79,17 +65,16 @@ const PercentageBar: React.FC<PercentageBarProps> = ({
   );
 };
 
-const PercentageCircle: React.FC<PercentageCircleProps> = ({ 
+const PercentageCircle: React.FC<PercentageBarProps> = ({ 
   progress, 
   type, 
-  thickness, 
-  options, 
-  className,
+  thickness,  
   showText,
   background,
-  size
+  size,
+  fontSize,
+  className,
 }) => {
-  const { fontSize } = options;
   const radius = size / 2;
   const normalizedRadius = radius - thickness / 2;
   const circumference = 2 * Math.PI * normalizedRadius;
@@ -146,10 +131,10 @@ const Percentage = ({
   shape = "bar",
   type = "primary",
   background = "secondary",
-  thickness = DEFAULT_THICKNESS,
+  thickness = 10,
   showText = true,
-  size = DEFAULT_SIZE,
-  circleOptions = DEFAULT_CIRCLE_OPTIONS,
+  size = 100,
+  fontSize = 16,  
   label = undefined,
   pre = undefined,
   post = undefined,
@@ -172,6 +157,7 @@ const Percentage = ({
           showText={showText}
           background={background}
           size={size}
+          fontSize={fontSize}
           className={finalClassName}
         />
       ) : (
@@ -182,7 +168,7 @@ const Percentage = ({
           showText={showText}
           background={background}
           size={size}
-          options={circleOptions}
+          fontSize={fontSize}
           className={finalClassName}
         />
       )}

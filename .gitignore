@@ -130,11 +130,11 @@ dist
 .pnp.*
 
 package-lock.json
-=======
+
 # IDEs
 .idea
 .vscode
 .env
 .cursor
 
->>>>>>> dfd915aa73914e18cb00921a25539f0d32ff7fc7
+

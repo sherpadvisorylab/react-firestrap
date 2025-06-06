@@ -1,8 +1,8 @@
 
-import {getPromptLang, getPromptStyle, getPromptVoice, PROMPTS, PROMPTS_ROLE} from "../conf/Prompt";
-import {fetchRest} from "../libs/fetch";
-import {consoleLog} from "../constant";
-import {AIConfig, Config, onConfigChange} from "../Config";
+import { getPromptLang, getPromptStyle, getPromptVoice, PROMPTS, PROMPTS_ROLE } from "../conf/Prompt";
+import { fetchRest } from "../libs/fetch";
+import { consoleLog } from "../constant";
+import { AIConfig, Config, onConfigChange } from "../Config";
 
 const TYPE_CHATGPT = "chatgpt";
 const TYPE_GEMINI = "gemini";
@@ -30,7 +30,7 @@ type PromptPlaceholders = {
     [key: string]: string | number | boolean | undefined;
 };
 
-type FetchAIOptions  = {
+type FetchAIOptions = {
     limit?: number;
     keywords?: string[];
     model?: string;
@@ -66,8 +66,8 @@ const promptAssign = (prompt: string, options: PromptPlaceholders): string => {
 const parseContent = (str: string): any => {
     try {
         return (str.startsWith("{") || str.startsWith("[")
-                ? JSON.parse(str)
-                : str
+            ? JSON.parse(str)
+            : str
         )
     } catch (error) {
         console.error('Errore di sintassi JSON');
@@ -85,7 +85,7 @@ const chatGPTApiContinue = async (
     prevMessages: any[],
     countRetry = 0
 ): Promise<any> => {
-    if(!config?.chatGptApiKey) {
+    if (!config?.chatGptApiKey) {
         console.error(`
 ❌ OpenAI API Key not configured.
 
@@ -114,7 +114,7 @@ To use ChatGPT, you must configure a valid OpenAI API key.
     const messages = [
         ...prevMessages,
         //{ role: 'user', content: 'Please continue from the previous response and include the complete content in the new response.'}
-        { role: 'user', content: 'Please continue: ' + content}
+        { role: 'user', content: 'Please continue: ' + content }
     ];
 
     console.log("Retry: " + countRetry, '<------------------------------------------------------------------------------------');
@@ -144,58 +144,46 @@ To use ChatGPT, you must configure a valid OpenAI API key.
 
 
 const fetchChatGPTApi = async (
-    search: string,
+    prompt: string,
     strategy: keyof typeof PROMPTS,
-    {
-        limit           = 10,
-        keywords        = [],
-        model           = undefined,
-        framework       = undefined,
-        temperature     = undefined,
-        voice           = undefined,
-        style           = undefined,
-    }: FetchAIOptions
+    options: {
+        model?: string;
+        temperature?: number;
+    } = {}
 ): Promise<any> => {
-    if(!config?.chatGptApiKey) {
+    /* if (!config?.chatGptApiKey) {
         console.error(`
-❌ OpenAI API Key not configured.
+            ❌ OpenAI API Key not configured.
 
-To use ChatGPT, you must configure a valid OpenAI API key.
+            To use ChatGPT, you must configure a valid OpenAI API key.
 
-🛠 How to get your API key:
-1. Go to https://platform.openai.com/
-2. Log in or create a free account
-3. From your dashboard, click on your profile (top right) > "View API keys"
-4. Click "Create new secret key"
-5. Copy the key and store it securely
+            🛠 How to get your API key:
+            1. Go to https://platform.openai.com/
+            2. Log in or create a free account
+            3. From your dashboard, click on your profile (top right) > "View API keys"
+            4. Click "Create new secret key"
+            5. Copy the key and store it securely
 
-📌 Add it to your tenant configuration under:
-  config.ai.chatGptApiKey = "<your-api-key>"
+            📌 Add it to your tenant configuration under:
+            config.ai.chatGptApiKey = "<your-api-key>"
 
-⚠️ Without this key, ChatGPT features will not work.
-`);
+            ⚠️ Without this key, ChatGPT features will not work.
+        `);
         return;
-    }
-    const promptOptions: PromptPlaceholders = {
-        keywords: keywords.join(', '), // 👈 qui convertiamo in stringa
-        search,
-        limit,
-        voice,
-        style,
-        framework: framework || CHATGPT_FRAMEWORK,
-    };
+    } */
+
     const roles: Message[] = (PROMPTS_ROLE[strategy] || []).map(role => ({
         role: 'system',
-        content: promptAssign(role, promptOptions),
+        content: role
     }));
 
     const body = {
-        model: model || CHATGPT_MODEL,
+        model: options.model || CHATGPT_MODEL,
         messages: [
             ...roles,
             { role: 'user', content: prompt }
         ],
-        temperature: temperature || CHATGPT_TEMPERATURE
+        temperature: options.temperature || CHATGPT_TEMPERATURE
     };
 
     consoleLog(TYPE_CHATGPT + "->request::", strategy, body);
@@ -203,30 +191,30 @@ To use ChatGPT, you must configure a valid OpenAI API key.
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + config.chatGptApiKey
+            'Authorization': 'Bearer ' + config?.chatGptApiKey
         },
         body: body
     })
         .then(response => apiLog(TYPE_CHATGPT, strategy, response))
         .then(response => {
-            if (!response?.choices) {
-                return null;
-            }
-            return parseContent(response.choices[0].message.content) || chatGPTApiContinue(response.choices[0].message.content, roles)
+            if (!response?.choices) return null;
+            return parseContent(response.choices[0].message.content)
+                || chatGPTApiContinue(response.choices[0].message.content, roles);
         });
-}
+};
+
 
 const fetchGeminiApi = async (
     search: string,
     strategy: keyof typeof PROMPTS,
     {
-        limit           = 10,
-        keywords        = [],
-        model           = undefined,
-        framework       = undefined,
-        temperature     = undefined,
-        voice           = undefined,
-        style           = undefined,
+        limit = 10,
+        keywords = [],
+        model = undefined,
+        framework = undefined,
+        temperature = undefined,
+        voice = undefined,
+        style = undefined,
     }: FetchAIOptions
 ): Promise<any> => {
     if (!config?.geminiApiKey) {
@@ -258,7 +246,7 @@ To use Google Gemini (formerly Bard), you must configure a valid API key.
     };
 
     const promptRole = (question: string): string => {
-        const role =  'Assistant'; //todo: da schematizzare estraendo da PROMPTS_ROLE[strategy]
+        const role = 'Assistant'; //todo: da schematizzare estraendo da PROMPTS_ROLE[strategy]
         const specialization = 'Generalist'; //todo: da schematizzare estraendo da PROMPTS_ROLE[strategy]
 
         return `**Role:** ${role}\n**Specialization:** ${specialization}\n\nYour question: ${question}`;

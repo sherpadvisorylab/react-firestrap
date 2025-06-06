@@ -168,9 +168,9 @@ function Helper() {
 
                   {/* Immagini */}
                   <Form dataStoragePath='' header="Images Upload">
-                    <UploadImage addButtonPosition='right' name='uploadImage' label='Upload Multiple Images' previewWidth={150} previewHeight={150} multiple editable />
+                    <UploadImage name='uploadImage' label='Upload Multiple Images' previewWidth={150} previewHeight={150} multiple editable />
 
-                      <UploadImage name='uploadImage' label='Upload Single Image' editable />
+                    <UploadImage name='uploadImage' label='Upload Single Image' editable />
 
                     <UploadImage name='uploadImage' label='Upload Single Image not Editable Images' />
                   </Form>
@@ -435,7 +435,7 @@ function Helper() {
                 <Col xs={12} className='mb-5'>
                   <Card className='mb-3' header='Percentage'>
                     <div className='mb-2'>
-                      <Percentage className='me-2' min={0} max={100} val={30} shape='circle' label='Circle' />  
+                      <Percentage className='me-2' min={0} max={100} val={30} shape='circle' label='Circle' fontSize={30} />  
                       <Percentage className='me-2' min={0} max={100} val={40} shape='circle' size={100} thickness={15} type='success' />
                       <Percentage className='me-2' min={0} max={100} val={50} shape='circle' size={80} thickness={20} type='danger' />
                       <Percentage className='me-2' min={0} max={100} val={60} shape='circle' size={60} thickness={25} type='warning' showText={false} />
