@@ -151,8 +151,6 @@ export const Select = ({
 
     }, [options, lookup, selectedValue, order]);
 
-    console.log("SELECT", selectedValue, opts);
-
     if (!selectedValue && !optionEmpty && opts.length > 0) {
         onChange?.({target: {name: name, value: opts[0].value}}, opts);
     }
@@ -226,8 +224,6 @@ export const Autocomplete = ({
         const combinedOptions = getOptions(options, lookup, order);
         return arrayUnique(combinedOptions, 'value');
     }, [options, lookup]);
-
-console.log("AUTOCOMPLETE", selectedItems, opts);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const currentValue = e.target.value;
@@ -339,15 +335,12 @@ export const Checklist = ({
         return arrayUnique(combinedOptions, 'value');
     }, [options, lookup]);
 
-    console.log("CHECKLIST", selectedItems, opts);
-
     const removeItem = (currentValue: string) => {
         setSelectedItems(prevState => {
             const updatedItems = prevState.filter(item => item !== currentValue);
             setTimeout(() => {
                 onChange?.({target: {name: name, value: updatedItems}}, opts);
             }, 0);
-            console.log("CHECKLIST REMOVE", updatedItems);
 
             return updatedItems;
         });
@@ -375,7 +368,6 @@ export const Checklist = ({
                 onChange?.({target: {name: name, value: updatedItems}}, opts);
             }, 0);
 
-            console.log("CHECKLIST CHANGE", updatedItems);
             return updatedItems;
         });
     };

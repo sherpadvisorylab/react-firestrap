@@ -29,6 +29,7 @@ const applyOnChangeRecursive = ({
         const {type, props} = child;
         const name = props.name;
         const onChange = handleChange && ((event: React.ChangeEvent<any>) => {
+            console.log("ONCHANGE", event, record);
             props.onChange?.(event);
             handleChange?.(event);
         });

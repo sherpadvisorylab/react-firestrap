@@ -129,9 +129,12 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
+package-lock.json
+
 # IDEs
 .idea
 .vscode
 .env
 .cursor
+
 
