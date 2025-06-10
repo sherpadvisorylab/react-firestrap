@@ -39,7 +39,8 @@ export const LoadingButton = ({
 
     useEffect(() => {
         setLoader(showLoader);
-    }, [showLoader]);
+        setDisable(disabled);
+    }, [showLoader, disabled]);
 
     return (
         <Wrapper className={wrapClass}>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Label, ListGroup, TextArea } from './Input';
-import { ActionButton } from '../Buttons';
+import { ActionButton, LoadingButton } from '../Buttons';
 import { getPrompt, PROMPTS, setPrompt } from '../../../conf/Prompt';
 import fetchAI from '../../../integrations/ai';
 import ComponentEnhancer from '../../ComponentEnhancer';
@@ -25,7 +25,7 @@ const AssistantAI = ({
     promptTopic,
     configVariables,
     initialValue,
-    handleOutput,
+    onChange,
     children,
     viewMode = 'list',
     autoStart = false,
@@ -35,7 +35,7 @@ const AssistantAI = ({
     promptTopic: PromptKey;
     configVariables: { lang: string, voice: string, style: string, limit: string };
     initialValue?: string,
-    handleOutput: (e: any) => void;
+    onChange: (e: any) => void;
     children?: React.ReactNode;
     viewMode?: 'list' | 'carousel' | 'tab';
     autoStart?: boolean;
@@ -43,7 +43,7 @@ const AssistantAI = ({
 }) => {
     const { prompt, label } = getPrompt(promptTopic);
     const [userInput, setUserInput] = useState<string>(initialValue ?? '');
-    const [responses, setResponses] = useState<ResponseItem[]>([]);
+    const [allResponses, setAllResponses] = useState<ResponseItem[]>([]);
     const [selectedResponse, setSelectedResponse] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
@@ -57,11 +57,9 @@ const AssistantAI = ({
     }, [initialValue])
 
     const handleInput = async () => {
-        setResponses([]);
         setSelectedResponse('');
         setIsLoading(true);
         setError(null);
-        onReset?.();
         
         try {
             const finalPrompt = setPrompt(prompt, configVariables, userInput);
@@ -74,7 +72,7 @@ const AssistantAI = ({
                 throw new Error('Failed to get response');
             }
 
-            let outputArray: any[] = [];
+            let outputArray: ResponseItem[] = [];
 
             // Handle single object response
             if (!Array.isArray(response) && typeof response === 'object') {
@@ -82,7 +80,7 @@ const AssistantAI = ({
                     outputArray = Array.isArray(response.output) ? response.output : [response.output];
                 } else {
                     setSelectedResponse(response);
-                    handleOutput(response);
+                    onChange(response);
                     setIsLoading(false);
                     return;
                 }
@@ -91,7 +89,8 @@ const AssistantAI = ({
                 outputArray = Array.isArray(response) ? response : [response];
             }
 
-            setResponses(outputArray);
+            // Append new responses to existing ones
+            setAllResponses(prev => [...prev, ...outputArray]);
         } catch (err) {
             setError('Failed to generate content. Please try again.');
             console.error('AI Error:', err);
@@ -106,19 +105,63 @@ const AssistantAI = ({
             .replace(/^Outline \d+:\s*\n*/i, '')
             .replace(/([•\-]\s*[^\n]+)/g, '$1\n')
             .trim();
+        
         let selectedElement: string | {} = selectedText;
+        
         if (index !== undefined) {
-            console.log('indice: ' + index);
-            const response = responses[index];
+            const response = allResponses[index];
             selectedElement = 'outline' in response ? response.outline : selectedText;
-            console.log('elemento selezionato:');
-            console.log(selectedElement);
         }
-        console.log(cleanedText);
-        console.log(selectedElement);
+        
         setSelectedResponse(cleanedText);
-        handleOutput(selectedElement);
+        onChange(selectedElement);
     }
+
+    const renderResponses = () => {
+        if (viewMode === 'carousel') {
+            return (
+                <Carousel>
+                    {allResponses.map((response, index) => {
+                        let content: React.ReactNode = '[Nessun valore]';
+
+                        if ('outline' in response && Array.isArray(response.outline)) {
+                            const formatted = response.outline.map(section => {
+                                const subs = section.subheadings.map(sub => `  - ${sub}`).join('\n');
+                                return `• ${section.headline}\n${subs}`;
+                            }).join('\n\n');
+
+                            content = formatted.split('\n').map((line, i) => <div key={i}>{line}</div>);
+                        } else if ('Title' in response) {
+                            content = response.Title;
+                        } else if ('Description' in response) {
+                            content = response.Description;
+                        }
+
+                        return (
+                            <div
+                                key={index}
+                                className="carousel-item-content"
+                                style={{ whiteSpace: 'pre-line', textAlign: 'left', cursor: 'pointer' }}
+                                onClick={(event) => handleResponse(event, index)}
+                            >
+                                {content}
+                            </div>
+                        );
+                    })}
+                </Carousel>
+            );
+        }
+
+        return (
+            <ListGroup
+                items={allResponses.map(response => {
+                    const firstValue = Object.values(response).find(value => typeof value === 'string');
+                    return firstValue ?? '[Nessun valore]';
+                })}
+                onClick={(e) => handleResponse(e)}
+            />
+        );
+    };
 
     return (
         <Card
@@ -128,65 +171,26 @@ const AssistantAI = ({
                 <div className='d-flex justify-content-end align-items-center gap-2'>
                     {isLoading && <Loader>Thinking...</Loader>}
                     {error && <span className='text-danger'>{error}</span>}
-                    {(selectedResponse || responses.length > 0 || error) && <ActionButton icon='arrow-clockwise' onClick={handleInput} />}
+                    {allResponses.length > 0 && <ActionButton icon='arrow-clockwise' onClick={handleInput} disabled={isLoading} />}
                 </div>
             }
         >
-
             {(!autoStart || !initialValue) && !selectedResponse && !error && <TextArea
                 name='inputUser'
                 label={label}
                 value={initialValue ?? userInput}
                 onChange={(e) => setUserInput(e.target.value)}
-                post={<ActionButton
+                post={<LoadingButton
                     icon='robot'
                     onClick={handleInput}
                     disabled={userInput ? false : true}
+                    showLoader={isLoading}
                 />}
                 wrapClass='my-3'
             />}
 
-            {responses?.length > 0 && !selectedResponse && !error && (
-                viewMode === 'carousel' ?
-                    <Carousel>
-                        {responses.map((response, index) => {
-                            let content: React.ReactNode = '[Nessun valore]';
+            {allResponses.length > 0 && !selectedResponse && !error && renderResponses()}
 
-                            if ('outline' in response && Array.isArray(response.outline)) {
-                                const formatted = response.outline.map(section => {
-                                    const subs = section.subheadings.map(sub => `  - ${sub}`).join('\n');
-                                    return `• ${section.headline}\n${subs}`;
-                                }).join('\n\n');
-
-                                content = formatted.split('\n').map((line, i) => <div key={i}>{line}</div>);
-                            } else if ('Title' in response) {
-                                content = response.Title;
-                            } else if ('Description' in response) {
-                                content = response.Description;
-                            }
-
-                            return (
-                                <div
-                                    key={index}
-                                    data-index={index}
-                                    className="carousel-item-content"
-                                    style={{ whiteSpace: 'pre-line', textAlign: 'left', cursor: 'pointer' }}
-                                    onClick={(event) => handleResponse(event, index)}
-                                >
-                                    {content}
-                                </div>
-                            );
-                        })}
-                    </Carousel>
-                    :
-                    <ListGroup
-                        items={responses.map((response, index) => {
-                            const firstValue = Object.values(response).find(value => typeof value === 'string');
-                            return firstValue ?? '[Nessun valore]';
-                        })}
-                        onClick={handleResponse}
-                    />
-            )}
             {selectedResponse && !error &&
                 <ComponentEnhancer
                     components={children}
