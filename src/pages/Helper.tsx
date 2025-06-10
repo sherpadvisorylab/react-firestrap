@@ -12,7 +12,7 @@ import Badge from "../components/ui/Badge";
 import Notifications from "../components/blocks/Notifications";
 import Search from "../components/blocks/Search";
 import Form from "../components/widgets/Form";
-import Tab2 from "../components/ui/Tab2";
+import TabDynamic from "../components/ui/TabDynamic";
 import Tab, { TabItem } from "../components/ui/Tab";
 import Table from "../components/ui/Table";
 import Brand from "../components/blocks/Brand";
@@ -468,13 +468,13 @@ function Helper() {
                   <Card className='mb-3' title='Dynamic Tabs (Tab)'>
 
                     <Label label='Tab Top' />
-                    <Tab2 children='Lorem ipsum.' min={3} label='Tab' />
+                    <TabDynamic children='Lorem ipsum.' min={3} label='Tab' />
 
                     <Label label='Tab Left' className='mt-3' />
-                    <Tab2 children='Lorem ipsum.' min={3} label='Tab' tabPosition='left' />
+                    <TabDynamic children='Lorem ipsum.' min={3} label='Tab' tabPosition='left' />
 
                     <Label label='Tab Right' className='mt-3' />
-                    <Tab2 children='Lorem ipsum.' min={3} label='Tab' tabPosition='right' />
+                    <TabDynamic children='Lorem ipsum.' min={3} label='Tab' tabPosition='right' />
 
                   </Card>
                   <Card className='mb-3' title='Tabs'>

@@ -4,12 +4,12 @@ import ComponentEnhancer from "../ComponentEnhancer";
 import {converter} from "../../libs/converter";
 import {RecordArray, RecordProps} from "../../integrations/google/firedatabase";
 
-interface TabLayoutProps {
+interface TabDynamicLayoutProps {
     menu: React.ReactNode;
     content: React.ReactNode;
 }
 
-interface TabProps {
+interface TabDynamicProps {
     children: React.ReactNode;
     name?: string;
     onChange?: (e: { target: { name: string; value: any[] } }) => void;
@@ -26,7 +26,7 @@ interface TabProps {
 }
 
 
-const TabTop = ({menu, content}: TabLayoutProps) => (
+const TabDynamicTop = ({menu, content}: TabDynamicLayoutProps) => (
     <>
         <ul className="nav nav-tabs">{menu}</ul>
         <div className="tab-content pt-3">{content}</div>
@@ -34,21 +34,21 @@ const TabTop = ({menu, content}: TabLayoutProps) => (
 );
 
 
-const TabLeft = ({menu, content}: TabLayoutProps) => (
+const TabDynamicLeft = ({menu, content}: TabDynamicLayoutProps) => (
     <div className="d-flex">
         <ul className="nav nav-tabs flex-column text-nowrap border-end border-bottom-0">{menu}</ul>
         <div className="tab-content ps-3 pt-3 border-top">{content}</div>
     </div>
 );
 
-const TabRight = ({menu, content}: TabLayoutProps) => (
+const TabDynamicRight = ({menu, content}: TabDynamicLayoutProps) => (
     <div className="d-flex">
         <div className="tab-content pe-3 pt-3 border-top">{content}</div>
         <ul className="nav nav-tabs flex-column text-nowrap border-start border-bottom-0">{menu}</ul>
     </div>
 );
 
-const Tab2 = ({
+const TabDynamic = ({
                  children,
                  name           = undefined,
                  onChange       = undefined,
@@ -62,7 +62,7 @@ const Tab2 = ({
                  onRemove       = undefined,
                  readOnly       = false,
                  tabPosition    = "top"
-}: TabProps) => {
+}: TabDynamicProps) => {
     // const recordEmpty = propsComponentEnhancer(children);
     const [active, setActive] = useState(activeIndex);
     const [uniqueKey, setUniqueKey] = useState(0);
@@ -161,17 +161,17 @@ const Tab2 = ({
         );
     }
 
-    const domKey = name || "Tab";
-    const TabDisplayed = {
-        top:    TabTop,
-        left:   TabLeft,
-        right:  TabRight
-    }[tabPosition] || TabTop;
+    const domKey = name || "TabDynamic";
+    const TabDynamicDisplayed = {
+        top:    TabDynamicTop,
+        left:   TabDynamicLeft,
+        right:  TabDynamicRight
+    }[tabPosition] || TabDynamicTop;
 
     return (
         <div>
             {title && <h3>{title}</h3>}
-            <TabDisplayed
+            <TabDynamicDisplayed
                 menu={<>
                     {components.map((_, index) => (
                         <li key={domKey + index + uniqueKey} className="nav-item me-1 position-relative">
@@ -200,5 +200,4 @@ const Tab2 = ({
     );
 }
 
-Tab2.enhance = true;
-export default Tab2;
+export default TabDynamic;

@@ -28,7 +28,7 @@ export * from './ui/Modal';
 export { default as Percentage } from './ui/Percentage';
 export { default as Percentage2 } from './ui/Percentage2';
 export { default as Repeat } from './ui/Repeat';
-export { default as Tab2 } from './ui/Tab2';
+export { default as TabDynamic } from './ui/TabDynamic';
 export { default as Tab } from './ui/Tab';
 export * from './ui/Tab';
 export { default as Table } from './ui/Table';

@@ -24,13 +24,13 @@ const TabTop = ({menu, content}: TabLayoutProps) => (
 const TabLeft = ({menu, content}: TabLayoutProps) => (
     <div className="d-flex">
         <ul className="nav nav-tabs flex-column text-nowrap border-end border-bottom-0">{menu}</ul>
-        <div className="tab-content ps-3 pt-3 border-top">{content}</div>
+        <div className="tab-content ps-3 pt-3 border-top w-100">{content}</div>
     </div>
 );
 
 const TabRight = ({menu, content}: TabLayoutProps) => (
     <div className="d-flex">
-        <div className="tab-content pe-3 pt-3 border-top">{content}</div>
+        <div className="tab-content pe-3 pt-3 border-top w-100">{content}</div>
         <ul className="nav nav-tabs flex-column text-nowrap border-start border-bottom-0">{menu}</ul>
     </div>
 );

@@ -149,8 +149,8 @@ const Percentage = ({
     <Wrapper className={wrapClass || theme.Percentage?.wrapClass}>
       {pre}
       {label && <Label label={label} />}
-      {shape === "bar" ? (
-        <PercentageBar
+      {shape === "bar" 
+      ? <PercentageBar
           progress={progress}
           type={type}
           thickness={thickness}
@@ -160,8 +160,7 @@ const Percentage = ({
           fontSize={fontSize}
           className={finalClassName}
         />
-      ) : (
-        <PercentageCircle
+      : <PercentageCircle
           progress={progress}
           type={type}
           thickness={thickness}
@@ -171,7 +170,7 @@ const Percentage = ({
           fontSize={fontSize}
           className={finalClassName}
         />
-      )}
+      }
       {post}
     </Wrapper>
   );

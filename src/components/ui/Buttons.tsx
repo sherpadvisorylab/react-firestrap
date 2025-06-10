@@ -13,6 +13,7 @@ export interface IButton extends UIProps {
     disabled?: boolean;
     showLoader?: boolean;
     badgeClass?: string;
+    iconClass?: string;
     toggle?: string;
     target?: string;
     style?: React.CSSProperties;
@@ -31,6 +32,7 @@ export const LoadingButton = ({
     wrapClass       = undefined,
     className       = undefined,
     badgeClass      = undefined,
+    iconClass       = undefined,
     style           = undefined
 }: IButton = {}) => {
     const [loader, setLoader] = useState(showLoader);
@@ -59,7 +61,7 @@ export const LoadingButton = ({
                 }}
             >
                 {loader && <i className={theme.LoadingButton.spinnerClass}></i>}
-                {icon && !loader && <i className={theme.getIcon(icon)}></i>}
+                {(icon && !loader) && <i className={(label ? "me-1 " : "") + (iconClass ? iconClass + " " : "") + theme.getIcon(icon)}></i>}
                 {label}
                 {badge && !loader && <span className={"position-absolute end-0 top-0 badge " + (badgeClass || theme.LoadingButton.badgeClass)}>{badge}</span>}
             </button>
@@ -82,6 +84,7 @@ export const ActionButton = ({
     wrapClass       = undefined,
     className       = undefined,
     badgeClass      = undefined,
+    iconClass       = undefined,
     style           = undefined
 }: IButton = {}) => {
     const theme = useTheme("button");
@@ -102,7 +105,7 @@ export const ActionButton = ({
                     onClick?.(e);
                 }}
             >
-                {icon && <i className={(label ? "me-1 " : "") + theme.getIcon(icon)}></i>}
+                {icon && <i className={(label ? "me-1 " : "") + (iconClass ? iconClass + " " : "") + theme.getIcon(icon)}></i>}
                 {label}
                 {badge && <span className={"position-absolute badge " + (badgeClass || theme.ActionButton.badgeClass)}>{badge}</span>}
             </button>
