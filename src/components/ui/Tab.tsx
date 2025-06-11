@@ -2,56 +2,72 @@ import React, { useState, Children, ReactElement } from 'react';
 import { Wrapper } from "./GridSystem";
 import { UIProps } from '../..';
 
+export type TabPosition = "default" | "top" | "left" | "right" | "bottom";
+
 interface TabItemProps {
     label: React.ReactNode;
     children: React.ReactNode;
 }
-
-export const TabItem: React.FC<TabItemProps> = () => null;
 
 interface TabLayoutProps {
     menu: React.ReactNode;
     content: React.ReactNode;
 }
 
-const TabTop = ({menu, content}: TabLayoutProps) => (
-    <>
-        <ul className="nav nav-tabs">{menu}</ul>
-        <div className="tab-content pt-3">{content}</div>
-    </>
-);
-
-const TabLeft = ({menu, content}: TabLayoutProps) => (
-    <div className="d-flex">
-        <ul className="nav nav-tabs flex-column text-nowrap border-end border-bottom-0">{menu}</ul>
-        <div className="tab-content ps-3 pt-3 border-top w-100">{content}</div>
-    </div>
-);
-
-const TabRight = ({menu, content}: TabLayoutProps) => (
-    <div className="d-flex">
-        <div className="tab-content pe-3 pt-3 border-top w-100">{content}</div>
-        <ul className="nav nav-tabs flex-column text-nowrap border-start border-bottom-0">{menu}</ul>
-    </div>
-);
-
-const TabBottom = ({menu, content}: TabLayoutProps) => (
-    <div className="d-flex">
-        <div className="tab-content ps-3 pt-3 border-top">{content}</div>
-        <ul className="nav nav-tabs flex-column text-nowrap border-start border-bottom-0">{menu}</ul>
-    </div>
-);
-
 interface TabProps extends UIProps {
     children: React.ReactNode;
     defaultTab?: number;
-    tabPosition?: "top" | "left" | "right" | "bottom";
+    tabPosition?: TabPosition;
 }
+
+export const TabLayout = ({position, menu, content}: TabLayoutProps & {position: TabPosition}) => {
+    const layouts: Record<TabPosition, (props: TabLayoutProps) => JSX.Element> = {
+        default: ({menu, content}) => (
+            <>
+                <ul className="nav nav-tabs mb-2">{menu}</ul>
+                <div className="tab-content">{content}</div>
+            </>
+        ),
+        top: ({menu, content}) => (
+            <>
+                <ul className="nav nav-pills mb-2">{menu}</ul>
+                <div className="tab-content">{content}</div>
+            </>
+        ),
+        left: ({menu, content}) => (
+            <div className="d-flex">
+                <ul className="nav nav-pills flex-column">{menu}</ul>
+                <div className="tab-content flex-fill">{content}</div>
+            </div>
+        ),
+        right: ({menu, content}) => (
+            <div className="d-flex">
+                <div className="tab-content flex-fill">{content}</div>
+                <ul className="nav nav-pills flex-column">{menu}</ul>
+            </div>
+        ),
+        bottom: ({menu, content}) => (
+            <>
+                <div className="tab-content">{content}</div>
+                <ul className="nav nav-pills">{menu}</ul>
+            </>
+        )
+    };
+
+    const Layout = layouts[position] || layouts.default;
+    return <Layout menu={menu} content={content} />;
+};
+
+
+
+let tagCount = 0;
+
+export const TabItem: React.FC<TabItemProps> = () => null;
 
 const Tab: React.FC<TabProps> = ({
     children,
     defaultTab = 0,
-    tabPosition = "top",
+    tabPosition = "default",
     pre = undefined,
     post = undefined,
     wrapClass = undefined,
@@ -59,26 +75,22 @@ const Tab: React.FC<TabProps> = ({
 }) => {
     const [active, setActive] = useState(defaultTab);
     
+    const name = `tab-${tagCount++}`;
     const items = Children.toArray(children)
         .filter((child): child is ReactElement<TabItemProps> => 
             React.isValidElement(child) && child.type === TabItem
         );
 
-    const TabDisplayed = {
-        top: TabTop,
-        left: TabLeft,
-        right: TabRight,
-        bottom: TabBottom
-    }[tabPosition] || TabTop;
+    
 
     return (
         <Wrapper className={wrapClass}>
             {pre}
             <div className={className}>
-                <TabDisplayed
+                <TabLayout position={tabPosition}
                     menu={items.map((item, index) => (
                         <li key={index} className="nav-item me-1">
-                            <a href={`#tab-${index}`}
+                            <a href={`#${name}-${index}`}
                                onClick={() => setActive(index)}
                                className={`nav-link ${index === active ? 'active' : ''}`}
                                data-bs-toggle="tab">
@@ -90,7 +102,7 @@ const Tab: React.FC<TabProps> = ({
                         <div 
                             key={index}
                             className={`tab-pane fade ${index === active ? 'show active' : ''}`}
-                            id={`tab-${index}`}
+                            id={`${name}-${index}`}
                         >
                             {item.props.children}
                         </div>

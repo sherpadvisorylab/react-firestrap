@@ -5,6 +5,7 @@ interface ComponentEnhancerProps {
     components: React.ReactNode | React.ReactNode[];
     record?: RecordProps;
     handleChange?: (event: React.ChangeEvent<any>) => void;
+    parentName?: string;
 }
 
 type ApplyOnChangeParams = {
@@ -12,6 +13,7 @@ type ApplyOnChangeParams = {
     record?: RecordProps;
     handleChange?: (event: React.ChangeEvent<any>) => void;
     onEnhance?: (child: React.ReactElement) => void;
+    parentName?: string;
 };
 
 
@@ -20,6 +22,7 @@ const applyOnChangeRecursive = ({
                                     children,
                                     record,
                                     handleChange,
+                                    parentName = undefined
                                 }: ApplyOnChangeParams): React.ReactNode => {
     return React.Children.map(children, (child) => {
         console.log("SIAMO TUTTI", child);
@@ -33,7 +36,15 @@ const applyOnChangeRecursive = ({
             props.onChange?.(event);
             handleChange?.(event);
         });
-
+        
+        if ((child.type as any)?.enhance) {
+            console.log("ENHANCE", child);
+            return React.cloneElement(child as any, {
+                wrapClass: `mb-3${props.wrapClass ? ' ' + props.wrapClass : ''}`,
+                value: record?.[name] ?? props.value ?? '',
+                onChange,
+            });
+        }
 
         if (props.children) {
             return React.cloneElement(child as any, {
@@ -56,6 +67,7 @@ const applyOnChangeRecursive = ({
         return React.cloneElement(child as any, props.onChange || name
             ? {
                 wrapClass: `mb-3${props.wrapClass ? ' ' + props.wrapClass : ''}`,
+                name: parentName ? `${parentName}.${name}` : name,
                 value: record?.[name] ?? props.value ?? '',
                 onChange,
             }
@@ -68,12 +80,13 @@ const applyOnChangeRecursive = ({
 const ComponentEnhancer = ({
                                components,
                                record,
-                               handleChange
+                               handleChange,
+                               parentName = undefined
 }: ComponentEnhancerProps ) => {
     const children = Array.isArray(components) ? components : [components];
     return (
         <>
-            {applyOnChangeRecursive({children, record, handleChange})}
+            {applyOnChangeRecursive({children, record, handleChange, parentName})}
         </>
     );
 }

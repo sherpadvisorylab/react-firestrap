@@ -1,8 +1,9 @@
-import React, {useState} from 'react';
+import React, {ChangeEvent, useEffect, useMemo, useState} from 'react';
 import {ActionButton} from "./Buttons";
 import ComponentEnhancer from "../ComponentEnhancer";
 import {converter} from "../../libs/converter";
 import {RecordArray, RecordProps} from "../../integrations/google/firedatabase";
+import { TabLayout } from './Tab';
 
 interface TabDynamicLayoutProps {
     menu: React.ReactNode;
@@ -11,8 +12,8 @@ interface TabDynamicLayoutProps {
 
 interface TabDynamicProps {
     children: React.ReactNode;
-    name?: string;
-    onChange?: (e: { target: { name: string; value: any[] } }) => void;
+    name: string;
+    onChange?: (event: { target: { name: string; value?: any } }) => void;
     value?: any[];
     label?: string;
     min?: number;
@@ -50,7 +51,7 @@ const TabDynamicRight = ({menu, content}: TabDynamicLayoutProps) => (
 
 const TabDynamic = ({
                  children,
-                 name           = undefined,
+                 name,
                  onChange       = undefined,
                  value          = undefined,
                  label          = "Tab",
@@ -63,105 +64,46 @@ const TabDynamic = ({
                  readOnly       = false,
                  tabPosition    = "top"
 }: TabDynamicProps) => {
-    // const recordEmpty = propsComponentEnhancer(children);
     const [active, setActive] = useState(activeIndex);
-    const [uniqueKey, setUniqueKey] = useState(0);
 
-    const [records, setRecords] = useState<RecordArray>(() => {
-        if (!value) {
-            value = [];
-        }
-
-        if (min && value.length < min) {
-            for (let i = value.length; i < min; i++) {
-                value.push({});
-            }
-        }
-        return value;
-    });
-
-    const [components, setComponents] = useState(() => {
-        return records.map((record, index) =>
-            <ComponentEnhancer
-                components={children}
-                record={record}
-                handleChange={(e) => handleChange(e, index)}
-            />
-        );
-    });
-
-    const addComponent = (index: number, record: RecordProps) => {
-        return (<ComponentEnhancer
-            components={children}
-            record={record}
-            handleChange={(e) => handleChange(e, index)}
-        />)
-    }
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, index: number) => {
-        setRecords(prevRecords => {
-            const newRecords = [...prevRecords];
-            newRecords[index] = {...newRecords[index], [e.target.name]: e.target.value};
-
-            if(onChange && name) {
-                setTimeout(() => {
-                    onChange({target: {name, value: newRecords}});
-                }, 0);
-            }
-            console.log("TAB CHANGE", records, newRecords);
-            return newRecords;
-        });
-    };
-
-    const handleAdd = () => {
-        const updatedRecords = [...records, {} as RecordProps];
-        const lastIndex = updatedRecords.length - 1;
-
-        setRecords(updatedRecords);
-        setComponents(prevComponents => {
-            return [...prevComponents, addComponent(lastIndex, updatedRecords[lastIndex])];
-        });
-        setActive(lastIndex);
-
-        console.log("tagAdd", records, updatedRecords);
-    };
-
-
-    const handleRemove = (index: number) => {
-        setRecords(prevRecords => {
-            const updatedRecords = [...prevRecords];
-            updatedRecords.splice(index, 1);
-
-            if (onChange && name) {
-                setTimeout(() => {
-                    onChange({target: {name, value: updatedRecords}});
-                }, 0);
-            }
-            setUniqueKey(uniqueKey + 1);
-            if (index > updatedRecords.length - 1) {
-                setActive(updatedRecords.length - 1);
-            }
-
-            setComponents(updatedRecords.map((record, index) =>
-                <ComponentEnhancer
-                    components={children}
-                    record={record}
-                    handleChange={(e) => handleChange(e, index)}
-                />
-            ));
-
-            console.log("tabRemove", records, updatedRecords);
-            return updatedRecords;
-        });
-    }
     const setLabel = (index: number) => {
         return (label.includes("{")
-            ? converter.parse(records[index], label) || "New " + (index + 1)
+            ? converter.parse(value?.[index], label) || "New " + (index + 1)
             : label + " " + (index + 1)
         );
     }
+    const addComponent = (index: number, record: RecordProps) => {
+        return <ComponentEnhancer
+            parentName={`${name}.${index}`}
+            components={children}
+            record={record}
+            handleChange={onChange}
+        />
+    }
+    console.log(value, "valueXXXXXXXXXXXXXXXXXXXXXXX");
+    const components = useMemo(
+        () =>
+          Array.from({ length: Math.max(min, value?.length || 0) }, (_, i) =>
+            addComponent(i, value?.[i] ?? {})
+          ),
+        [value, children, name, onChange, min]
+    );
+      
 
-    const domKey = name || "TabDynamic";
+    const handleAdd = () => {
+        onChange?.({ target: { name: `${name}.${components.length}`, value: {} } });
+
+        setActive(components.length);
+    }
+
+    const handleRemove = (index: number) => {
+        onChange?.({ target: { name: `${name}.${index}` } });
+        console.log(index, components.length, "index, components.length");
+        if(index == components.length - 1) {
+            setActive(index - 1);
+        }
+    }
+
     const TabDynamicDisplayed = {
         top:    TabDynamicTop,
         left:   TabDynamicLeft,
@@ -173,31 +115,32 @@ const TabDynamic = ({
             {title && <h3>{title}</h3>}
             <TabDynamicDisplayed
                 menu={<>
-                    {components.map((_, index) => (
-                        <li key={domKey + index + uniqueKey} className="nav-item me-1 position-relative">
-                            <a href={`#${domKey}-${index}`}
+                    {components.map((_, index) => 
+                        <li key={index} className="nav-item me-1 position-relative">
+                            <a href={`#${name}-${index}`}
                                onClick={() => setActive(index)}
                                className={`nav-link ${index === active ? 'active' : ''}`}
                                data-bs-toggle="tab">
                                 {setLabel(index)}
                             </a>
-                            {(!readOnly && index === active) &&
-                                <ActionButton className="position-absolute top-0 end-0 p-0 me-1" post="x"
+                            {(!readOnly && components.length -1 >= min && index === active) &&
+                                <ActionButton className="position-absolute top-0 end-0 p-0" icon="x"
                                               onClick={() => handleRemove(index)}/>}
                         </li>
-                    ))}
-                    {!readOnly && <li key={records.length + 1} className="nav-item me-1">
+                    )}
+                    {!readOnly && <li key={components.length + 1} className="nav-item me-1">
                         <ActionButton className="nav-link" icon="plus" onClick={handleAdd} />
                     </li>}
                 </>}
-                content={components.map((component, index) => (
-                    <div key={domKey + index + uniqueKey} className={`tab-pane fade ${index === active ? 'show active' : ''}`} id={domKey + "-" + index}>
+                content={components.map((component, index) => 
+                    <div key={index} className={`tab-pane fade ${index === active ? 'show active' : ''}`} id={name + "-" + index}>
                         {component}
                     </div>
-                ))}
+                )}
             />
         </div>
     );
 }
 
+TabDynamic.enhance = true;
 export default TabDynamic;

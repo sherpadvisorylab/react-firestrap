@@ -117,40 +117,57 @@ export function FormData({
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const path = e.target.name.split(".");
         const value = e.target.value;
-        console.log("handleChange", path, value);
+    
         setRecord(prev => {
             const updated = { ...prev };
             let target = updated;
-
+    
             for (let i = 0; i < path.length - 1; i++) {
                 if (!target[path[i]]) target[path[i]] = {};
                 target = target[path[i]];
             }
 
-            target[path[path.length - 1]] = value;
+            const lastKey = path[path.length - 1];
+
+            if (value == null || value === "") {
+                if (Array.isArray(target) && !isNaN(Number(lastKey))) {
+                  target.splice(Number(lastKey), 1);
+                } else {
+                  delete (target as Record<string, any>)[lastKey];
+                }
+            } else {
+                target[lastKey] = value;
+            }
+            
+            console.log("handleChange", path, value, updated);
+
             return updated;
         });
     };
+    
 
     const cleanedRecord = (record: RecordProps | undefined): RecordProps => {
         const cleaned: RecordProps = {};
-        if (!record) return cleaned;
 
+        if (!record) return cleaned;
         for (const [k, v] of Object.entries(record)) {
             if (Array.isArray(v)) {
-                cleaned[k] = v.filter((item) => item !== undefined);
+                cleaned[k] = v
+                .map(item => typeof item === 'object' ? cleanedRecord(item) : item)
+                .filter(item => item !== undefined);
             } else if(v && typeof v === 'object') {
-                cleanedRecord(v);
+                cleaned[k] = cleanedRecord(v);
             } else if (v !== undefined) {
                 cleaned[k] = v;
             }
         }
+
         return cleaned;
     }
 
     const handleSave = async (e: React.ChangeEvent<HTMLInputElement>) => {
         e.preventDefault();
-
+        
         showNotice && setNotification(undefined);
         defaultValues && onInsert && await onInsert(record);
         !defaultValues && onUpdate && await onUpdate(record);

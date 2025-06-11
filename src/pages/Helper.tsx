@@ -468,17 +468,44 @@ function Helper() {
                   <Card className='mb-3' title='Dynamic Tabs (Tab)'>
 
                     <Label label='Tab Top' />
-                    <TabDynamic children='Lorem ipsum.' min={3} label='Tab' />
+                    <TabDynamic name='tabDynamic' children='Lorem ipsum.' min={3} label='Tab' />
 
                     <Label label='Tab Left' className='mt-3' />
-                    <TabDynamic children='Lorem ipsum.' min={3} label='Tab' tabPosition='left' />
+                    <TabDynamic name='tabDynamic' children='Lorem ipsum.' min={3} label='Tab' tabPosition='left' />
 
                     <Label label='Tab Right' className='mt-3' />
-                    <TabDynamic children='Lorem ipsum.' min={3} label='Tab' tabPosition='right' />
+                    <TabDynamic name='tabDynamic' children='Lorem ipsum.' min={3} label='Tab' tabPosition='right' />
 
                   </Card>
                   <Card className='mb-3' title='Tabs'>
-                    <Tab>
+                    <h3>Default</h3>
+                    <Tab tabPosition='default'>
+                      <TabItem label='Intro'>
+                        <p>Lorem ipsum. Content 1 or Component Nested 1</p>
+                        <p>Lorem ipsum. Content 2 or Component Nested 2</p>
+                        <p>Lorem ipsum. Content 3 or Component Nested 3</p>
+                      </TabItem>
+                      <TabItem label='Tab 2'>
+                        <String name='example' label='Example Tab 2' />
+                        <TextArea name='example' label='Example Tab 2' />
+                      </TabItem>
+                      <TabItem label='End'>
+                        <Card
+                          title='Card Example Tab 3'
+                          header={"Lorem ipsum. Content 1 or Component Nested 1"}
+                          footer={"Lorem ipsum. Content 2 or Component Nested 2"}
+                          showLoader={false}
+                          showArrow={true}
+                        >
+                          <p>Main content.</p>
+                          <hr />
+                          <TextArea name='example' label='Example Tab 3' />
+                        </Card>
+                      </TabItem>
+                    </Tab>
+                    <br /><hr /><br />
+                    <h3>Top</h3>
+                    <Tab tabPosition='top'>
                       <TabItem label='Tab1'>
                         <p>Lorem ipsum. Content 1 or Component Nested 1</p>
                       </TabItem>
@@ -489,6 +516,8 @@ function Helper() {
                         <p>Lorem ipsum. Content 3 or Component Nested 3</p>
                       </TabItem>
                     </Tab>
+                    <br /><hr /><br />
+                    <h3>Left</h3>
                     <Tab tabPosition='left'>
                       <TabItem label='Tab1'>
                         <p>Lorem ipsum. Content 1 or Component Nested 1</p>
@@ -500,6 +529,8 @@ function Helper() {
                         <p>Lorem ipsum. Content 3 or Component Nested 3</p>
                       </TabItem>
                     </Tab>
+                    <br /><hr /><br />
+                    <h3>Right</h3>
                     <Tab tabPosition='right'>
                     <TabItem label='Tab1'>
                         <p>Lorem ipsum. Content 1 or Component Nested 1</p>
@@ -511,6 +542,8 @@ function Helper() {
                         <p>Lorem ipsum. Content 3 or Component Nested 3</p>
                       </TabItem>
                     </Tab>
+                    <br /><hr /><br />
+                    <h3>Bottom</h3>
                     <Tab tabPosition='bottom'>
                       <TabItem label='Tab1'>
                         <p>Lorem ipsum. Content 1 or Component Nested 1</p>
@@ -522,7 +555,6 @@ function Helper() {
                         <p>Lorem ipsum. Content 3 or Component Nested 3</p>
                       </TabItem>
                     </Tab>
-
                   </Card>
                 </Col>
 
