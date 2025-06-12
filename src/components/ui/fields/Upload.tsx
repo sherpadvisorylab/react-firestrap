@@ -496,7 +496,6 @@ export const UploadImage = ({
                         accept={accept} 
                         onUpload={onUpload}
                         onChange={handleFileChange}
-                        label={"Upload"}
                         icon={"upload"}
                         required={required}
                         multiple={multiple}

@@ -465,18 +465,6 @@ function Helper() {
                 {/* Tab */}
                 <Col xs={12} className='mb-5'>
                   <h2 id='tab'>Tab</h2>
-                  <Card className='mb-3' title='Dynamic Tabs (Tab)'>
-
-                    <Label label='Tab Top' />
-                    <TabDynamic name='tabDynamic' children='Lorem ipsum.' min={1} label='Tab' />
-
-                    <Label label='Tab Left' className='mt-3' />
-                    <TabDynamic name='tabDynamic2' children='Lorem ipsum.' min={1} label='Tab' tabPosition='left' />
-
-                    <Label label='Tab Right' className='mt-3' />
-                    <TabDynamic name='tabDynamic3' children='Lorem ipsum.' min={1} label='Tab' tabPosition='right' />
-
-                  </Card>
                   <Card className='mb-3' title='Tabs'>
                     <h3>Default</h3>
                     <Tab tabPosition='default'>
@@ -555,6 +543,32 @@ function Helper() {
                         <p>Lorem ipsum. Content 3 or Component Nested 3</p>
                       </TabItem>
                     </Tab>
+                  </Card>
+                  <Card className='mb-3' title='Dynamic Tabs (TabDynamic)'>
+                    <h3>Default</h3>
+                    <TabDynamic name='tabDynamic' min={1} label='Tab'>
+                      <String name='example' label='Example Tab 1' />
+                    </TabDynamic>
+                    <br /><hr /><br />
+                    <h3>Top</h3>
+                    <TabDynamic name='tabDynamic2' min={2} label='Tab' tabPosition='top'>
+                      <String name='example' label='Example Tab 2' />
+                    </TabDynamic>
+                    <br /><hr /><br />
+                    <h3>Left</h3>
+                    <TabDynamic name='tabDynamic3' min={3} label='Tab' tabPosition='left'>
+                      <String name='example' label='Example Tab 3' />
+                    </TabDynamic>
+                    <br /><hr /><br />
+                    <h3>Right</h3>
+                    <TabDynamic name='tabDynamic4' min={4} max={4} label='Tab' tabPosition='right'>
+                      <String name='example' label='Example Tab 4' />
+                    </TabDynamic>
+                    <br /><hr /><br />
+                    <h3>Bottom</h3>
+                    <TabDynamic name='tabDynamic5' min={0} readOnly={true} value={[{example: 'first Tab'}, {example: 'second Tab'}, {example: 'third Tab'}]} label='Tab' tabPosition='bottom'>
+                      <String name='example' label='Example Tab 5' />
+                    </TabDynamic>
                   </Card>
                 </Col>
 

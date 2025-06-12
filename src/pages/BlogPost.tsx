@@ -224,7 +224,7 @@ export default function BlogPost({
             onChange={updatePost('title')}
             onReset={() => resetPost('fromTitle')}
           >
-            <String name='title' label='Title' value={post.title} />
+            <TextArea name='title' label='Title' value={post.title} rows={2} />
           </AssistantAI>
 
           {post.title && (
@@ -238,7 +238,7 @@ export default function BlogPost({
               onReset={() => resetPost('fromDescription')}
               autoStart={true}
             >
-              <String name='description' label='Description' value={post.description} />
+              <TextArea name='description' label='Description' value={post.description} rows={3} />
             </AssistantAI>
           )}
 
@@ -286,7 +286,7 @@ export default function BlogPost({
                   { type: 'conclusion', label: 'Conclusion', section: post.sections.conclusion }
                 ] as SectionItem[]).map((item) => (
                   <TabItem key={item.label} label={item.label}>
-                    <String
+                    <TextArea
                       name={`post${item.label}Title`}
                       label={`${item.label} Title`}
                       value={item.section.title}
@@ -295,6 +295,7 @@ export default function BlogPost({
                           ? updateSection(item.index, 'title', e.target.value)
                           : updateSectionContent(item.type, 'title', e.target.value)
                       }
+                      rows={2}
                     />
                     <TextArea
                       name={`post${item.label}`}
