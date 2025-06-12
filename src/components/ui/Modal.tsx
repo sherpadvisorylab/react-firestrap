@@ -77,7 +77,7 @@ const ModalDefault = ({
             bodyClass: `modal-body ${bodyClass || theme.Modal.bodyClass}`,
             footerClass: `modal-footer ${footerClass || theme.Modal.footerClass}`,
             backdropClass: `modal-backdrop fade show`,
-        }, 
+        },
         top: {
             coverClass: ``,
             dialogClass: `offcanvas offcanvas-top modal-${size || theme.Modal.size} ${wrapClass || theme.Modal.wrapClass}`,
@@ -143,10 +143,10 @@ const ModalDefault = ({
                             {(title && header) && <div className={position.subTitleClass}>{header}</div>}
                             {!title && header}
                         </div>
-                        {(buttonFullscreen || onClose) && <div>
+                        {(buttonFullscreen || onClose) && <div className={"ms-auto"}>
                             {buttonFullscreen && <ActionButton
                                 icon={fullScreenClass ? theme.Modal.iconCollapse : theme.Modal.iconExpand}
-                                className={"btn border-0 p-0"}
+                                className={"btn border-0 p-2"}
                                 onClick={(e) => {
                                     e.preventDefault();
                                     setFullScreenClass((prev) => prev === " modal-fullscreen" ? "" : " modal-fullscreen")

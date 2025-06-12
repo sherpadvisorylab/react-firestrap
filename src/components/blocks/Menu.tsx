@@ -105,7 +105,7 @@ const Menu = ({
   };
 
   return (
-    <Wrapper className={wrapClass}>
+    <Wrapper className={wrapClass || theme.Menu.wrapClass}>
       <Type className={className || theme.Menu.className}>
         {menu.map((item, index) => (
           <MenuItem key={index} item={item} index={index} />
