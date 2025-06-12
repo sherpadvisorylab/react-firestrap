@@ -60,7 +60,7 @@ export const TabLayout = ({position, menu, content}: TabLayoutProps & {position:
 
 
 
-let tagCount = 0;
+let tabCount = 0;
 
 export const TabItem: React.FC<TabItemProps> = () => null;
 
@@ -75,7 +75,7 @@ const Tab: React.FC<TabProps> = ({
 }) => {
     const [active, setActive] = useState(defaultTab);
     
-    const name = `tab-${tagCount++}`;
+    const tabKey = `tab-${tabCount++}`;
     const items = Children.toArray(children)
         .filter((child): child is ReactElement<TabItemProps> => 
             React.isValidElement(child) && child.type === TabItem
@@ -90,23 +90,22 @@ const Tab: React.FC<TabProps> = ({
                 <TabLayout position={tabPosition}
                     menu={items.map((item, index) => (
                         <li key={index} className="nav-item me-1">
-                            <a href={`#${name}-${index}`}
+                            <button 
                                onClick={() => setActive(index)}
                                className={`nav-link ${index === active ? 'active' : ''}`}
-                               data-bs-toggle="tab">
+                            >
                                 {item.props.label}
-                            </a>
+                            </button>
                         </li>
                     ))}
-                    content={items.map((item, index) => (
+                    content={
                         <div 
-                            key={index}
-                            className={`tab-pane fade ${index === active ? 'show active' : ''}`}
-                            id={`${name}-${index}`}
+                            key={`${tabKey}-${active}`}
+                            className={`tab-pane fade show active`}
                         >
-                            {item.props.children}
+                            {items[active].props.children}
                         </div>
-                    ))}
+                    }
                 />
             </div>
             {post}

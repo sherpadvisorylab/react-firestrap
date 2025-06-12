@@ -65,6 +65,9 @@ const TabDynamic = ({
                  tabPosition    = "top"
 }: TabDynamicProps) => {
     const [active, setActive] = useState(activeIndex);
+    const [release, setRelease] = useState(0);
+    
+    const tabKey = `${name}-${release}`;
 
     const setLabel = (index: number) => {
         return (label.includes("{")
@@ -86,7 +89,7 @@ const TabDynamic = ({
           Array.from({ length: Math.max(min, value?.length || 0) }, (_, i) =>
             addComponent(i, value?.[i] ?? {})
           ),
-        [value, children, name, onChange, min]
+        [value, children, name, onChange, min, release]
     );
       
 
@@ -102,6 +105,7 @@ const TabDynamic = ({
         if(index == components.length - 1) {
             setActive(index - 1);
         }
+        setRelease(prev => prev + 1);
     }
 
     const TabDynamicDisplayed = {
@@ -116,27 +120,28 @@ const TabDynamic = ({
             <TabDynamicDisplayed
                 menu={<>
                     {components.map((_, index) => 
-                        <li key={index} className="nav-item me-1 position-relative">
-                            <a href={`#${name}-${index}`}
+                        <li key={`${name}-${index}`} className="nav-item me-1 position-relative">
+                            <button
                                onClick={() => setActive(index)}
                                className={`nav-link ${index === active ? 'active' : ''}`}
-                               data-bs-toggle="tab">
+                            >
                                 {setLabel(index)}
-                            </a>
+                            </button>
                             {(!readOnly && components.length -1 >= min && index === active) &&
                                 <ActionButton className="position-absolute top-0 end-0 p-0" icon="x"
                                               onClick={() => handleRemove(index)}/>}
                         </li>
                     )}
-                    {!readOnly && <li key={components.length + 1} className="nav-item me-1">
+                    {!readOnly && (!max || components.length < max) && <li key={components.length + 1} className="nav-item me-1">
                         <ActionButton className="nav-link" icon="plus" onClick={handleAdd} />
                     </li>}
                 </>}
-                content={components.map((component, index) => 
-                    <div key={index} className={`tab-pane fade ${index === active ? 'show active' : ''}`} id={name + "-" + index}>
-                        {component}
-                    </div>
-                )}
+                content={<div
+                    key={`${name}-${active}-${release}`}
+                    className="tab-pane fade show active"
+                  >
+                    {components[active]}
+                  </div>}
             />
         </div>
     );
