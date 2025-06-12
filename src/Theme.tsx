@@ -171,16 +171,16 @@ const defaultTheme = {
         }
     },
     Menu: {
-        wrapClass: "",
-        className: "nav",
+        wrapClass: "offcanvas-body",
+        className: "navbar-nav flex-column mb-auto",
         headerClass: "",
         itemClass: "nav-item",
         linkClass: "nav-link",
         iconClass: "me-1",
-        textClass: "",
+        textClass: "flex-grow-1",
         badgeClass: "ms-1",
         arrowClass: "",
-        submenuClass: "",
+        submenuClass: "nav flex-column ms-4",
     },
     Brand: {
         wrapClass: "",

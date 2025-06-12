@@ -99,10 +99,10 @@ const ModalDefault = ({
                   {title ?
                       <h3 className={"modal-title text-nowrap " + (titleClass || theme.Modal.titleClass)}>{title}</h3> : ""}
                   {!title && header}
-                  <div>
+                  <div className={"ms-auto"}>
                       {(showFullscreen || fullScreen) && <ActionButton
                           icon={fullScreen ? theme.Modal.iconCollapse : theme.Modal.iconExpand}
-                          className={"btn border-0 p-0"}
+                          className={"btn border-0 p-2"}
                           onClick={(e) => {
                               e.preventDefault();
                               setFullScreen(!fullScreen)}
