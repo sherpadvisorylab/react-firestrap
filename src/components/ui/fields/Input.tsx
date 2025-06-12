@@ -240,7 +240,7 @@ export const DateInput = ({
     const fullClassName = `form-control${className ? ' ' + className : ''}`;
     return (<>
         {label && <Label required={required} label={label}/>}
-        <div className="input-group w-50">
+        <div className="input-group">
             <input
                 name={name}
                 type="text"
@@ -322,7 +322,7 @@ export const ListGroup = ({
                     <a
                         key={generateUniqueId()}
                         onClick={(e) => {
-                            if (e.currentTarget.tagName.toLowerCase() !== 'a' && !isLoading) {
+                            if (!isLoading) {
                                 onClick?.(e, index);
                             }
                         }}

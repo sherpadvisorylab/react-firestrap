@@ -23,7 +23,7 @@ interface MenuProps {
   submenuClass?: string;
 }
 
-export const Menu = ({
+const Menu = ({
   context,
   Type          = 'ul',
   badges        = [],
@@ -62,7 +62,7 @@ export const Menu = ({
       return (
         <li key={index} className={headerClass || theme.Menu.headerClass}>
           {item.icon && <Icon />}
-          <span>{item.title}</span>
+          {item.title && (/^-+$/.test(item.title) ? <hr className={"m-0"} /> : <span>{item.title}</span>)}
         </li>
       );
     }
@@ -114,3 +114,5 @@ export const Menu = ({
     </Wrapper>
   );
 };
+
+export default Menu;

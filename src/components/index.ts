@@ -1,3 +1,12 @@
+import React from 'react';
+
+export interface UIProps {
+    wrapClass?: string;
+    className?: string;
+    pre?: React.ReactNode;
+    post?: React.ReactNode;
+}
+
 export { default as Brand } from './blocks/Brand';
 export { default as Breadcrumbs } from './blocks/Breadcrumbs';
 export { default as Carousel } from './blocks/Carousel';
@@ -19,15 +28,18 @@ export * from './ui/Modal';
 export { default as Percentage } from './ui/Percentage';
 export { default as Percentage2 } from './ui/Percentage2';
 export { default as Repeat } from './ui/Repeat';
+export { default as TabDynamic } from './ui/TabDynamic';
 export { default as Tab } from './ui/Tab';
-export { default as Tab2 } from './ui/Tab2';
+export * from './ui/Tab';
 export { default as Table } from './ui/Table';
 
 export * from './ui/fields/Input';
 export * from './ui/fields/Select';
 export * from './ui/fields/Upload';
 export * from './ui/fields/Crop';
-export * from './blocks/Menu';
+
+export * from './ui/fields/AssistantAI';
+export { default as Menu } from './blocks/Menu';
 
 export { default as Form } from './widgets/Form';
 export { default as Grid } from './widgets/Grid';

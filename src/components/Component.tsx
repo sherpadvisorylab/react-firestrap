@@ -4,7 +4,7 @@ import componentFormFields from "../models/componentFormFields";
 import componentBlock from "../models/componentBlock";
 import componentSection from "../models/componentSection";
 
-import Form from "./widgets/Form";
+import { FormDatabase } from "./widgets/Form";
 
 type Primitive = string | number | boolean | undefined;
 
@@ -59,11 +59,17 @@ export abstract class ComponentBlock {
     static default(this: new () => ComponentBlock, options?: { dataStoragePath?: string }): React.FC {
         const instance = new this();
         instance.verifyRequiredMethods();
-        return () => (
-            <Form model={instance.model} dataStoragePath={options?.dataStoragePath}>
-                {(fields) => instance.form(fields)}
-            </Form>
-        );
+        return () => {
+            const [fields, defaults] = React.useMemo(() => {
+                return buildFormFields(instance.model);
+            }, [instance.model]);
+            
+            return (
+                <FormDatabase defaultValues={defaults} dataStoragePath={options?.dataStoragePath}>
+                    {instance.form(fields)}
+                </FormDatabase>
+            );
+        };
     }
 }
 

@@ -1,3 +1,4 @@
+import { Percentage } from 'components';
 import React, {createContext, useContext, useEffect, useState, ReactNode} from 'react';
 
 interface Theme {
@@ -25,7 +26,8 @@ const defaultTheme = {
     },
     Grid: {
         Card: {
-            cardClass: "",
+            wrapClass: "",
+            className: "",
             headerClass: "d-flex justify-content-between",
             bodyClass: "p-0",
             footerClass: "",
@@ -33,17 +35,17 @@ const defaultTheme = {
         },
         Table: {
             wrapClass: "",
-            scrollClass: "fixed-table-container",
-            tableClass: "table-striped",
+            className: "table-striped",
             headerClass: "",
             bodyClass: "",
             footerClass: "",
+            scrollClass: "fixed-table-container",
             selectedClass: "table-info"
         },
         Gallery: {
             wrapClass: "",
+            className: "",
             scrollClass: "",
-            tableClass: "",
             headerClass: "",
             bodyClass: "",
             footerClass: "",
@@ -52,28 +54,32 @@ const defaultTheme = {
             rowCols: "4"
         },
         Modal: {
-            size: "lg",
+            size: "lg", 
+            display: "center",
             wrapClass: "",
-            modalClass: "",
+            className: "",
             headerClass: "",
             titleClass: "",
+            subTitleClass: "pe-1 text-muted",
             bodyClass: "",
             footerClass: "",
+            iconExpand: "fullscreen",
+            iconCollapse: "fullscreen-exit"
         }
     },
     Table: {
         wrapClass: "bootstrap-table",
-        scrollClass: "fixed-table-container",
-        tableClass: "table-striped",
+        className: "table-striped",
         headerClass: "",
         bodyClass: "",
         footerClass: "",
+        scrollClass: "fixed-table-container",
         selectedClass: "table-info"
     },
     Gallery: {
         wrapClass: "",
+        className: "",
         scrollClass: "",
-        tableClass: "",
         headerClass: "",
         bodyClass: "",
         footerClass: "",
@@ -89,15 +95,17 @@ const defaultTheme = {
         autoPlay: true,
     },
     Card: {
-        cardClass: "",
+        wrapClass: "",
+        className: "",
         headerClass: "d-flex justify-content-between bg-white bg-opacity-15 fw-400",
         bodyClass: "d-flex flex-column",
         footerClass: "",
-        wrapClass: "",
         showLoader: false,
         showArrow: false
     },
     Loader: {
+        wrapClass: "",
+        className: "",
         icon: "custom-loader",
         title: "Loading..",
         description: ""
@@ -122,10 +130,12 @@ const defaultTheme = {
     },
     Modal: {
         size: "lg",
+        display: "center",
         wrapClass: "",
-        modalClass: "",
+        className: "",
         headerClass: "",
         titleClass: "",
+        subTitleClass: "pe-1 text-muted",
         bodyClass: "",
         footerClass: "",
         iconExpand: "fullscreen",
@@ -191,6 +201,26 @@ const defaultTheme = {
     SignIn: {
         className: "d-flex align-items-center",
         avatarClass: "avatar rounded-circle mx-2",
+    },
+    Image: {
+        wrapClass: "",
+        className: "",
+    },
+    ImageAvatar: {
+        wrapClass: "",
+        className: "",
+    },
+    Percentage: {
+        wrapClass: "",
+        className: "",
+    },
+    Tab: {
+        wrapClass: "",
+        className: "",
+    },
+    Code: {
+        wrapClass: "",
+        className: "",
     }
 }
 

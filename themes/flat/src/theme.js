@@ -7,7 +7,8 @@ export const theme = {
     },
     Grid: {
         Card: {
-            cardClass: "",
+            wrapClass: "",
+            className: "",
             headerClass: "d-flex justify-content-between",
             bodyClass: "p-0",
             footerClass: "",
@@ -15,17 +16,17 @@ export const theme = {
         },
         Table: {
             wrapClass: "",
-            scrollClass: "app-scroll simplebar-scrollable-y",
-            tableClass: "table-hover m-0",
+            className: "table-hover m-0",
             headerClass: "",
             bodyClass: "",
-            footerClass: "",
+            footerClass: "",    
+            scrollClass: "app-scroll simplebar-scrollable-y",
             selectedClass: "table-info"
         },
         Gallery: {
             wrapClass: "",
+            className: "",
             scrollClass: "",
-            tableClass: "",
             headerClass: "",
             bodyClass: "",
             footerClass: "",
@@ -35,27 +36,31 @@ export const theme = {
         },
         Modal: {
             size: "lg",
+            display: "center",
             wrapClass: "",
-            modalClass: "",
-            headerClass: null,
+            className: "",
+            headerClass: "justify-content-between",
             titleClass: "",
+            subTitleClass: "pe-1 text-muted",
             bodyClass: "",
-            footerClass: ""
+            footerClass: "",
+            iconExpand: "arrows-out",
+            iconCollapse: "arrows-in"
         }
     },
     Table: {
         wrapClass: "bootstrap-table",
-        scrollClass: "app-scroll simplebar-scrollable-y",
-        tableClass: "table-hover m-0",
+        className: "table-hover m-0",
         headerClass: "",
         bodyClass: "",
         footerClass: "",
+        scrollClass: "app-scroll simplebar-scrollable-y",
         selectedClass: "table-info"
     },
     Gallery: {
         wrapClass: "",
+        className: "",
         scrollClass: "",
-        tableClass: "",
         headerClass: "",
         bodyClass: "",
         footerClass: "",
@@ -71,15 +76,17 @@ export const theme = {
         autoPlay: true,
     },
     Card: {
-        cardClass: "",
+        wrapClass: "",
+        className: "",
         headerClass: "d-flex justify-content-between bg-white bg-opacity-15 fw-400",
         bodyClass: "d-flex flex-column",
         footerClass: "",
-        wrapClass: "",
         showLoader: false,
         showArrow: true
     },
     Loader: {
+        wrapClass: "",
+        className: "",
         icon: "custom-loader",
         title: "Loading..",
         description: ""
@@ -100,14 +107,16 @@ export const theme = {
         className: "alert-info"
     },
     Badge: {
-        ClassName: ""
+        className: ""
     },
     Modal: {
         size: "lg",
+        display: "center",
         wrapClass: "",
-        modalClass: "",
+        className: "",
         headerClass: "justify-content-between",
         titleClass: "",
+        subTitleClass: "pe-1 text-muted",
         bodyClass: "",
         footerClass: "",
         iconExpand: "arrows-out",
@@ -173,5 +182,25 @@ export const theme = {
     SignIn: {
         className: "d-flex align-items-center",
         avatarClass: "avatar rounded-circle mx-2",
+    },
+    Image: {
+        wrapClass: "",
+        className: "",
+    },
+    ImageAvatar: {
+        wrapClass: "",
+        className: "",
+    },
+    Percentage: {
+        wrapClass: "",
+        className: "",
+    },
+    Tab: {
+        wrapClass: "",
+        className: "",
+    },
+    Code: {
+        wrapClass: "",
+        className: "",
     }
 }

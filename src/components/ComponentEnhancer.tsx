@@ -5,6 +5,7 @@ interface ComponentEnhancerProps {
     components: React.ReactNode | React.ReactNode[];
     record?: RecordProps;
     handleChange?: (event: React.ChangeEvent<any>) => void;
+    parentName?: string;
 }
 
 type ApplyOnChangeParams = {
@@ -12,6 +13,7 @@ type ApplyOnChangeParams = {
     record?: RecordProps;
     handleChange?: (event: React.ChangeEvent<any>) => void;
     onEnhance?: (child: React.ReactElement) => void;
+    parentName?: string;
 };
 
 
@@ -20,32 +22,26 @@ const applyOnChangeRecursive = ({
                                     children,
                                     record,
                                     handleChange,
-                                    onEnhance,
+                                    parentName = undefined
                                 }: ApplyOnChangeParams): React.ReactNode => {
     return React.Children.map(children, (child) => {
+        console.log("SIAMO TUTTI", child);
+
         if (!React.isValidElement(child)) return child;
 
         const {type, props} = child;
-        const isFragment = type === React.Fragment;
-        const isCustomComponent = typeof type !== 'string';
         const name = props.name;
         const onChange = handleChange && ((event: React.ChangeEvent<any>) => {
+            console.log("ONCHANGE", event, record);
             props.onChange?.(event);
             handleChange?.(event);
         });
-
-        if (isFragment) {
-            return applyOnChangeRecursive({
-                children: props.children,
-                record,
-                handleChange,
-                onEnhance,
-            });
-        }
-
-        if (isCustomComponent && (type as any).enhance) {
+        
+        if ((child.type as any)?.enhance) {
+            console.log("ENHANCE", child);
             return React.cloneElement(child as any, {
-                value: record?.[name] ?? '',
+                wrapClass: `mb-3${props.wrapClass ? ' ' + props.wrapClass : ''}`,
+                value: record?.[name] ?? props.value ?? '',
                 onChange,
             });
         }
@@ -56,23 +52,22 @@ const applyOnChangeRecursive = ({
                     children: props.children,
                     record,
                     handleChange,
-                    onEnhance,
                 }),
             });
         }
 
-        if (onEnhance && isCustomComponent && name) {
-            onEnhance(child);
-            return child;
-        }
-
-        if (isCustomComponent && record?.[name] === undefined) {
+        if (name && record?.[name] === undefined) {
             console.warn(`The property "${name}" is not present in the record`, child);
         }
-
-        return React.cloneElement(child as any, isCustomComponent
+        if (name) {
+            console.log("CE IL NAMEEEE", props);
+        } else {
+            console.log("non ce il nNANAANANN", props);
+        }
+        return React.cloneElement(child as any, props.onChange || name
             ? {
                 wrapClass: `mb-3${props.wrapClass ? ' ' + props.wrapClass : ''}`,
+                name: parentName ? `${parentName}.${name}` : name,
                 value: record?.[name] ?? props.value ?? '',
                 onChange,
             }
@@ -85,12 +80,13 @@ const applyOnChangeRecursive = ({
 const ComponentEnhancer = ({
                                components,
                                record,
-                               handleChange
+                               handleChange,
+                               parentName = undefined
 }: ComponentEnhancerProps ) => {
     const children = Array.isArray(components) ? components : [components];
     return (
         <>
-            {applyOnChangeRecursive({children, record, handleChange})}
+            {applyOnChangeRecursive({children, record, handleChange, parentName})}
         </>
     );
 }

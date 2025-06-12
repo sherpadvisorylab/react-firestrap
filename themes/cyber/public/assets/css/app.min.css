@@ -57,10 +57,6 @@
     direction: ltr;
     cursor: pointer;
 }
-.app-sidebar {
-  z-index: 1100 !important; 
-  position: fixed;
-}
 
 .offcanvas-backdrop {
     display: none !important;

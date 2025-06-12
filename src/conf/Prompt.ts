@@ -1,10 +1,10 @@
 const PROMPT_CLEANUP = `Please ignore all previous instructions.`;
 const PROMPT_NO_REFERENCE = `Do not repeat yourself. Do not self reference. Do not explain what you are doing.`;
 export const PROMPT_MODELS = [
-    "gpt-3.5-turbo",
-    "gpt-4",
-    "dall-e-3",
-    "gemini"
+  "gpt-3.5-turbo",
+  "gpt-4",
+  "dall-e-3",
+  "gemini"
 ]
 export const PROMPTS = {
   SEARCH_INTENT_FROM_KEYWORDS: `
@@ -82,15 +82,50 @@ export const PROMPTS = {
         You are an expert copywriter who creates content outlines. 
         You have a {voice} tone of voice. 
         You have a {style} writing style. 
-        Create a long form content outline in the {language} language for the blog post titled "{search}".  
-        The content outline should include a minimum of 20 headings and subheadings. 
-        The outline should be extensive and it should cover the entire topic. 
+        Create {limit} alternative long form content outlines in the {language} language for the blog post titled {search}.  
+        Each outline should include a minimum of 3-4 headings, and each heading should have 4-5 subheadings. 
+        Each outline should be extensive and should cover the entire topic. 
         Create detailed subheadings that are engaging and catchy. 
-        Do not write the blog post, please only write the outline of the blog post. 
-        Please do not number the headings. 
-        Please add a newline space between headings and subheadings. 
-        Avoid self-reference and the inclusion of explanatory notes, crafting an outline that speaks directly to the essence of the blog post.
+        Do not write the blog post, only the outlines. 
+        Write the output as an array of outlines, where each outline is an array of sections.
+        The response should have this exact structure:
+        [
+          {
+            "outline": [
+              {
+                "headline": "First Section Title",
+                "subheadings": ["Point 1", "Point 2", "Point 3", "Point 4"]
+              },
+              {
+                "headline": "Second Section Title",
+                "subheadings": ["Point 1", "Point 2", "Point 3", "Point 4"]
+              }
+            ]
+          },
+          {
+            "outline": [
+              // next alternative outline sections...
+            ]
+          }
+        ]
+        Each outline array should contain 3-4 different sections.
+        Avoid self-reference and the inclusion of explanatory notes, crafting outlines that speak directly to the essence of the blog post.
+        ${PROMPT_NO_REFERENCE}
     `,
+  /*   GENERATE_BLOG_POST_OUTLINE_OLD: `
+          ${PROMPT_CLEANUP}
+          You are an expert copywriter who creates content outlines. 
+          You have a {voice} tone of voice. 
+          You have a {style} writing style. 
+          Create a long form content outline in the {language} language for the blog post titled "{search}".  
+          The content outline should include a minimum of 20 headings and subheadings. 
+          The outline should be extensive and it should cover the entire topic. 
+          Create detailed subheadings that are engaging and catchy. 
+          Do not write the blog post, please only write the outline of the blog post. 
+          Please do not number the headings. 
+          Please add a newline space between headings and subheadings. 
+          Avoid self-reference and the inclusion of explanatory notes, crafting an outline that speaks directly to the essence of the blog post.
+      `, */
   GENERATE_COMPLETE_BLOG_POST_FROM_OUTLINE: `
         ${PROMPT_CLEANUP}
         You are an expert copywriter who writes detailed and thoughtful blog articles. 
@@ -102,7 +137,7 @@ export const PROMPTS = {
         Please format the content in a professional format. 
         Do not use markdown, line breaks, single quotes, double quotes or any other enclosing characters in any of the columns you fill in. 
         ${PROMPT_NO_REFERENCE} 
-        Please return the responses in a valid JSON object following this prototype: { title: "", intro: "", sections: [{ title: "", paragraphs: [...] }, {...}], conclusion: { title: "", paragraphs: [...] } }.
+        Please return the responses in a valid JSON object following this prototype: { intro: { title: "", paragraphs: [...] }, sections: [{ title: "", paragraphs: [...] }, {...}], conclusion: { title: "", paragraphs: [...] } }.
         The blog article outline is - "{search}"
     `,
   GENERATE_COMPLETE_BLOG_POST_FROM_TOPIC: `
@@ -222,10 +257,10 @@ export const PROMPTS_ROLE = {
     'You have a {style} writing style.',
   ],
 };
-const PROMPT_COUNTRY_DEFAULT  = "Italy";
-const PROMPT_LANG_DEFAULT  = "Italiano";
-const PROMPT_VOICE_DEFAULT  = "Informative";
-const PROMPT_STYLE_DEFAULT  = "Argumentative";
+const PROMPT_COUNTRY_DEFAULT = "Italy";
+const PROMPT_LANG_DEFAULT = "Italiano";
+const PROMPT_VOICE_DEFAULT = "Informative";
+const PROMPT_STYLE_DEFAULT = "Argumentative";
 
 const PROMPT_COUNTRIES = {
   "Italy": "IT",
@@ -238,7 +273,6 @@ const PROMPT_LANGS = {
   "English": "en",
   "Chinese": "zh",
 };
-
 
 const PROMPT_VOICES = [
   "Authoritative",
@@ -308,6 +342,24 @@ const PROMPT_STYLES = [
   "Technical",
 ];
 
+export const LABELS = {
+  SEARCH_INTENT_FROM_KEYWORDS: "Enter the list of keywords to classify by search intent.",
+  RELATED_KEYWORD_GENERATOR: "What is the main keyword you want related suggestions for?",
+  LONG_TAIL_KEYWORD_GENERATOR: "What is the main keyword you want long-tail keywords for?",
+  KEYWORD_STRATEGY: "What is the main keyword to build your SEO strategy around?",
+  GENERATE_BLOG_POST_TITLES: "What is the main topic you want to generate titles about?",
+  GENERATE_BLOG_POST_DESCRIPTIONS: "What is the title of the blog post to generate descriptions for?",
+  GENERATE_BLOG_POST_OUTLINE: "What is the blog post title you want an outline for?",
+  /* GENERATE_BLOG_POST_OUTLINE_OLD: "What is the blog post title you want an outline for?", */
+  GENERATE_COMPLETE_BLOG_POST_FROM_OUTLINE: "What is the outline or blog topic to expand into a full article?",
+  GENERATE_COMPLETE_BLOG_POST_FROM_TOPIC: "What is the topic for the blog article?",
+  GENERATE_INTRODUCTION_USING_FRAMEWORK: "What is the topic of the blog post you want an introduction for?",
+  GENERATE_PARAGRAPH_OF_TEXT: "What is the topic you want to write a paragraph about?",
+  GENERATE_DICTIONARY: "What items do you want to list in a dictionary format?",
+  GENERATE_FREE: "What custom prompt would you like to run?"
+};
+
+
 export const getPromptCountry = (code: boolean = false) => {
   const country = localStorage.getItem("promptCountry") || PROMPT_COUNTRY_DEFAULT;
 
@@ -315,7 +367,7 @@ export const getPromptCountry = (code: boolean = false) => {
     ? PROMPT_COUNTRIES[country as keyof typeof PROMPT_COUNTRIES]
     : country
 }
-export const getPromptLang = (code : boolean = false) => {
+export const getPromptLang = (code: boolean = false) => {
   const lang = localStorage.getItem("promptLang") || PROMPT_LANG_DEFAULT;
 
   return code
@@ -343,8 +395,11 @@ export const getPromptStyles = () => {
   return PROMPT_STYLES;
 }
 
-export const getPrompt = (strategy: keyof typeof PROMPTS): string => {
-  return PROMPTS[strategy] ?? "";
+export const getPrompt = (strategy: keyof typeof PROMPTS): { prompt: string; label: string } => {
+  return {
+    prompt: PROMPTS[strategy] ?? "",
+    label: LABELS[strategy] ?? ""
+  };
 }
 
 export const getPromptOutline = () => {
@@ -353,4 +408,19 @@ export const getPromptOutline = () => {
 
 export const getPromptRole = (strategy: keyof typeof PROMPTS_ROLE): string[] => {
   return PROMPTS_ROLE[strategy] ?? [];
+};
+
+
+export const setPrompt = (
+  prompt: string,
+  configVariables: { lang?: string, voice?: string, style?: string, limit?: string },
+  userInput: string
+): string => {
+  const { lang, voice, style, limit } = configVariables;
+  return prompt
+    .replaceAll("{search}", userInput || "")
+    .replaceAll("{language}", lang || "")
+    .replaceAll("{voice}", voice || "")
+    .replaceAll("{style}", style || "")
+    .replaceAll("{limit}", limit || "");
 };

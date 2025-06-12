@@ -1,81 +1,86 @@
 import React, { useRef, useState } from "react";
-import { PLACEHOLDER_IMAGE } from "../../../Theme";
 import Modal from "../Modal";
 import { ActionButton } from "../Buttons";
 import Badge from "../Badge";
 import Table from "../Table";
 import Percentage from "../Percentage";
 import { CropImage, FileNameEditor } from "./Crop";
+import { Label } from "./Input";
+import { Wrapper } from "../GridSystem";
+import { UIProps } from "../..";
 
 
 /* ------------------------ Pulsanti modifica ed eliminazione ---------------------- */
 
-interface EditDeleteButtonsProps {
-    editAction: () => void;
-    deleteAction: () => void;
-    editable?: boolean;
-}
-const EditDeleteButtons = ({
-    editAction,
-    deleteAction,
-    editable = false
-}: EditDeleteButtonsProps) => {
-    return (
-        <>
-            {editable && <ActionButton onClick={editAction} icon='pencil' className="border-0 text-primary" />}
-            <ActionButton onClick={deleteAction} icon='x' className="border-0 text-primary" />
-        </>
-    )
+type ImageData = {
+    fileName: string;
+    url: string;
+};
+
+interface CropData {
+    scale: string;
+    top: number;
+    left: number;
+    width: number;
+    height: number;
 }
 
-/* ------------------------ Pulsante e input aggiunta elementi ---------------------- */
+interface PreviewImage {
+    original: ImageData;
+    crops: Record<string, ImageData>;
+    cropData?: Record<string, CropData>;
+    progress: number;
+}
+
+
+
+export interface UploadDocumentProps extends UIProps {
+    name: string;
+    value?: string;
+    onChange?: (e: { target: { name: string; value: File[] } }) => void;
+    label?: string;
+    required?: boolean;
+    editable?: boolean;
+    multiple?: boolean;
+    accept?: string;
+}
+
+export interface UploadImageProps extends UploadDocumentProps {
+    previewHeight?: number;
+    previewWidth?: number;
+}
+
+
+type DocumentFile = {
+    key: string;
+    fileName: string;
+    size: number;
+    type: string;
+    progress: number;
+}
+
+interface ActionButtonsProps {
+    onEdit?: () => void;
+    onDelete?: () => void;   
+}
 
 type FileOrPreview = DocumentFile | PreviewImage;
 
-interface AddFileInputProps {
-    multiple?: boolean;
+interface FileInputProps {
+    name: string;
     elements: FileOrPreview[];
-    triggerUpload: () => void;
-    accept: string;
     fileInputRef: React.RefObject<HTMLInputElement>;
-    handleFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    heightButton?: number;
-    widthButton?: number;
+    accept: string;
+    onUpload: () => void;
+    onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    label?: string;
+    icon?: string;
+    required?: boolean;
+    multiple?: boolean;
+    height?: number;
+    width?: number;
+    iconClass?: string;
 }
-
-const AddFileInput = ({
-    multiple = false,
-    elements,
-    triggerUpload,
-    accept,
-    fileInputRef,
-    handleFileChange,
-    heightButton = 100,
-    widthButton = 100
-}: AddFileInputProps) => {
-    const max = multiple ? 100 : 1;
-    return (
-        <>
-            {elements.length < max && <ActionButton
-                label={<img width={widthButton} height={heightButton} src={PLACEHOLDER_IMAGE} />}
-                onClick={triggerUpload}
-                className="p-0"
-            />}
-
-            <input
-                type="file"
-                accept={accept}
-                ref={fileInputRef}
-                multiple={multiple}
-                className="d-none"
-                onChange={handleFileChange}
-            />
-        </>
-    );
-};
-
-
-/* ------------------------ Modale modifica ---------------------- */
 
 interface EditFileModalProps {
     title: string;
@@ -89,6 +94,62 @@ interface EditFileModalProps {
     onClose: () => void;
 }
 
+
+const ActionButtons = ({
+    onEdit              = undefined,
+    onDelete            = undefined,
+}: ActionButtonsProps) => {
+    return (
+        <>
+            {onEdit && <ActionButton onClick={onEdit} icon='pencil' className="border-0 text-primary" />}
+            {onDelete && <ActionButton onClick={onDelete} icon='x' className="border-0 text-primary" />}
+        </>
+    )
+}
+
+/* ------------------------ Pulsante e input aggiunta elementi ---------------------- */
+const FileInput = ({
+    name,
+    elements,
+    fileInputRef,
+    accept              = "*/*",
+    onUpload,
+    onChange            = undefined,
+    label               = undefined,
+    icon                = undefined,
+    required            = false,
+    multiple            = false,
+    height              = undefined,
+    width               = undefined,
+    iconClass           = undefined
+}: FileInputProps) => {
+    const max = multiple ? 100 : 1;
+    return (
+        <>
+            {elements.length < max && <ActionButton
+                icon={icon}
+                label={label}
+                onClick={onUpload}
+                iconClass={iconClass}
+                style={{height: height, width: width}}
+            />}
+
+            <input
+                name={name}
+                type="file"
+                accept={accept}
+                ref={fileInputRef}
+                multiple={multiple}
+                required={required}
+                className="d-none"
+                onChange={onChange}
+            />
+        </>
+    );
+};
+
+
+/* ------------------------ Modale modifica ---------------------- */
 const EditFileModal = ({
     title = 'Editor',
     file,
@@ -96,7 +157,6 @@ const EditFileModal = ({
     onSave = () => { },
     onClose = () => { }
 }: EditFileModalProps) => {
-
     const [fileName, setFileName] = useState(() =>
         'original' in file ? file.original.fileName : file.fileName
     );
@@ -110,7 +170,7 @@ const EditFileModal = ({
         };
     }>(null);
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (cropRef.current) {
             const { originalFileName, crops, cropDetails } = cropRef.current.triggerSave();
             onSave?.(originalFileName, crops, cropDetails);
@@ -122,8 +182,9 @@ const EditFileModal = ({
     return (
         <Modal
             title={title}
-            onSave={async () => { handleSave() }}
-            onDelete={async () => { onClose() }}
+            onSave={handleSave}
+            onClose={onClose}
+            size="fullscreen"
         >
             {type === 'document' &&
                 <FileNameEditor
@@ -142,35 +203,19 @@ const EditFileModal = ({
 
 
 /* ------------------------ Caricamento documenti ---------------------- */
-
-export interface UploadDocumentProps {
-    name: string;
-    value?: string;
-    onChange?: (e: { target: { name: string; value: DocumentFile[] } }) => void;
-    label?: string;
-    editable?: boolean;
-    multiple?: boolean;
-    className?: string;
-    accept?: string;
-}
-
-type DocumentFile = {
-    key: string;
-    fileName: string;
-    size: number;
-    type: string;
-    progress: number;
-}
-
 export const UploadDocument = ({
     name,
     value       = undefined,
     onChange    = undefined,
     label       = undefined,
+    required    = false,
     editable    = false,
     multiple    = false,
-    className   = undefined,
     accept      = ".pdf,.doc,.docx,.txt,.iso",
+    pre         = undefined,
+    post        = undefined,
+    wrapClass   = undefined,
+    className   = undefined,
 }: UploadDocumentProps) => {
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const [files, setFiles] = useState<DocumentFile[]>([]);
@@ -223,7 +268,7 @@ export const UploadDocument = ({
         if (fileInputRef.current) fileInputRef.current.value = "";
     };
 
-    const triggerUpload = () => fileInputRef.current?.click();
+    const onUpload = () => fileInputRef.current?.click();
 
     const handleRemove = (index: number) => setFiles(files.filter((_, i) => i !== index));
 
@@ -239,103 +284,79 @@ export const UploadDocument = ({
     };
 
     return (
-        <div className={className}>
-            {label && <label>{label}</label>}
+        <Wrapper className={wrapClass}>
+            {pre}
+            <div className={className}>
+                <div className="d-flex justify-content-between align-items-center">
+                    {label && <Label label={label} required={required} />}
+                    <FileInput
+                        name={name}
+                        elements={files}
+                        fileInputRef={fileInputRef}
+                        accept={accept}
+                        onUpload={onUpload}
+                        onChange={handleFileChange}
+                        label={"Upload"}
+                        icon={"upload"}
+                        required={required}
+                        multiple={multiple}
+                    />
+                </div>
+                {files.length > 0 && <Table
+                    header={[
+                        { label: 'Name', key: 'name' },
+                        { label: 'Kilobyte', key: 'kilobyte' },
+                        { label: 'Actions', key: 'actions' }
+                    ]}
+                    body={files.map((file, i) => ({
+                        name: file.fileName,
+                        kilobyte: (
+                            file.progress === 100 
+                            ? (file.size / 1024).toFixed(2) + ' KB' 
+                            : <Percentage max={100} min={0} val={file.progress} shape="bar" />
+                        ),
+                        actions: (
+                            <ActionButtons
+                                onEdit={() => editable && setEditingIndex(i)}
+                                onDelete={() => handleRemove(i)}
+                            />
+                        )
+                    }))}
+                />}
 
-            <Table
-                header={[
-                    { label: 'Name', key: 'name' },
-                    { label: 'Kilobyte', key: 'kilobyte' },
-                    { label: 'Actions', key: 'actions' }
-                ]}
-                body={files.map((file, i) => ({
-                    name: file.fileName,
-                    kilobyte: (file.progress === 100 ? (file.size / 1024).toFixed(2) + ' KB' : <Percentage max={100} min={0} val={file.progress} styleType="progress" />),
-                    actions: (
-                        <EditDeleteButtons
-                            editAction={() => setEditingIndex(i)}
-                            deleteAction={() => handleRemove(i)}
-                            editable={editable}
-                        />
-                    )
-                }))}
-            />
-
-            <AddFileInput
-                multiple={multiple}
-                elements={files}
-                triggerUpload={triggerUpload}
-                accept={accept}
-                fileInputRef={fileInputRef}
-                handleFileChange={handleFileChange}
-            />
-
-            {editable && editingIndex !== null && (
-                <EditFileModal
-                    title="Editor Document"
-                    file={files[editingIndex]}
-                    type="document"
-                    onSave={(result) => handleFileRename(result)}
-                    onClose={() => setEditingIndex(null)}
-                />
-            )}
-        </div>
+                {editable && editingIndex !== null && (
+                    <EditFileModal
+                        title="Editor Document"
+                        file={files[editingIndex]}
+                        type="document"
+                        onSave={(result) => handleFileRename(result)}
+                        onClose={() => setEditingIndex(null)}
+                    />
+                )}
+            </div>
+            {post}
+        </Wrapper>
     );
 };
 
 
 /* ------------------------ Caricamento immagini ---------------------- */
-
-export interface UploadImageProps {
-    name: string;
-    value?: string;
-    onChange?: (e: { target: { name: string; value: File[] } }) => void;
-    editable?: boolean;
-    multiple?: boolean;
-    extensions?: string[];
-    label?: string;
-    disabled?: boolean;
-    className?: string;
-    addButtonPosition?: "left" | "right";
-    previewHeight?: number;
-    previewWidth?: number;
-}
-
-type ImageData = {
-    fileName: string;
-    url: string;
-};
-
-interface CropData {
-    scale: string;
-    top: number;
-    left: number;
-    width: number;
-    height: number;
-}
-
-interface PreviewImage {
-    original: ImageData;
-    crops: Record<string, ImageData>;
-    cropData?: Record<string, CropData>;
-    progress: number;
-}
-
 export const UploadImage = ({
     name,
-    value       = undefined,
-    onChange    = undefined,
-    editable    = false,
-    multiple    = false,
-    extensions  = undefined,
-    label       = undefined,
-    disabled    = false,
-    className   = undefined,
-    addButtonPosition = "left",
-    previewHeight = 100,
-    previewWidth = 100
+    value           = undefined,
+    onChange        = undefined,
+    label           = undefined,
+    editable        = false,
+    multiple        = false,
+    accept          = "image/*",
+    required        = false,
+    previewHeight   = 100,
+    previewWidth    = 100,
+    pre             = undefined,
+    post            = undefined,
+    wrapClass       = undefined,
+    className       = undefined,
 }: UploadImageProps) => {
-
     const fileInputRef = useRef<HTMLInputElement | null>(null); // riferimento all'input file
     const [previews, setPreviews] = useState<PreviewImage[]>([]);
     const [editingIndex, setEditingIndex] = useState<number | null>(null); // img selezionata
@@ -389,7 +410,7 @@ export const UploadImage = ({
         });
     };
 
-    const triggerUpload = () => fileInputRef.current?.click();
+    const onUpload = () => fileInputRef.current?.click();
 
     const handleRemove = (index: number) => setPreviews(prev => prev.filter((_, i) => i !== index));
 
@@ -420,65 +441,71 @@ export const UploadImage = ({
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
     return (
-        <div className="d-flex gap-3 align-items-center">
-            {/* aggiunta immagini */}
-            <div className={addButtonPosition === "left" ? "order-0" : "order-2"}>
-                <AddFileInput
-                    multiple={multiple}
-                    elements={previews}
-                    triggerUpload={triggerUpload}
-                    accept={extensions && extensions.length > 0
-                        ? extensions.map(ext => (ext.startsWith('.') ? ext : '.' + ext)).join(',')
-                        : "image/*"
-                    }
-                    fileInputRef={fileInputRef}
-                    handleFileChange={handleFileChange}
-                    heightButton={previewHeight}
-                    widthButton={previewWidth}
-                />
-            </div>
+        <Wrapper className={wrapClass}>
+            {pre}
+            <Wrapper className={className}>
+                {label && <Label label={label} required={required} />}
+                <div className="d-flex gap-2 flex-wrap">
+                    {/* anteprime */}
+                    {previews.map((img, i) => (
+                        <div
+                            key={i}
+                            className="position-relative overflow-hidden"
+                            style={{ width: previewHeight, height: previewWidth }}
+                            onMouseEnter={() => setHoveredIndex(i)}
+                            onMouseLeave={() => setHoveredIndex(null)}
+                        >
+                            {img.progress === 100 ? (
+                                <>
+                                    {/* anteprima img */}
+                                    <img
+                                        src={img.original.url}
+                                        alt={`preview-${i}`}
+                                        className="img-thumbnail"
+                                    />
 
-            {/* anteprime */}
-            <div className="d-flex gap-2 flex-wrap order-1">
-                {previews.map((img, i) => (
-                    <div
-                        key={i}
-                        className="position-relative rounded-2 overflow-hidden border-1 border-white"
-                        style={{ width: previewHeight, height: previewWidth }}
-                        onMouseEnter={() => setHoveredIndex(i)}
-                        onMouseLeave={() => setHoveredIndex(null)}
-                    >
-                        {img.progress === 100 ? (
-                            <>
-                                {/* anteprima img */}
-                                <img
-                                    src={img.original.url}
-                                    alt={`preview-${i}`}
-                                    className="w-100 h-100"
-                                    style={{ objectFit: "contain" }}
-                                />
-
-                                {/* badge */}
-                                {editable && Object.keys(img.crops) &&
-                                    <div className="position-absolute bottom-0 start-0 w-100 p-1 d-flex align-items-center justify-content-between">
-                                        {Object.keys(img.crops)
-                                            .map((scale) => (
-                                                <Badge key={scale}>{scale}</Badge>
-                                            ))
-                                        }
+                                    {/* badge */}
+                                    {editable && Object.keys(img.crops) &&
+                                        <div className="position-absolute bottom-0 start-0 w-100 p-1 d-flex align-items-center justify-content-between">
+                                            {Object.keys(img.crops)
+                                                .map((scale) => (
+                                                    <Badge key={scale}>{scale}</Badge>
+                                                ))
+                                            }
+                                        </div>
+                                    }
+                                    {/* pulsanti modifica/elimina */}
+                                    <div className="actions position-absolute top-0 start-0 w-100 justify-content-end" style={{ display: hoveredIndex === i ? "flex" : "none" }}>
+                                        <ActionButtons 
+                                            onEdit={() => editable && setEditingIndex(i)} 
+                                            onDelete={() => handleRemove(i)} 
+                                        />
                                     </div>
-                                }
-                                {/* pulsanti modifica/elimina */}
-                                <div className="actions position-absolute top-0 start-0 w-100 justify-content-end" style={{ display: hoveredIndex === i ? "flex" : "none" }}>
-                                    <EditDeleteButtons editAction={() => setEditingIndex(i)} deleteAction={() => handleRemove(i)} editable={editable} />
-                                </div>
-                            </>
-                        ) : (
-                            <Percentage max={100} min={0} val={img.progress} styleType="progress" />
-                        )}
-                    </div>
-                ))}
-            </div>
+                                </>
+                            ) : (
+                                <Percentage max={100} min={0} val={img.progress} shape="bar" />
+                            )}
+                        </div>
+                    ))}
+
+                    {/* aggiunta immagini */}
+                    <FileInput
+                        name={name}
+                        elements={previews}
+                        fileInputRef={fileInputRef}
+                        accept={accept} 
+                        onUpload={onUpload}
+                        onChange={handleFileChange}
+                        label={"Upload"}
+                        icon={"upload"}
+                        required={required}
+                        multiple={multiple}
+                        height={previewHeight}
+                        width={previewWidth}
+                        iconClass="fs-1"
+                    />
+                </div>
+            </Wrapper>
 
             {/* modale modifica */}
             {editable && editingIndex !== null &&
@@ -490,6 +517,7 @@ export const UploadImage = ({
                     onClose={() => setEditingIndex(null)}
                 />
             }
-        </div>
+            {post}
+        </Wrapper>
     );
 };

@@ -1,87 +1,178 @@
 import React from "react";
+import { Label, UIProps } from '../..';
+import { useTheme } from "../../Theme";
+import { Wrapper } from "./GridSystem";
 
-interface PercentageProps {
+type ColorType = "info" | "success" | "warning" | "danger" | "primary" | "secondary" | "light" | "dark";
+type ShapeType = "bar" | "circle";
+
+interface PercentageBarProps {
+  progress: number;
+  type: ColorType;
+  className: string;
+  thickness: number;
+  showText: boolean;
+  background: ColorType;
+  size: number;
+  fontSize: number;
+}
+
+
+interface PercentageProps extends UIProps {
   val?: number;
   max?: number;
   min?: number;
-  styleType?: "rounded" | "progress";
+  shape?: ShapeType;
+  type?: ColorType;
+  background?: ColorType;
+  thickness?: number;
+  showText?: boolean;
+  size?: number;
+  fontSize?: number;
+  label?: string;
 }
+
+const PercentageBar: React.FC<PercentageBarProps> = ({ 
+  progress, 
+  type,  
+  thickness,
+  showText,
+  background,
+  size,
+  fontSize,
+  className
+}) => {
+  return (
+    <div 
+      className={`progress ${className}`} 
+      style={{ 
+        height: `${thickness}px`,
+        width: `${size}%`,
+        backgroundColor: `var(--bs-${background})`
+      }}
+    >
+      <div
+        className={`progress-bar bg-${type}`}
+        role="progressbar"
+        style={{ width: `${progress}%`, fontSize: `${fontSize}px` }}
+        aria-valuenow={progress}
+        aria-valuemin={0}
+        aria-valuemax={100}
+      >
+        {showText && `${progress}%`}
+      </div>
+    </div>
+  );
+};
+
+const PercentageCircle: React.FC<PercentageBarProps> = ({ 
+  progress, 
+  type, 
+  thickness,  
+  showText,
+  background,
+  size,
+  fontSize,
+  className,
+}) => {
+  const radius = size / 2;
+  const normalizedRadius = radius - thickness / 2;
+  const circumference = 2 * Math.PI * normalizedRadius;
+  const strokeDashoffset = circumference * ((100 - progress) / 100);
+  const startAngle = -90;
+
+  return (
+    <span className={className}>
+      <svg width={size} height={size}>
+        {/* Background circle */}
+        <circle
+          r={normalizedRadius}
+          cx={radius}
+          cy={radius}
+          fill="none"
+          className="opacity-25"
+          stroke={`var(--bs-${background})`}
+          strokeWidth={thickness}
+        />
+        {/* Progress circle */}
+        <circle
+          r={normalizedRadius}
+          cx={radius}
+          cy={radius}
+          fill="none"
+          stroke={`var(--bs-${type})`}
+          strokeWidth={thickness}
+          strokeDasharray={circumference}
+          strokeDashoffset={strokeDashoffset}
+          style={{ transform: `rotate(${startAngle}deg)`, transformOrigin: 'center' }}
+        />
+        {showText && (
+          <text
+            x="50%"
+            y="50%"
+            textAnchor="middle"
+            dominantBaseline="middle"
+            className="fw-bold"
+            fontSize={fontSize}
+            fill={`var(--bs-${background})`}
+          >
+            {`${progress}%`}
+          </text>
+        )}
+      </svg>
+    </span>
+  );
+};
 
 const Percentage = ({
   val = 0,
   max = 100,
   min = 0,
-  styleType = "rounded",
+  shape = "bar",
+  type = "primary",
+  background = "secondary",
+  thickness = 10,
+  showText = true,
+  size = 100,
+  fontSize = 16,  
+  label = undefined,
+  pre = undefined,
+  post = undefined,
+  wrapClass = undefined,
+  className = undefined
 }: PercentageProps) => {
-  const clampedProgress = Math.max(0, Math.min(100, ((val - min) / (max - min)) * 100));
-  const progress = Math.round(clampedProgress);
-  const color = "#4db8ff";
-
-  if (styleType === "progress") {
-    return (
-      <div className="position-relative w-100">
-        <div className="progress">
-          <div
-            className="progress-bar"
-            role="progressbar"
-            style={{ width: `${progress}%`, backgroundColor: color }}
-            aria-valuenow={progress}
-            aria-valuemin={0}
-            aria-valuemax={100}
-          />
-        </div>
-        <div className="position-absolute top-50 start-50 translate-middle text-center fw-bold">
-          {`${progress}%`}
-        </div>
-      </div>
-    );
-  }
-
-  // Rounded style
-  const radius = 35;
-  const strokeWidth = 10;
-  const normalizedRadius = radius - strokeWidth / 2;
-  const circumference = 2 * Math.PI * normalizedRadius;
-  const strokeDashoffset = circumference * (1 - progress / 100);
+  const theme = useTheme("percentage");
+  const progress = Math.round(Math.max(0, Math.min(100, ((val - min) / (max - min)) * 100)));
+  const finalClassName = className || theme.Percentage?.className || '';
 
   return (
-    <div
-      className="d-flex justify-content-center align-items-center position-relative"
-      style={{ width: `${radius * 2}px`, height: `${radius * 2}px` }}
-    >
-      <svg width={radius * 2} height={radius * 2}>
-        <circle
-          r={normalizedRadius}
-          cx={radius}
-          cy={radius}
-          fill="none"
-          stroke="#e6e6e6"
-          strokeWidth={strokeWidth}
+    <Wrapper className={wrapClass || theme.Percentage?.wrapClass}>
+      {pre}
+      {label && <Label label={label} />}
+      {shape === "bar" 
+      ? <PercentageBar
+          progress={progress}
+          type={type}
+          thickness={thickness}
+          showText={showText}
+          background={background}
+          size={size}
+          fontSize={fontSize}
+          className={finalClassName}
         />
-        <circle
-          r={normalizedRadius}
-          cx={radius}
-          cy={radius}
-          fill="none"
-          stroke={color}
-          strokeWidth={strokeWidth}
-          strokeDasharray={circumference}
-          strokeDashoffset={strokeDashoffset}
-          transform="rotate(-90)"
-          transformOrigin="50% 50%"
+      : <PercentageCircle
+          progress={progress}
+          type={type}
+          thickness={thickness}
+          showText={showText}
+          background={background}
+          size={size}
+          fontSize={fontSize}
+          className={finalClassName}
         />
-        <text
-          x="50%"
-          y="50%"
-          textAnchor="middle"
-          dominantBaseline="middle"
-          className="fw-bold text-dark"
-          fontSize="20"
-        >
-          {`${progress}%`}
-        </text>
-      </svg>
-    </div>
+      }
+      {post}
+    </Wrapper>
   );
 };
 
