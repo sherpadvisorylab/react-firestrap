@@ -1,123 +1,95 @@
-import React, {ChangeEvent, useEffect, useMemo, useState} from 'react';
+import React, {useMemo, useState} from 'react';
 import {ActionButton} from "./Buttons";
 import ComponentEnhancer from "../ComponentEnhancer";
 import {converter} from "../../libs/converter";
-import {RecordArray, RecordProps} from "../../integrations/google/firedatabase";
-import { TabLayout } from './Tab';
-
-interface TabDynamicLayoutProps {
-    menu: React.ReactNode;
-    content: React.ReactNode;
-}
+import { TabLayouts, TabPosition } from './Tab';
 
 interface TabDynamicProps {
     children: React.ReactNode;
     name: string;
     onChange?: (event: { target: { name: string; value?: any } }) => void;
+    onAdd?: (value: any[]) => void;
+    onRemove?: (index: number) => void;
     value?: any[];
     label?: string;
     min?: number;
     max?: number;
     activeIndex?: number;
     title?: string;
-    onAdd?: () => void;
-    onRemove?: (index: number) => void;
     readOnly?: boolean;
-    tabPosition?: "top" | "left" | "right";
+    tabPosition?: TabPosition;
 }
-
-
-const TabDynamicTop = ({menu, content}: TabDynamicLayoutProps) => (
-    <>
-        <ul className="nav nav-tabs">{menu}</ul>
-        <div className="tab-content pt-3">{content}</div>
-    </>
-);
-
-
-const TabDynamicLeft = ({menu, content}: TabDynamicLayoutProps) => (
-    <div className="d-flex">
-        <ul className="nav nav-tabs flex-column text-nowrap border-end border-bottom-0">{menu}</ul>
-        <div className="tab-content ps-3 pt-3 border-top">{content}</div>
-    </div>
-);
-
-const TabDynamicRight = ({menu, content}: TabDynamicLayoutProps) => (
-    <div className="d-flex">
-        <div className="tab-content pe-3 pt-3 border-top">{content}</div>
-        <ul className="nav nav-tabs flex-column text-nowrap border-start border-bottom-0">{menu}</ul>
-    </div>
-);
 
 const TabDynamic = ({
                  children,
                  name,
                  onChange       = undefined,
+                 onAdd          = undefined,
+                 onRemove       = undefined,
                  value          = undefined,
                  label          = "Tab",
                  min            = 1,
                  max            = undefined,
                  activeIndex    = 0,
                  title          = undefined,
-                 onAdd          = undefined,
-                 onRemove       = undefined,
                  readOnly       = false,
-                 tabPosition    = "top"
+                 tabPosition    = "default"
 }: TabDynamicProps) => {
     const [active, setActive] = useState(activeIndex);
     const [release, setRelease] = useState(0);
-    
-    const tabKey = `${name}-${release}`;
+    const [internalValue, setInternalValue] = useState(() =>
+        Array.from({ length: min }, () => ({}))
+      );    
+    const records = value ?? internalValue;
 
     const setLabel = (index: number) => {
         return (label.includes("{")
-            ? converter.parse(value?.[index], label) || "New " + (index + 1)
+            ? converter.parse(records?.[index], label) || "New " + (index + 1)
             : label + " " + (index + 1)
         );
     }
-    const addComponent = (index: number, record: RecordProps) => {
-        return <ComponentEnhancer
-            parentName={`${name}.${index}`}
-            components={children}
-            record={record}
-            handleChange={onChange}
-        />
-    }
-    console.log(value, "valueXXXXXXXXXXXXXXXXXXXXXXX");
+
     const components = useMemo(
         () =>
-          Array.from({ length: Math.max(min, value?.length || 0) }, (_, i) =>
-            addComponent(i, value?.[i] ?? {})
+          Array.from({ length: Math.max(min, records?.length) }, (_, i) =>
+            <ComponentEnhancer
+                parentName={`${name}.${i}`}
+                components={children}
+                record={records?.[i]}
+                handleChange={onChange}
+            />
           ),
-        [value, children, name, onChange, min, release]
+        [records, children, name, onChange, min, release]
     );
       
-
     const handleAdd = () => {
+        const next = [...records, {}];
+        onAdd?.(next);
         onChange?.({ target: { name: `${name}.${components.length}`, value: {} } });
 
+        !value && setInternalValue(next);
+        
         setActive(components.length);
     }
 
     const handleRemove = (index: number) => {
+        onRemove?.(index);
         onChange?.({ target: { name: `${name}.${index}` } });
-        console.log(index, components.length, "index, components.length");
+
+        !value && setInternalValue(prev => prev.filter((_, i) => i !== index));
+
         if(index == components.length - 1) {
             setActive(index - 1);
         }
         setRelease(prev => prev + 1);
     }
 
-    const TabDynamicDisplayed = {
-        top:    TabDynamicTop,
-        left:   TabDynamicLeft,
-        right:  TabDynamicRight
-    }[tabPosition] || TabDynamicTop;
+    const TabLayout = TabLayouts[tabPosition];
 
     return (
         <div>
             {title && <h3>{title}</h3>}
-            <TabDynamicDisplayed
+            <TabLayout
                 menu={<>
                     {components.map((_, index) => 
                         <li key={`${name}-${index}`} className="nav-item me-1 position-relative">

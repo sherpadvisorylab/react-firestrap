@@ -468,13 +468,13 @@ function Helper() {
                   <Card className='mb-3' title='Dynamic Tabs (Tab)'>
 
                     <Label label='Tab Top' />
-                    <TabDynamic name='tabDynamic' children='Lorem ipsum.' min={3} label='Tab' />
+                    <TabDynamic name='tabDynamic' children='Lorem ipsum.' min={1} label='Tab' />
 
                     <Label label='Tab Left' className='mt-3' />
-                    <TabDynamic name='tabDynamic' children='Lorem ipsum.' min={3} label='Tab' tabPosition='left' />
+                    <TabDynamic name='tabDynamic2' children='Lorem ipsum.' min={1} label='Tab' tabPosition='left' />
 
                     <Label label='Tab Right' className='mt-3' />
-                    <TabDynamic name='tabDynamic' children='Lorem ipsum.' min={3} label='Tab' tabPosition='right' />
+                    <TabDynamic name='tabDynamic3' children='Lorem ipsum.' min={1} label='Tab' tabPosition='right' />
 
                   </Card>
                   <Card className='mb-3' title='Tabs'>
