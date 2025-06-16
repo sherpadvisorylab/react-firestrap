@@ -1,6 +1,6 @@
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import Card from "../Card";
-import { String, SwitchInput } from "./Input";
+import { String, Switch } from "./Input";
 
 
 const aspectRatios: Record<string, number> = {
@@ -295,10 +295,10 @@ export const CropImage = forwardRef(({img} : { img: PreviewImage }, ref) => {
             <div className="mb-2">
                 {Object.keys(aspectRatios).map((scale) => (
                     <Card key={scale}>
-                        <SwitchInput
+                        <Switch
                             name={scale}
                             label={scale}
-                            status={selectedAspects.includes(scale)}
+                            value={selectedAspects.includes(scale)}
                             onChange={(e) => {
                                 setSelectedAspects(prev =>
                                     e.target.checked

@@ -1,8 +1,9 @@
-import React, {ChangeEvent} from 'react';
-import {generateUniqueId, isEmpty} from "../../../libs/utils";
+import React, {ChangeEvent, useId, useState} from 'react';
+import {isEmpty} from "../../../libs/utils";
 import {Wrapper} from "../GridSystem";
+import { ActionButton, UIProps } from '../../..';
 
-interface BaseInputProps {
+interface BaseInputProps extends UIProps{
     name: string;
     value?: string | number;
     placeholder?: string;
@@ -12,18 +13,14 @@ interface BaseInputProps {
     updatable?: boolean;
     disabled?: boolean;
     onChange?: (event: ChangeEvent<HTMLInputElement>) => void;
-    pre?: React.ReactNode;
-    post?: React.ReactNode;
     feedback?: string;
     min?: number;
     max?: number;
-    wrapClass?: string;
-    inputClass?: string;
 }
 
 export type InputProps = Omit<BaseInputProps, 'type'>;
 
-export interface CheckboxProps {
+export interface CheckboxProps extends UIProps {
     name: string;
     value?: boolean;
     onChange?: (event: ChangeEvent<HTMLInputElement>) => void;
@@ -31,8 +28,6 @@ export interface CheckboxProps {
     title?: string;
     required?: boolean;
     valueChecked?: string;
-    checkboxClass?: string;
-    wrapClass?: string;
 }
 
 interface LabelProps {
@@ -42,51 +37,59 @@ interface LabelProps {
     className?: string;
 }
 
-export interface TextAreaProps {
+export interface TextAreaProps extends UIProps {
     name: string;
     value?: string;
+    onChange?: (event: ChangeEvent<HTMLTextAreaElement>) => void;
     placeholder?: string;
     label?: string;
     required?: boolean;
     updatable?: boolean;
     disabled?: boolean;
     rows?: number;
-    onChange?: (event: ChangeEvent<HTMLTextAreaElement>) => void;
-    pre?: React.ReactNode;
-    post?: React.ReactNode;
     feedback?: string;
-    className?: string;
-    wrapClass?: string;
     useRef?: any; //da verificare se serve
+}
+
+export interface ListGroupProps extends UIProps {
+    children: React.ReactNode[];
+    onClick?: (event: React.MouseEvent<HTMLDivElement>, index: number) => void;
+    label?: string;
+    actives?: number[];
+    disables?: number[];
+    loaders?: number[];
+    itemClass?: string;
 }
 
 export const Input = ({
                                                 name,
                                                 value       = undefined,
+                                                onChange    = undefined,
                                                 placeholder = undefined,
                                                 label       = undefined,
                                                 type        = "text",
                                                 required    = false,
                                                 updatable   = true,
                                                 disabled    = false,
-                                                onChange    = undefined,
                                                 pre         = undefined,
                                                 post        = undefined,
                                                 feedback    = undefined,
                                                 min         = undefined,
                                                 max         = undefined,
                                                 wrapClass   = undefined,
-                                                inputClass  = undefined
+                                                className   = undefined
 }: BaseInputProps) => {
+    const id = useId();
     return (
         <Wrapper className={wrapClass}>
-            {label && <Label label={label} required={required} />}
+            {label && <Label label={label} required={required} htmlFor={id} />}
             <Wrapper className={pre || post ? "input-group": ""}>
                 {pre && <span className="input-group-text">{pre}</span>}
                 <input
+                    id={id}
                     type={type}
                     name={name}
-                    className={`form-control${inputClass ? " " + inputClass : ""}`}
+                    className={`form-control${className ? " " + className : ""}`}
                     placeholder={placeholder}
                     required={required}
                     disabled={disabled || (!updatable && !isEmpty(value))}
@@ -102,16 +105,31 @@ export const Input = ({
     );
 };
 
-export const Number = (props: InputProps) => (
-    <Input {...props} type="number" />
-);
-
 export const String = (props: InputProps) => (
     <Input {...props} type="text" />
 );
 
+export const Number = (props: InputProps) => (
+    <Input {...props} type="number" />
+);
+
 export const Email = (props: InputProps) => (
     <Input {...props} type="email" />
+);
+
+export const Password = (props: InputProps) => {
+    const [visible, setVisible] = useState(false);
+
+    return <Input {...props} type={visible ? "text": "password"} post={
+        <ActionButton 
+            icon={visible ? "eye" : "eye-slash"} 
+            onClick={() => setVisible(!visible)}
+        />} 
+    />
+};
+
+export const Color = (props: InputProps) => (
+    <Input {...props} type="color" />
 );
 
 export const Date = (props: InputProps) => (
@@ -126,6 +144,14 @@ export const DateTime = (props: InputProps) => (
     <Input {...props} type="datetime-local" />
 );
 
+export const Week = (props: InputProps) => (
+    <Input {...props} type="week" />
+);
+
+export const Month = (props: InputProps) => (
+    <Input {...props} type="month" />
+);
+
 export const Checkbox = ({
                                                       name,
                                                       value         = false,
@@ -134,10 +160,12 @@ export const Checkbox = ({
                                                       title         = undefined,
                                                       required      = false,
                                                       valueChecked  = "on",
-                                                      checkboxClass = undefined,
-                                                      wrapClass     = undefined
+                                                      pre           = undefined,
+                                                      post          = undefined,
+                                                      wrapClass     = undefined,
+                                                      className     = undefined
 }: CheckboxProps) => {
-    const key = name || label;
+    const id = useId();
     const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         event.target.value = event.target.checked ? valueChecked : ""
 
@@ -148,22 +176,30 @@ export const Checkbox = ({
     }
     return (
         <Wrapper className={wrapClass}>
+            {pre}
             <input
                 type="checkbox"
-                id={key}
+                id={id}
                 name={name}
                 title={title}
-                className={`form-check-input${checkboxClass ? " " + checkboxClass : ""}`}
+                className={`form-check-input${className ? " " + className : ""}`}
                 defaultChecked={value}
                 onChange={handleCheckboxChange}
             />
-            {label && <label className="form-check-label ps-1" htmlFor={key}>
+            {label && <label className="form-check-label ps-1" htmlFor={id}>
                 {label}
                 {required && <span className="text-danger">&nbsp;*</span>}
             </label>}
+            {post}
         </Wrapper>
     );
 };
+
+export const Switch = (props: CheckboxProps) => (
+    <Wrapper className={props?.wrapClass}>
+        <Checkbox {...props} wrapClass='form-check form-switch' />
+    </Wrapper>
+);
 
 export const Label = ({
                                                 label,
@@ -181,13 +217,13 @@ export const Label = ({
 export const TextArea = ({
                                                       name,
                                                       value         = undefined,
+                                                      onChange      = undefined,
                                                       placeholder   = undefined,
                                                       label         = undefined,
                                                       required      = false,
                                                       updatable     = true,
                                                       disabled      = false,
                                                       rows          = undefined,
-                                                      onChange      = undefined,
                                                       useRef        = {},
                                                       pre           = undefined,
                                                       post          = undefined,
@@ -218,120 +254,57 @@ export const TextArea = ({
   );
 };
 
-export interface DateInputProps {
-    name: string;
-    value?: string;
-    placeholder?: string;
-    label?: string;
-    required?: boolean;
-    onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    className?: string;
-}
-
-export const DateInput = ({
-                                                            name,
-                                                            value           = undefined,
-                                                            placeholder     = undefined,
-                                                            label           = undefined,
-                                                            required        = false,
-                                                            onChange        = undefined,
-                                                            className       = undefined
-}: DateInputProps) => {
-    const fullClassName = `form-control${className ? ' ' + className : ''}`;
-    return (<>
-        {label && <Label required={required} label={label}/>}
-        <div className="input-group">
-            <input
-                name={name}
-                type="text"
-                className={fullClassName}
-                placeholder={placeholder}
-                defaultValue={value}
-                onChange={onChange}
-            />
-            <label className="input-group-text" htmlFor={name}>
-                <i className="fa fa-calendar"></i>
-            </label>
-        </div>
-    </>);
-};
-
-export interface SwitchInputProps {
-    name: string;
-    value?: string | number;
-    label?: string;
-    status?: boolean;
-    onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    className?: string;
-}
-
-export const SwitchInput = ({
-                                                            name,
-                                                            value       = undefined,
-                                                            label       = undefined,
-                                                            status      = false,
-                                                            onChange    = undefined,
-                                                            className   = undefined
-}: SwitchInputProps) => {
-    const fullClassName = `form-check form-switch${className ? ' ' + className : ''}`;
-    return (
-        <div className={fullClassName}>
-            <input
-                name={name}
-                type="checkbox"
-                className="form-check-input"
-                checked={status}
-                value={value}
-                onChange={onChange}
-            />
-            
-            <label className="form-check-label" htmlFor={name}>
-                {label}
-            </label>
-        </div>
-    );
-};
-
-export interface ListGroupProps {
-    items: React.ReactNode[];
-    onClick?: (event: React.MouseEvent<HTMLAnchorElement>, index: number) => void;
-    active?: number;
-    className?: string;
-    indexLoading?: number | string;
-}
 export const ListGroup = ({
-                                                        items,
+                                                        children,
                                                         onClick         = undefined,
-                                                        active          = undefined,
+                                                        label           = undefined,
+                                                        actives         = undefined,
+                                                        disables        = undefined,
+                                                        loaders         = undefined,
+                                                        pre             = undefined,
+                                                        post            = undefined,
+                                                        wrapClass       = undefined,
                                                         className       = undefined,
-                                                        indexLoading    = undefined
+                                                        itemClass       = undefined
 }: ListGroupProps) => {
     const fullClassName = `list-group${className ? ' ' + className : ''}`;
-    const iLoader = parseInt((indexLoading ?? '-1') as string , 10);
 
-    return (
+    return <Wrapper className={wrapClass}>
+        {pre}
+        {label && <div>{label}</div>}
         <div className={fullClassName}>
-            {items.map((item, index) => {
-                const isActive = index === active;
-                const isLoading = index === iLoader;
-                const itemClass = `list-group-item list-group-item-action p-0${
-                    isActive ? ' bg-white bg-opacity-15' : ''
-                }${isLoading ? ' loading' : ''}`;
+            {children.map((child, index) => {
+                const isActive = actives?.includes(index);
+                const isDisable = disables?.includes(index);
+                const isLoading = loaders?.includes(index);
+                const fullItemClass = `list-group-item${
+                    itemClass ? ' ' + itemClass : ''
+                }${
+                    onClick ? ' list-group-item-action' : ''
+                }${
+                    isActive ? ' active' : ''
+                }${
+                    isDisable ? ' disabled' : ''
+                }${isLoading ? ' loading' : ''}`;   
 
-                return (
-                    <a
-                        key={generateUniqueId()}
+                return <>
+                    {onClick && <div
+                        key={index}
                         onClick={(e) => {
-                            if (!isLoading) {
-                                onClick?.(e, index);
+                            const target = e.target as HTMLElement;
+                            if (!isLoading && !target.closest('a') && !target.closest('button')) {
+                                onClick(e, index);
                             }
                         }}
-                        className={itemClass}
+                        className={fullItemClass}
+                        style={{cursor: "pointer"}}
                     >
-                        {item}
-                    </a>
-                );
+                        {child}
+                    </div>}
+                    {!onClick && <span key={index} className={fullItemClass}>{child}</span>}
+                </>;
             })}
         </div>
-    );
+        {post}
+    </Wrapper>
 };

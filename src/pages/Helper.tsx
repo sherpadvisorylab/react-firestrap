@@ -3,7 +3,7 @@ import Grid from "../components/widgets/Grid";
 import { Select } from "../components/ui/fields/Select";
 import { Wrapper, Container, Row, Col } from "../components/ui/GridSystem";
 import Card from "../components/ui/Card";
-import { String, Number, Email, Date, Time, DateTime, DateInput, TextArea, Checkbox, ListGroup, SwitchInput, Label } from "../components/ui/fields/Input";
+import { String, Number, Email, Password, Color, Date, Time, DateTime, Week, Month, TextArea, Checkbox, ListGroup, Switch, Label } from "../components/ui/fields/Input";
 import { Autocomplete, Checklist } from "../components/ui/fields/Select";
 import { UploadDocument, UploadImage } from "../components/ui/fields/Upload";
 import { ActionButton, LoadingButton, GoSite, ReferSite } from "../components/ui/Buttons";
@@ -52,13 +52,17 @@ function Helper() {
                 <Col lg={5}>
                   <Form dataStoragePath='' header="Input">
                     {/* String */}
-                    <String name='text' label='Text input' placeholder='Lorem ipsum.' />
+                    <String name='text' label='String' placeholder='Lorem ipsum.' />
                     {/* Number */}
-                    <Number name='number' label='Number input' value={10} />
+                    <Number name='number' label='Number' value={10} />
                     {/* Email */}
-                    <Email name='email' label='Email input' placeholder='test@example.com' />
+                    <Email name='email' label='Email' placeholder='test@example.com' />
+                    {/* Password */}
+                    <Password name='password' label='Password' placeholder='my passowrd' />
+                    {/* Color */}
+                    <Color name='color' label='Color' placeholder='Pick a Color' />
                     {/* TextArea */}
-                    <TextArea name='textarea' label='Text area' placeholder='Lorem ipsum.' />
+                    <TextArea name='textarea' label='Text Area' placeholder='Lorem ipsum.' />
                   </Form>
                 </Col>
                 <Col lg={7}>
@@ -66,16 +70,22 @@ function Helper() {
 {`<Form dataStoragePath='' header="Input">
 
   {/* String */}
-  <String name='text' label='Text input' placeholder='Lorem ipsum.' />
+  <String name='text' label='String' placeholder='Lorem ipsum.' />
 
   {/* Number */}
-  <Number name='number' label='Number input' value={10} />
+  <Number name='number' label='Number' value={10} />
 
   {/* Email */}
-  <Email name='email' label='Email input' placeholder='test@example.com' />
+  <Email name='email' label='Email' placeholder='test@example.com' />
+
+  {/* Password */}
+  <Password name='password' label='Password' placeholder='my passowrd' />
+
+  {/* Color */}
+  <Color name='color' label='Color' placeholder='Pick a Color' />
 
   {/* TextArea */}
-  <TextArea name='textarea' label='Text area' placeholder='Lorem ipsum.' />
+  <TextArea name='textarea' label='Text Area' placeholder='Lorem ipsum.' />
 
 </Form>`}
                   </Code>
@@ -86,13 +96,15 @@ function Helper() {
                   {/* Date */}
                   <Form dataStoragePath='' header="Date Input">
                     {/* Date */}
-                    <Date name='date' label='Date' inputClass='mb-3' placeholder='YYYY-MM-DD' />
+                    <Date name='date' label='Date' />
                     {/* Time */}
-                    <Time name='time' label='Time' inputClass='mb-3' placeholder='HH:MM:SS' />
+                    <Time name='time' label='Time' />
                     {/* DateTime */}
-                    <DateTime name='datetime' label='DateTime' inputClass='mb-3' placeholder='YYYY-MM-DD HH:MM:SS' />
-                    {/* Custom date */}
-                    <DateInput name='dateInput' placeholder='YYYY-MM-DD' />
+                    <DateTime name='datetime' label='DateTime'/>
+                    {/* Week */}
+                    <Week name='week' label='Week'/>
+                    {/* Month */}
+                    <Month name='month' label='Month'  />
                   </Form>
                 </Col>
                 <Col lg={7}>
@@ -100,16 +112,19 @@ function Helper() {
 {`<Form dataStoragePath='' header="Date Input">
 
   {/* Date */}
-  <Date name='date' label='Date' inputClass='mb-3' placeholder='YYYY-MM-DD' />
+  <Date name='date' label='Date'/>
 
   {/* Time */}
-  <Time name='time' label='Time' inputClass='mb-3' placeholder='HH:MM:SS' />
+  <Time name='time' label='Time' />
 
   {/* DateTime */}
-  <DateTime name='datetime' label='DateTime' inputClass='mb-3' placeholder='YYYY-MM-DD HH:MM:SS' />
+  <DateTime name='datetime' label='DateTime' />
 
-  {/* Custom date */}
-  <DateInput name='dateInput' placeholder='YYYY-MM-DD' />
+  {/* Week */}
+  <Week name='week' label='Week'/>
+  
+  {/* Month */}
+  <Month name='month' label='Month'  />
 
 </Form>`}
                   </Code>
@@ -121,22 +136,26 @@ function Helper() {
                   <Form dataStoragePath='' header="Boolean Input">
                     {/* Checkbox */}
                     <Label label='Checkboxes' />
-                    <Checkbox name='checkbox' label='Checkbox1' />
-                    <Checkbox name='checkbox' label='Checkbox2' checkboxClass='mb-3' value={true} />
+                    <Checkbox name='checkbox1' label='Checkbox1' />
+                    <Checkbox name='checkbox2' label='Checkbox2' className='mb-3' value={true} />
                     {/* Switch */}
                     <Label label='Switches' />
-                    <SwitchInput name='switch1' label='Switch input' onChange={() => { }} status={false} />
-                    <SwitchInput name='switch2' onChange={() => { }} label='Switch input' className='mb-3' status={true} />
+                    <Switch name='switch1' label='Switch input' onChange={() => { }} value={false} />
+                    <Switch name='switch2' onChange={() => { }} label='Switch input' className='mb-3' value={true} />
                   </Form>
 
                   {/* List -> Select? */}
-                  <Form dataStoragePath='' header="List Input">
-                    <Label label='List Group' />
-                      <ListGroup className='mb-3' onClick={() => { }} active={0} items={[
-                        <span className='text-danger'>Element1</span>,
-                        <span className='text-success'>Element2</span>,
-                        <span className='text-warning'>Element3</span>
-                      ]} />
+                  <Form dataStoragePath='' header="List Group">
+                    <ListGroup actives={[0]} disables={[1]} className='mb-3' itemClass='p-1'>
+                      <span className='text-danger'>Element1</span>
+                      <span className='text-success'>Element2</span>
+                      <span className='text-warning'>Element3</span>
+                    </ListGroup>
+                    <ListGroup label='List Group with onClick' onClick={(e, index) => { console.log("List Group click", index, e.currentTarget.innerHTML) }} actives={[0]} disables={[1]}>
+                      <span className='text-danger'>Element1</span>
+                      <span className='text-success'>Element2</span>
+                      <span className='text-warning'>Element3</span>
+                    </ListGroup>
                   </Form>
                 </Col>
 
@@ -455,9 +474,9 @@ function Helper() {
                   <h2 id='repeat'>Repeat</h2>
                   <Card className='mb-3' title=''>
                     <Repeat>
-                      <String name='repeat' label='Repeat 1' inputClass='mb-3' placeholder='Lorem ipsum.' />
-                      <String name='repeat' label='Repeat 2' inputClass='mb-3' placeholder='Lorem ipsum.' />
-                      <String name='repeat' label='Repeat 3' inputClass='mb-3' placeholder='Lorem ipsum.' />
+                      <String name='repeat' label='Repeat 1' className='mb-3' placeholder='Lorem ipsum.' />
+                      <String name='repeat' label='Repeat 2' className='mb-3' placeholder='Lorem ipsum.' />
+                      <String name='repeat' label='Repeat 3' className='mb-3' placeholder='Lorem ipsum.' />
                     </Repeat>
                   </Card>
                 </Col>

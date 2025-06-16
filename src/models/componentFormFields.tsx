@@ -4,14 +4,17 @@ import {
     InputProps,
     Checkbox,
     Date,
-    DateInput,
     DateTime,
     Email,
     Number,
     String,
-    SwitchInput,
+    Switch,
     TextArea,
-    Time, TextAreaProps, DateInputProps, CheckboxProps, SwitchInputProps
+    Time, TextAreaProps, CheckboxProps,
+    Password,
+    Color,
+    Week,
+    Month
 } from "../components/ui/fields/Input";
 import {Autocomplete, Checklist, Select, SelectProps} from "../components/ui/fields/Select";
 import { getContextMenu } from "../App";
@@ -21,15 +24,18 @@ import {UploadDocument, UploadDocumentProps, UploadImage, UploadImageProps} from
 export interface ComponentFormFieldsMap {
 //    label: FieldFactory<Omit<LabelProps, 'name' | 'onChange'>>;
     string: FieldFactory<Omit<InputProps, 'name' | 'onChange'>>;
-    email: FieldFactory<Omit<InputProps, 'name' | 'onChange'>>;
     number: FieldFactory<Omit<InputProps, 'name' | 'onChange'>>;
-    date: FieldFactory<Omit<InputProps, 'name' | 'onChange'>>;          //da mettere filter: contrast(0.5) vedere su tema chiaro
-    time: FieldFactory<Omit<InputProps, 'name' | 'onChange'>>;          //da mettere filter: contrast(0.5) vedere su tema chiaro
-    datetime: FieldFactory<Omit<InputProps, 'name' | 'onChange'>>;      //da mettere filter: contrast(0.5) vedere su tema chiaro
+    email: FieldFactory<Omit<InputProps, 'name' | 'onChange'>>;
+    password: FieldFactory<Omit<InputProps, 'name' | 'onChange'>>;
+    color: FieldFactory<Omit<InputProps, 'name' | 'onChange'>>;
+    date: FieldFactory<Omit<InputProps, 'name' | 'onChange'>>;         
+    time: FieldFactory<Omit<InputProps, 'name' | 'onChange'>>;          
+    datetime: FieldFactory<Omit<InputProps, 'name' | 'onChange'>>;  
+    week: FieldFactory<Omit<InputProps, 'name' | 'onChange'>>;  
+    month: FieldFactory<Omit<InputProps, 'name' | 'onChange'>>;  
     textarea: FieldFactory<Omit<TextAreaProps, 'name' | 'onChange'>>;
-    dateinput: FieldFactory<Omit<DateInputProps, 'name' | 'onChange'>>;     //da togliere
     checkbox: FieldFactory<Omit<CheckboxProps, 'name' | 'onChange'>>;
-    switch: FieldFactory<Omit<SwitchInputProps, 'name' | 'onChange'>>;      //da fondere con checkbox
+    switch: FieldFactory<Omit<CheckboxProps, 'name' | 'onChange'>>;      
 //    listgroup: FieldFactory<Omit<ListGroupProps, 'name' | 'onChange'>>;
     select: FieldFactory<Omit<SelectProps, 'name' | 'onChange'>>;
     autocomplete: FieldFactory<Omit<SelectProps, 'name' | 'onChange'>>;
@@ -55,6 +61,14 @@ const componentFormFields: ComponentFormFieldsMap = {
             renderForm: (key) => <String name={key} label={label ?? key} {...rest} />
         }
     },
+    number: (props = {}) => {
+        const { value, label, ...rest } = props;
+        return {
+            __props: props,
+            getDefaults: (key) => ({[key]: value}),
+            renderForm: (key) => <Number name={key} label={label ?? key} {...rest} />
+        }
+    },
     email: (props = {}) => {
         const { value, label, ...rest } = props;
         return {
@@ -63,12 +77,20 @@ const componentFormFields: ComponentFormFieldsMap = {
             renderForm: (key) => <Email name={key} label={label ?? key} {...rest} />
         }
     },
-    number: (props = {}) => {
+    password: (props = {}) => {
         const { value, label, ...rest } = props;
         return {
             __props: props,
             getDefaults: (key) => ({[key]: value}),
-            renderForm: (key) => <Number name={key} label={label ?? key} {...rest} />
+            renderForm: (key) => <Password name={key} label={label ?? key} {...rest} />
+        }
+    },
+    color: (props = {}) => {
+        const { value, label, ...rest } = props;
+        return {
+            __props: props,
+            getDefaults: (key) => ({[key]: value}),
+            renderForm: (key) => <Color name={key} label={label ?? key} {...rest} />
         }
     },
     date: (props = {}) => {
@@ -95,20 +117,28 @@ const componentFormFields: ComponentFormFieldsMap = {
             renderForm: (key) => <DateTime name={key} label={label ?? key} {...rest} />
         }
     },
+    week: (props = {}) => {
+        const { value, label, ...rest } = props;
+        return {
+            __props: props,
+            getDefaults: (key) => ({ [key]: value }),
+            renderForm: (key) => <Week name={key} label={label ?? key} {...rest} />
+        }
+    },
+    month: (props = {}) => {
+        const { value, label, ...rest } = props;
+        return {
+            __props: props,
+            getDefaults: (key) => ({ [key]: value }),
+            renderForm: (key) => <Month name={key} label={label ?? key} {...rest} />
+        }
+    },
     textarea: (props = {}) => {
         const { value, label, ...rest } = props;
         return {
             __props: props,
             getDefaults: (key) => ({[key]: value}),
             renderForm: (key) => <TextArea name={key} label={label ?? key} {...rest} />
-        }
-    },
-    dateinput: (props = {}) => {
-        const { value, label, ...rest } = props;
-        return {
-            __props: props,
-            getDefaults: (key) => ({[key]: value}),
-            renderForm: (key) => <DateInput name={key} label={label ?? key} {...rest} />
         }
     },
     checkbox: (props = {}) => {
@@ -124,7 +154,7 @@ const componentFormFields: ComponentFormFieldsMap = {
         return {
             __props: props,
             getDefaults: (key) => ({[key]: value}),
-            renderForm: (key) => <SwitchInput name={key} label={label ?? key} {...rest} />
+            renderForm: (key) => <Switch name={key} label={label ?? key} {...rest} />
         }
     },
     select: (props = {}) => {

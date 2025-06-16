@@ -153,13 +153,12 @@ const AssistantAI = ({
         }
 
         return (
-            <ListGroup
-                items={allResponses.map(response => {
+            <ListGroup onClick={handleResponse}>
+                {allResponses.map(response => {
                     const firstValue = Object.values(response).find(value => typeof value === 'string');
                     return firstValue ?? '[Nessun valore]';
                 })}
-                onClick={(e) => handleResponse(e)}
-            />
+            </ListGroup>
         );
     };
 
