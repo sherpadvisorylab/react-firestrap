@@ -3,6 +3,7 @@ import {Link} from "react-router-dom";
 import {useTheme} from "../../Theme";
 import {Wrapper} from "../ui/GridSystem";
 import Badge from "../ui/Badge";
+import Menu from './Menu';
 
 interface DropdownTogglerProps {
     icon?: string;
@@ -22,7 +23,6 @@ interface DropdownProps {
     header?: React.ReactNode;
     footer?: React.ReactNode;
     keepDropdownOpen?: boolean;
-    height?: string | number;
     wrapClass?: string;
     className?: string;
     buttonClass?: string;
@@ -35,17 +35,17 @@ interface DropdownProps {
 interface DropdownButtonProps {
     children: React.ReactNode;
     badge?: DropdownBadgeProps;
-    url?: string;
     display?: "static" | "dynamic";
     className?: string;
     badgeClass?: string;
 }
 
-interface DropdownLinkProps {
+interface DropdownItemProps {
     url?: string;
     onClick?: React.MouseEventHandler<HTMLAnchorElement | HTMLButtonElement>;
     className?: string;
     children: React.ReactNode;
+    icon?: string;
 }
 interface DropdownHeaderProps {
     children: React.ReactNode;
@@ -62,7 +62,6 @@ export const Dropdown = ({
                              header             = undefined,
                              footer             = undefined,
                              keepDropdownOpen   = false,
-                             height             = "auto",
                              wrapClass          = undefined,
                              className          = undefined,
                              buttonClass        = undefined,
@@ -84,10 +83,10 @@ export const Dropdown = ({
 
     const Button = <DropdownButton className={buttonClass} badge={badge} badgeClass={badgeClass}>
         {isDropdownToggler(toggleButton)
-            ? <span className={theme.Dropdown.buttonClass}>
+            ? <>
                 {toggleButton.icon && <i className={theme.getIcon(toggleButton.icon)}></i>}
                 {toggleButton.text}
-            </span>
+            </>
             : toggleButton
         }
     </DropdownButton>
@@ -99,7 +98,6 @@ export const Dropdown = ({
                 {Button}
                 <div className={"dropdown-menu dropdown-menu-end " + (menuClass || theme.Dropdown.menuClass)}
                      onClick={(e) => keepDropdownOpen && e.stopPropagation()}
-                     style={{height: height}}
                 >
                     {header && <div className={headerClass || theme.Dropdown.headerClass}>
                         {header}
@@ -120,7 +118,6 @@ export const Dropdown = ({
 export const DropdownButton = ({
                                    children,
                                    badge        = undefined,
-                                   url          = undefined,
                                    display      = "static",
                                    className    = undefined,
                                    badgeClass   = undefined
@@ -134,20 +131,18 @@ export const DropdownButton = ({
                 : { content: badge, type: "info" as const }
             : undefined;
 
-    console.log("BADGE", dropdownBadge);
-
     return (
-        <a
-            href={url || "#"}
+        <div
             data-bs-toggle="dropdown"
             data-bs-display={display}
-            className={className}
+            className={className || theme.Dropdown.buttonClass}
+            style={{cursor: "pointer"}}
         >
             {children}
             {dropdownBadge && <Badge className={badgeClass || theme.Dropdown.badgeClass} type={dropdownBadge.type}>
                 {dropdownBadge.content}
             </Badge>}
-        </a>
+        </div>
     );
 };
 
@@ -155,21 +150,33 @@ export const DropdownItem = ({
                                  children,
                                  url        = undefined,
                                  onClick    = undefined,
+                                 icon       = undefined,
                                  className  = undefined
-}: DropdownLinkProps) => {
+}: DropdownItemProps) => {
     const theme = useTheme("dropdown");
+    const item = icon 
+        ? <>
+            <span className={"me-1"}>
+                <i className={theme.getIcon(icon)}></i>
+            </span>
+            <span className={"flex-column"}>
+                {children}
+            </span>
+        </> 
+        : children;
+
     return (
         url
             ? <Link to={url || "#"}
                     className={"dropdown-item " + (className || theme.Dropdown.menuItemClass)}
                     onClick={onClick}
             >
-                {children}
+                {item}
             </Link>
             : <button onClick={onClick}
-                      className={"dropdown-item " + (className)}
+                      className={"dropdown-item " + (className || theme.Dropdown.menuItemClass)}
             >
-                {children}
+                {item}
             </button>
     );
 };
@@ -186,4 +193,40 @@ export const DropdownHeader = ({children, className}: DropdownHeaderProps) => {
 export const DropdownDivider = ({className}: DropdownDividerProps) => {
     const theme = useTheme("dropdown");
     return <div className={"dropdown-divider " + (className || theme.Dropdown.menuDividerClass)} />;
+}
+
+interface DropdownMenuProps {
+    context: string;
+    Type?: 'ul' | 'ol';
+    badges?: Record<string, any>;
+    pre?: React.ReactNode;
+    post?: React.ReactNode;
+}
+
+export const DropdownMenu = ({  
+    context,
+    Type          = 'ul',
+    badges        = {},
+    pre           = undefined,
+    post          = undefined
+}: DropdownMenuProps) => {
+    const theme = useTheme("dropdown");
+
+    return <Menu 
+        context={context} 
+        Type={Type} 
+        badges={badges} 
+        pre={pre} 
+        post={post} 
+        wrapClass={theme.Dropdown.Menu.wrapClass}
+        className={theme.Dropdown.Menu.className}
+        headerClass={theme.Dropdown.Menu.headerClass}
+        itemClass={theme.Dropdown.Menu.itemClass}
+        linkClass={theme.Dropdown.Menu.linkClass}
+        iconClass={theme.Dropdown.Menu.iconClass}
+        textClass={theme.Dropdown.Menu.textClass}
+        badgeClass={theme.Dropdown.Menu.badgeClass}
+        arrowClass={theme.Dropdown.Menu.arrowClass}
+        submenuClass={theme.Dropdown.Menu.submenuClass}
+    />
 }

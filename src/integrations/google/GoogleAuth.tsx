@@ -1,7 +1,6 @@
 import React from "react";
 import {getAuth, GoogleAuthProvider, signInWithCredential, getAdditionalUserInfo, signOut} from 'firebase/auth';
-import {Dropdown, DropdownDivider, DropdownItem} from "../../components/blocks/Dropdown";
-import {useMenu} from "../../App";
+import {Dropdown, DropdownDivider, DropdownItem, DropdownMenu} from "../../components/blocks/Dropdown";
 import {decodeJWT, loadScripts} from "../../libs/utils";
 import {PLACEHOLDER_USER, useTheme} from "../../Theme";
 import {useGlobalVars} from "../../Global";
@@ -41,13 +40,6 @@ declare global {
 }
 
 
-interface ProfileItemProps {
-    label?: string;
-    icon?: string;
-    pre?: React.ReactNode;
-    post?: React.ReactNode;
-}
-
 interface GoogleAuthProps {
     scope: string;
     iconLogout: string;
@@ -67,24 +59,6 @@ const loadScript = () => {
             {src: "https://accounts.google.com/gsi/client", async: true, clean: true}
     ]);
 }
-
-const ProfileItem = ({
-                         label,
-                         icon   = undefined,
-                         pre    = undefined,
-                         post   = undefined
-}: ProfileItemProps) => {
-    const theme = useTheme("button");
-
-    return (
-        <>
-            {pre}
-            {icon && <i className={`${theme.getIcon(icon)}`}/>}
-            {label}
-            {post}
-        </>
-    );
-};
 
 const GoogleAuthFallback = () => (
     <div className="menu-item dropdown dropdown-mobile-full" title="⚠️ Google OAuth2 config missing">
@@ -128,7 +102,6 @@ const GoogleAuth = ({
                         avatarClass = undefined
 }: GoogleAuthProps) => {
     const theme = useTheme("auth");
-    const menuAuth = useMenu("profile");
     const [ user, setUser, removeUser ] = useGlobalVars("user");
     const userProfile = user?.profile || {};
 
@@ -229,7 +202,7 @@ const GoogleAuth = ({
                         className={avatarClass || theme.SignIn.avatarClass}
                     />}
                 >
-                    {!user && <div>
+                    {!user && <>
                         <DropdownItem key={"g_id_signin"}>
                             <div className="g_id_signin"
                                  data-type="standard"
@@ -241,29 +214,16 @@ const GoogleAuth = ({
                             </div>
                         </DropdownItem>
                         <DropdownDivider />
-                    </div>}
+                    </>}
                     <TenantMenu />
-                    <Menu context={"profile"}
-                        linkClass={"dropdown-item"}
-                    />
-                    {menuAuth.map((item) => {
-                        return (item.path
-                                ? <DropdownItem key={item.title} url={item.path}>
-                                    <ProfileItem label={item.title} icon={item.icon} />
-                                </DropdownItem>
-                                : (!item.title || item.title === '---'
-                                        ? <hr key={"---"} />
-                                        : <div key={item.title} className="dropdown-header">{item.title}</div>
-                                )
-                        );
-                    })}
-
-                    {user && <div>
+                    <DropdownMenu context={"profile"} />
+                    
+                    {user && <>
                         <DropdownDivider />
-                        <DropdownItem onClick={handleGoogleSignOut}>
-                            <ProfileItem label={"LOGOUT"} icon={iconLogout}/>
+                        <DropdownItem onClick={handleGoogleSignOut} icon={iconLogout}>
+                            LOGOUT
                         </DropdownItem>
-                    </div>}
+                    </>}
                 </Dropdown>
             </div>}
         </>

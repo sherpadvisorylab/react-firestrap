@@ -4,11 +4,12 @@ import { useTheme } from '../../Theme';
 import { Link } from 'react-router-dom';
 import { Wrapper } from '../ui/GridSystem';
 import Badge, { BadgeProps } from '../ui/Badge';
+import { isInteractiveElement } from '../../libs/utils';
 
 interface MenuProps {
   context: string;
   Type?: 'ul' | 'ol';
-  badges?: { type?: BadgeProps["type"], text: string }[];
+  badges?: Record<string, { type?: BadgeProps["type"], children: string }>;
   pre?: React.ReactNode;
   post?: React.ReactNode;
   wrapClass?: string;
@@ -26,7 +27,7 @@ interface MenuProps {
 const Menu = ({
   context,
   Type          = 'ul',
-  badges        = [],
+  badges        = {},
   pre           = undefined,
   post          = undefined,
   wrapClass     = undefined,
@@ -51,16 +52,16 @@ const Menu = ({
     }, [item]);
 
     const hasChildren = item.children?.length > 0;
-    const id = `${item.title}-${index}`;
+    const key = item.title.toLowerCase();
     const Icon = () => (
-      <span className={iconClass || theme.Menu.iconClass}>
+      <span className={iconClass ?? theme.Menu.iconClass}>
         <i className={theme.getIcon(item.icon)}></i>
       </span>
     );
 
     if (!item.path) {
       return (
-        <li key={index} className={headerClass || theme.Menu.headerClass}>
+        <li key={index} className={headerClass ?? theme.Menu.headerClass}>
           {item.icon && <Icon />}
           {item.title && (/^-+$/.test(item.title) ? <hr className={"m-0"} /> : <span>{item.title}</span>)}
         </li>
@@ -68,32 +69,34 @@ const Menu = ({
     }
 
     return (
-      <li className={`${itemClass || theme.Menu.itemClass} ${item.active ? 'active' : ''}`}>
+      <li className={`${item.active ? 'active ' : ''}${itemClass ?? theme.Menu.itemClass}`}>
         <Link
           to={item.path}
-          className={linkClass || theme.Menu.linkClass}
+          className={linkClass ?? theme.Menu.linkClass}
           {...(hasChildren && {
-            'data-bs-toggle': 'collapse',
-            'data-bs-target': `#${id}`,
+
           })}
-          onClick={() => setIsOpen(prev => !prev)}
+          onClick={(e) => {
+            if (hasChildren && !isInteractiveElement(e, 'a')) {
+              e.preventDefault();
+              setIsOpen(prev => !prev)
+            }
+          }}
         >
-          {pre}
           {item.icon && <Icon />}
-          <span className={textClass || theme.Menu.textClass}>
+          <span className={textClass ?? theme.Menu.textClass}>
             {item.title}
-            {badges.map((badge, i) => (
-              <Badge key={i} type={badge.type} className={badgeClass || theme.Menu.badgeClass}>
-                {badge.text}
-              </Badge>
-            ))}
           </span>
-          {post}
+          {badges[key] && (
+            <Badge type={badges[key].type} className={badgeClass ?? theme.Menu.badgeClass}>
+              {badges[key].children}
+            </Badge>
+          )}
           {hasChildren && <i className={theme.getIcon(isOpen ? 'caret-down' : 'caret-right')}></i>}
         </Link>
         {hasChildren && (
-          <div className={`collapse ${isOpen ? 'show' : ''}`} id={id}>
-            <Type className={submenuClass || theme.Menu.submenuClass}>
+          <div className={`collapse ${isOpen ? 'show' : ''}`}>
+            <Type className={submenuClass ?? theme.Menu.submenuClass}>
               {item.children.map((child: any, idx: number) => (
                 <MenuItem key={idx} item={child} index={idx} />
               ))}
@@ -105,12 +108,14 @@ const Menu = ({
   };
 
   return (
-    <Wrapper className={wrapClass || theme.Menu.wrapClass}>
-      <Type className={className || theme.Menu.className}>
+    <Wrapper className={wrapClass ?? theme.Menu.wrapClass}>
+      {pre}
+      <Type className={className ?? theme.Menu.className}>
         {menu.map((item, index) => (
           <MenuItem key={index} item={item} index={index} />
         ))}
       </Type>
+      {post}
     </Wrapper>
   );
 };

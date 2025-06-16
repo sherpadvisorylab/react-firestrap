@@ -132,7 +132,19 @@ export const theme = {
         menuItemClass: "",
         menuDividerClass: "",
         headerClass: "",
-        footerClass: ""
+        footerClass: "",
+        Menu: {
+            wrapClass: "",
+            className: "list-unstyled",
+            headerClass: "",
+            itemClass: "",
+            linkClass: "dropdown-item",
+            iconClass: "me-1",
+            textClass: "",
+            badgeClass: "",
+            arrowClass: "",
+            submenuClass: "",
+        }
     },
     Notifications: {
         wrapClass: "",

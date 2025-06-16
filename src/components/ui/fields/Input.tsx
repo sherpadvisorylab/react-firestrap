@@ -1,5 +1,5 @@
 import React, {ChangeEvent, useId, useState} from 'react';
-import {isEmpty} from "../../../libs/utils";
+import {isEmpty, isInteractiveElement} from "../../../libs/utils";
 import {Wrapper} from "../GridSystem";
 import { ActionButton, UIProps } from '../../..';
 
@@ -291,8 +291,7 @@ export const ListGroup = ({
                     {onClick && <div
                         key={index}
                         onClick={(e) => {
-                            const target = e.target as HTMLElement;
-                            if (!isLoading && !target.closest('a') && !target.closest('button')) {
+                            if (!isLoading && !isInteractiveElement(e)) {
                                 onClick(e, index);
                             }
                         }}

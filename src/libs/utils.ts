@@ -1,3 +1,4 @@
+import React from 'react';
 import {converter} from "./converter";
 import {getConfig} from "../Config";
 
@@ -321,4 +322,19 @@ export function arraysEqual(a: any[], b: any[]): boolean {
 
 export function sanitizeKey(str: string) : string {
     return str.replace(/[^a-zA-Z0-9-_:.]/g, "_");
+}
+
+/**
+ * Checks if the event target or any of its parent elements is an interactive element
+ * (link, button, input, textarea, or select)
+ * @param e The event to check
+ * @returns true if the target or any parent is an interactive element
+ */
+export function isInteractiveElement(e: Event | React.MouseEvent, exclude?: string): boolean {
+    const target = e.target as HTMLElement;
+    const isInteractive = !!(target.closest('a') || target.closest('button') || target.closest('input') || target.closest('textarea') || target.closest('select'));
+    if (exclude) {
+        return isInteractive && !target.closest(exclude);
+    }
+    return isInteractive;
 }
