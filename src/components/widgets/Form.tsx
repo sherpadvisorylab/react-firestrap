@@ -21,7 +21,7 @@ interface BaseFormProps {
     onInsert?: (record: any) => Promise<void>;
     onUpdate?: (record: any) => Promise<void>;
     onDelete?: (record: any) => Promise<void>;
-    onFinally?: () => Promise<void>;
+    onFinally?: (record: any, action: 'create' | 'update' | 'delete') => Promise<void>;
     log?: boolean;
     showNotice?: boolean;
     showBack?: boolean;
@@ -188,7 +188,7 @@ export function FormData({
     const handleFinally = async (action: 'create' | 'update' | 'delete') => {
         log && dataStoragePath && setLog(dataStoragePath, action, record);
 
-        onFinally && await onFinally();
+        onFinally && await onFinally(record, action);
 
         notice({ message: `Record ${action}ed successfully`, type: "success" });
     }
