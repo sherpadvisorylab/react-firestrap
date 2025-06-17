@@ -23,6 +23,7 @@ interface DropdownProps {
     header?: React.ReactNode;
     footer?: React.ReactNode;
     keepDropdownOpen?: boolean;
+    position?: "start" | "end";
     wrapClass?: string;
     className?: string;
     buttonClass?: string;
