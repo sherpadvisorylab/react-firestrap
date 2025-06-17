@@ -37,7 +37,7 @@ interface PreviewImage {
 export interface UploadDocumentProps extends UIProps {
     name: string;
     value?: string;
-    onChange?: (e: { target: { name: string; value: File[] } }) => void;
+    onChange?: (e: { target: { name: string; value: any } }) => void;
     label?: string;
     required?: boolean;
     editable?: boolean;
@@ -402,7 +402,7 @@ export const UploadImage = ({
                             : img
                     )
                 );
-
+                onChange?.({ target: { name: name, value: selectedFiles } });
                 if (fileInputRef.current) fileInputRef.current.value = "";
             };
 

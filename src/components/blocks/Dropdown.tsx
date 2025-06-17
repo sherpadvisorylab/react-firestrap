@@ -63,6 +63,7 @@ export const Dropdown = ({
                              header             = undefined,
                              footer             = undefined,
                              keepDropdownOpen   = false,
+                             position           = undefined,
                              wrapClass          = undefined,
                              className          = undefined,
                              buttonClass        = undefined,
@@ -95,9 +96,9 @@ export const Dropdown = ({
 
     return (
         <Wrapper className={wrapClass || theme.Dropdown.wrapClass}>
-            <div className={"dropdown " + (className || theme.Dropdown.className)}>
+            <div className={`dropdown ${className || theme.Dropdown.className}`}>
                 {Button}
-                <div className={"dropdown-menu dropdown-menu-end " + (menuClass || theme.Dropdown.menuClass)}
+                <div className={`dropdown-menu ${menuClass || theme.Dropdown.menuClass}${position ? ` dropdown-menu-${position}` : ''}`}
                      onClick={(e) => keepDropdownOpen && e.stopPropagation()}
                 >
                     {header && <div className={headerClass || theme.Dropdown.headerClass}>
@@ -166,19 +167,24 @@ export const DropdownItem = ({
         </> 
         : children;
 
-    return (
-        url
-            ? <Link to={url || "#"}
-                    className={"dropdown-item " + (className || theme.Dropdown.menuItemClass)}
-                    onClick={onClick}
-            >
-                {item}
-            </Link>
-            : <button onClick={onClick}
-                      className={"dropdown-item " + (className || theme.Dropdown.menuItemClass)}
-            >
-                {item}
-            </button>
+    return url ? (
+        <Link 
+            to={url}
+            className={`dropdown-item ${className || theme.Dropdown.menuItemClass}`}
+        >
+            {item}
+        </Link>
+    ) : onClick ? (
+        <button 
+            onClick={onClick}
+            className={`dropdown-item ${className || theme.Dropdown.menuItemClass}`}
+        >
+            {item}
+        </button>
+    ) : (
+        <span className={`dropdown-item-text ${className || theme.Dropdown.menuItemClass}`}>
+            {item}
+        </span>
     );
 };
 

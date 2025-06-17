@@ -25,7 +25,7 @@ const AssistantAI = ({
     promptTopic,
     configVariables,
     initialValue,
-    handleOutput,
+    onChange,
     children,
     viewMode = 'list',
     autoStart = false,
@@ -35,7 +35,7 @@ const AssistantAI = ({
     promptTopic: PromptKey;
     configVariables: { lang: string, voice: string, style: string, limit: string };
     initialValue?: string,
-    handleOutput: (e: any) => void;
+    onChange: (e: any) => void;
     children?: React.ReactNode;
     viewMode?: 'list' | 'carousel' | 'tab';
     autoStart?: boolean;
@@ -82,7 +82,7 @@ const AssistantAI = ({
                     outputArray = Array.isArray(response.output) ? response.output : [response.output];
                 } else {
                     setSelectedResponse(response);
-                    handleOutput(response);
+                    onChange(response);
                     setIsLoading(false);
                     return;
                 }
@@ -117,7 +117,7 @@ const AssistantAI = ({
         console.log(cleanedText);
         console.log(selectedElement);
         setSelectedResponse(cleanedText);
-        handleOutput(selectedElement);
+        onChange(selectedElement);
     }
 
     return (
@@ -179,13 +179,12 @@ const AssistantAI = ({
                         })}
                     </Carousel>
                     :
-                    <ListGroup
-                        items={responses.map((response, index) => {
+                    <ListGroup onClick={handleResponse}>
+                        {responses.map((response, index) => {
                             const firstValue = Object.values(response).find(value => typeof value === 'string');
                             return firstValue ?? '[Nessun valore]';
                         })}
-                        onClick={handleResponse}
-                    />
+                    </ListGroup>
             )}
             {selectedResponse && !error &&
                 <ComponentEnhancer

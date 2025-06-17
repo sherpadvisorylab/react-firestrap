@@ -150,6 +150,12 @@ export function FormData({
         const cleaned: RecordProps = {};
 
         if (!record) return cleaned;
+        if (record instanceof File) return {
+            name: record.name,
+            type: record.type,
+            size: record.size,
+            lastModified: record.lastModified
+        };
         for (const [k, v] of Object.entries(record)) {
             if (Array.isArray(v)) {
                 cleaned[k] = v
@@ -161,7 +167,6 @@ export function FormData({
                 cleaned[k] = v;
             }
         }
-
         return cleaned;
     }
 

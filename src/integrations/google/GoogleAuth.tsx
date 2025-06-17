@@ -195,7 +195,9 @@ const GoogleAuth = ({
 
 
             { <div className={className || theme.SignIn.className}>
-                <Dropdown toggleButton={<ImageAvatar
+                <Dropdown 
+                    position="end"
+                    toggleButton={<ImageAvatar
                         src={userProfile.picture}
                         title={userProfile.name}
                         height={36}

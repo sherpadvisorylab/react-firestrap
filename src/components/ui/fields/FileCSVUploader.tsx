@@ -42,7 +42,7 @@ export const FileCSVUploader: React.FC<CsvParserProps> = ({
         onDataLoaded(results.data, file);
         setError(null);
       },
-      error: (err) => {
+      error: (err: any) => {
         setError(err.message);
       },
     });
