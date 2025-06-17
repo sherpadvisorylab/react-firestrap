@@ -62,22 +62,22 @@ export interface ListGroupProps extends UIProps {
 }
 
 export const Input = ({
-                                                name,
-                                                value       = undefined,
-                                                onChange    = undefined,
-                                                placeholder = undefined,
-                                                label       = undefined,
-                                                type        = "text",
-                                                required    = false,
-                                                updatable   = true,
-                                                disabled    = false,
-                                                pre         = undefined,
-                                                post        = undefined,
-                                                feedback    = undefined,
-                                                min         = undefined,
-                                                max         = undefined,
-                                                wrapClass   = undefined,
-                                                className   = undefined
+    name,
+    value = undefined,
+    onChange = undefined,
+    placeholder = undefined,
+    label = undefined,
+    type = "text",
+    required = false,
+    updatable = true,
+    disabled = false,
+    pre = undefined,
+    post = undefined,
+    feedback = undefined,
+    min = undefined,
+    max = undefined,
+    wrapClass = undefined,
+    className = undefined
 }: BaseInputProps) => {
     const id = useId();
     return (
@@ -153,17 +153,17 @@ export const Month = (props: InputProps) => (
 );
 
 export const Checkbox = ({
-                                                      name,
-                                                      value         = false,
-                                                      onChange      = undefined,
-                                                      label         = undefined,
-                                                      title         = undefined,
-                                                      required      = false,
-                                                      valueChecked  = "on",
-                                                      pre           = undefined,
-                                                      post          = undefined,
-                                                      wrapClass     = undefined,
-                                                      className     = undefined
+    name,
+    value = false,
+    onChange = undefined,
+    label = undefined,
+    title = undefined,
+    required = false,
+    valueChecked = "on",
+    pre = undefined,
+    post = undefined,
+    wrapClass = undefined,
+    className = undefined
 }: CheckboxProps) => {
     const id = useId();
     const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -172,7 +172,7 @@ export const Checkbox = ({
         onChange?.(event);
     };
     if (!wrapClass && label) {
-       wrapClass = "checkbox"
+        wrapClass = "checkbox"
     }
     return (
         <Wrapper className={wrapClass}>
@@ -202,70 +202,106 @@ export const Switch = (props: CheckboxProps) => (
 );
 
 export const Label = ({
-                                                label,
-                                                required    = false,
-                                                htmlFor     = undefined,
-                                                className   = undefined
+    label,
+    required    = false,
+    htmlFor     = undefined,
+    className   = undefined
 }: LabelProps) => {
-  return (
-    <label htmlFor={htmlFor} className={`form-label${className ? " " + className : ""}`}>
-      {label} {required && <span className="text-danger">*</span>}
-    </label>
-  );
+    return (
+        <label htmlFor={htmlFor} className={`form-label${className ? " " + className : ""}`}>
+            {label} {required && <span className="text-danger">*</span>}
+        </label>
+    );
 };
 
 export const TextArea = ({
-                                                      name,
-                                                      value         = undefined,
-                                                      onChange      = undefined,
-                                                      placeholder   = undefined,
-                                                      label         = undefined,
-                                                      required      = false,
-                                                      updatable     = true,
-                                                      disabled      = false,
-                                                      rows          = undefined,
-                                                      useRef        = {},
-                                                      pre           = undefined,
-                                                      post          = undefined,
-                                                      feedback      = undefined,
-                                                      className     = undefined,
-                                                      wrapClass     = undefined
+    name,
+    value = undefined,
+    onChange = undefined,
+    placeholder = undefined,
+    label = undefined,
+    required = false,
+    updatable = true,
+    disabled = false,
+    rows = undefined,
+    useRef = {},
+    pre = undefined,
+    post = undefined,
+    feedback = undefined,
+    className = undefined,
+    wrapClass = undefined
 }: TextAreaProps) => {
-  return (
-      <Wrapper className={wrapClass}>
-          {label && <Label required={required} label={label}/>}
-          <Wrapper className={pre || post ? "input-group": ""}>
-              {pre && <span className="input-group-text">{pre}</span>}
-              <textarea
-                  name={name}
-                  className={`form-control${className ? " " + className : ""}`}
-                  ref={(button) => (useRef = button)}
-                  rows={rows}
-                  placeholder={placeholder}
-                  required={required}
-                  disabled={disabled || (!updatable && !isEmpty(value))}
-                  defaultValue={value}
-                  onChange={onChange}
-              />
-              {post && <span className="input-group-text">{post}</span>}
-          </Wrapper>
-          {feedback && <div className="feedback">{feedback}</div>}
-      </Wrapper>
-  );
+    const handleDrop = React.useCallback((e: React.DragEvent<HTMLTextAreaElement>) => {
+        e.preventDefault();
+        
+        const target = e.target as HTMLTextAreaElement;
+        const raw = e.dataTransfer.getData('text/plain').replace(/{{|}}/g, '');
+        const text = ` {${raw}} `;
+        
+        target.focus();
+        
+        // Get caret position using modern or fallback API
+        const caretPosition = (() => {
+            const position = document.caretPositionFromPoint?.(e.clientX, e.clientY) 
+                ?? (document as any).caretRangeFromPoint?.(e.clientX, e.clientY);
+            return position && 'offset' in position ? position.offset : target.value.length;
+        })();
+        
+        // Create new value with inserted text
+        const newValue = (value ?? '').slice(0, caretPosition) + text + (value ?? '').slice(caretPosition);
+        
+        // Trigger onChange if provided
+        onChange?.({ 
+            target: { 
+                value: newValue, 
+                name 
+            } 
+        } as ChangeEvent<HTMLTextAreaElement>);
+        
+        // Set cursor position after inserted text
+        requestAnimationFrame(() => {
+            const newPosition = caretPosition + text.length;
+            target.setSelectionRange(newPosition, newPosition);
+        });
+    }, [name, value, onChange]);
+
+    return (
+        <Wrapper className={wrapClass}>
+            {label && <Label required={required} label={label} />}
+            <Wrapper className={pre || post ? "input-group" : ""}>
+                {pre && <span className="input-group-text">{pre}</span>}
+                <textarea
+                    name={name}
+                    className={`form-control${className ? " " + className : ""}`}
+                    ref={(el) => (useRef = el)}
+                    rows={rows}
+                    placeholder={placeholder}
+                    required={required}
+                    disabled={disabled || (!updatable && !isEmpty(value))}
+                    value={value}
+                    onChange={onChange}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={handleDrop}
+                />
+                {post && <span className="input-group-text">{post}</span>}
+            </Wrapper>
+            {feedback && <div className="feedback">{feedback}</div>}
+        </Wrapper>
+    );
 };
 
 export const ListGroup = ({
-                                                        children,
-                                                        onClick         = undefined,
-                                                        label           = undefined,
-                                                        actives         = undefined,
-                                                        disables        = undefined,
-                                                        loaders         = undefined,
-                                                        pre             = undefined,
-                                                        post            = undefined,
-                                                        wrapClass       = undefined,
-                                                        className       = undefined,
-                                                        itemClass       = undefined
+    children,
+    onClick         = undefined,
+    label           = undefined,
+    actives         = undefined,
+    disables        = undefined,
+    loaders         = undefined,
+    pre             = undefined,
+    post            = undefined,
+    wrapClass       = undefined,
+    className       = undefined,
+    itemClass       = undefined
 }: ListGroupProps) => {
     const fullClassName = `list-group${className ? ' ' + className : ''}`;
 
