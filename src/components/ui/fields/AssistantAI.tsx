@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Label, ListGroup, TextArea } from './Input';
-import { ActionButton } from '../Buttons';
+import { ActionButton, LoadingButton } from '../Buttons';
 import { getPrompt, PROMPTS, setPrompt } from '../../../conf/Prompt';
 import fetchAI from '../../../integrations/ai';
 import ComponentEnhancer from '../../ComponentEnhancer';
@@ -25,7 +25,7 @@ const AssistantAI = ({
     promptTopic,
     configVariables,
     initialValue,
-    handleOutput,
+    onChange,
     children,
     viewMode = 'list',
     autoStart = false,
@@ -35,7 +35,7 @@ const AssistantAI = ({
     promptTopic: PromptKey;
     configVariables: { lang: string, voice: string, style: string, limit: string };
     initialValue?: string,
-    handleOutput: (e: any) => void;
+    onChange: (e: any) => void;
     children?: React.ReactNode;
     viewMode?: 'list' | 'carousel' | 'tab';
     autoStart?: boolean;
@@ -62,7 +62,7 @@ const AssistantAI = ({
         setIsLoading(true);
         setError(null);
         onReset?.();
-        
+
         try {
             const finalPrompt = setPrompt(prompt, configVariables, userInput);
             const response = await fetch(finalPrompt, promptTopic, {
@@ -82,7 +82,7 @@ const AssistantAI = ({
                     outputArray = Array.isArray(response.output) ? response.output : [response.output];
                 } else {
                     setSelectedResponse(response);
-                    handleOutput(response);
+                    onChange(response);
                     setIsLoading(false);
                     return;
                 }
@@ -117,7 +117,7 @@ const AssistantAI = ({
         console.log(cleanedText);
         console.log(selectedElement);
         setSelectedResponse(cleanedText);
-        handleOutput(selectedElement);
+        onChange(selectedElement);
     }
 
     return (
@@ -138,7 +138,7 @@ const AssistantAI = ({
                 label={label}
                 value={initialValue ?? userInput}
                 onChange={(e) => setUserInput(e.target.value)}
-                post={<ActionButton
+                post={<LoadingButton
                     icon='robot'
                     onClick={handleInput}
                     disabled={userInput ? false : true}
@@ -180,12 +180,14 @@ const AssistantAI = ({
                     </Carousel>
                     :
                     <ListGroup
-                        items={responses.map((response, index) => {
+                        onClick={handleResponse}
+                    >
+                        {responses.map((response) => {
                             const firstValue = Object.values(response).find(value => typeof value === 'string');
                             return firstValue ?? '[Nessun valore]';
                         })}
-                        onClick={handleResponse}
-                    />
+                    </ListGroup>
+                    
             )}
             {selectedResponse && !error &&
                 <ComponentEnhancer

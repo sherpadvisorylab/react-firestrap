@@ -48,10 +48,6 @@ export const FileCSVUploader: React.FC<CsvParserProps> = ({
     });
   };
 
-  useEffect(()=>{
-    console.log(data);
-  }, [data])
-
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] ?? null;
     file && handleFile(file);
