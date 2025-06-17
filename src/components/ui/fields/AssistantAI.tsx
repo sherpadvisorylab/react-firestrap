@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Label, ListGroup, TextArea } from './Input';
-import { ActionButton } from '../Buttons';
+import { ActionButton, LoadingButton } from '../Buttons';
 import { getPrompt, PROMPTS, setPrompt } from '../../../conf/Prompt';
 import fetchAI from '../../../integrations/ai';
 import ComponentEnhancer from '../../ComponentEnhancer';
@@ -62,7 +62,7 @@ const AssistantAI = ({
         setIsLoading(true);
         setError(null);
         onReset?.();
-        
+
         try {
             const finalPrompt = setPrompt(prompt, configVariables, userInput);
             const response = await fetch(finalPrompt, promptTopic, {
@@ -138,7 +138,7 @@ const AssistantAI = ({
                 label={label}
                 value={initialValue ?? userInput}
                 onChange={(e) => setUserInput(e.target.value)}
-                post={<ActionButton
+                post={<LoadingButton
                     icon='robot'
                     onClick={handleInput}
                     disabled={userInput ? false : true}
@@ -179,12 +179,13 @@ const AssistantAI = ({
                         })}
                     </Carousel>
                     :
-                    <ListGroup onClick={handleResponse}>
-                        {responses.map((response, index) => {
+                    <ListGroup
+                        items={responses.map((response, index) => {
                             const firstValue = Object.values(response).find(value => typeof value === 'string');
                             return firstValue ?? '[Nessun valore]';
                         })}
-                    </ListGroup>
+                        onClick={handleResponse}
+                    />
             )}
             {selectedResponse && !error &&
                 <ComponentEnhancer
