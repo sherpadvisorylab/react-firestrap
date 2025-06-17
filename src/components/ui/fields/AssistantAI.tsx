@@ -179,13 +179,12 @@ const AssistantAI = ({
                         })}
                     </Carousel>
                     :
-                    <ListGroup
-                        items={responses.map((response, index) => {
+                    <ListGroup onClick={handleResponse}>
+                        {responses.map((response, index) => {
                             const firstValue = Object.values(response).find(value => typeof value === 'string');
                             return firstValue ?? '[Nessun valore]';
                         })}
-                        onClick={handleResponse}
-                    />
+                    </ListGroup>
             )}
             {selectedResponse && !error &&
                 <ComponentEnhancer

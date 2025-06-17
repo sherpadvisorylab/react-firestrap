@@ -9,7 +9,7 @@ const aspectRatios: Record<string, number> = {
     "4:3": 4 / 3,
 };
 
-interface CropData {
+export interface CropData {
     scale: string;
     top: number;
     left: number;
@@ -17,21 +17,24 @@ interface CropData {
     height: number;
 }
 
-type ImageData = {
+export type ImageData = {
     fileName: string;
     url: string;
 };
 
-interface PreviewImage {
-    original: ImageData;
+interface ImageFile {
+    fileName: string;
+    size: number;
+    type: string;
+    progress: number;
+    url: string;
     crops: Record<string, ImageData>;
     cropData?: Record<string, CropData>;
-    progress: number;
 }
 
 type ImageBounds = { width: number; height: number; offsetX: number; offsetY: number };
 
-export const CropImage = forwardRef(({img} : { img: PreviewImage }, ref) => {
+export const CropImage = forwardRef(({img} : { img: ImageFile }, ref) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const imgRefs = useRef<Record<string, HTMLImageElement | null>>({});
     const [imageBoundsMap, setImageBoundsMap] = useState<Record<string, ImageBounds>>({});
@@ -67,7 +70,7 @@ export const CropImage = forwardRef(({img} : { img: PreviewImage }, ref) => {
 
                 const crop = {
                     fileName: fileNames[aspect],
-                    url: canvas.toDataURL("image/jpeg")
+                    url: canvas.toDataURL("image/jpeg"),
                 };
                 crops[aspect] = crop;
                 cropDetails[aspect] = data;
@@ -79,7 +82,7 @@ export const CropImage = forwardRef(({img} : { img: PreviewImage }, ref) => {
 
     const [selectedAspects, setSelectedAspects] = useState<string[]>(() => Object.keys(img.cropData ?? aspectRatios).filter(k => k !== "original"));
 
-    const [originalFileName, setOriginalFileName] = useState<string>(img.original.fileName)
+    const [originalFileName, setOriginalFileName] = useState<string>(img.fileName)
     const [fileNames, setFileNames] = useState<Record<string, string>>(
         Object.fromEntries(
             Object.entries(img.crops).map(([scale, data]) => [scale, data.fileName])
@@ -196,7 +199,7 @@ export const CropImage = forwardRef(({img} : { img: PreviewImage }, ref) => {
     useEffect(() => {
         setCropData(prev => Object.fromEntries(selectedAspects.map(a => [a, prev[a]])));
         setFileNames(prev => Object.fromEntries(selectedAspects.map(a => [a, prev[a] ?? a])));
-    }, [img.original.url, selectedAspects]);
+    }, [img.url, selectedAspects]);
 
     const handleMouseDown = (e: React.MouseEvent, scale: string, type: "move" | "resize") => {
         e.stopPropagation();
@@ -282,12 +285,12 @@ export const CropImage = forwardRef(({img} : { img: PreviewImage }, ref) => {
                 <h6>Original Image</h6>
                 <ImageEditorItem
                     img={{
-                        src: img.original.url,
+                        src: img.url,
                         alt: 'Original Image'
                     }}
                     file={{
                         value: originalFileName,
-                        originalFileName: img.original.fileName,
+                        originalFileName: img.fileName,
                         onChange: newName => setOriginalFileName(newName),
                     }}
                 />
@@ -310,7 +313,7 @@ export const CropImage = forwardRef(({img} : { img: PreviewImage }, ref) => {
                         {selectedAspects.includes(scale) && (
                             <ImageEditorItem
                                 img={{
-                                    src: img.original.url,
+                                    src: img.url,
                                     alt: `Crop ${scale}`,
                                     ref: el => imgRefs.current[scale] = el,
                                     onLoad: (e) => handleLoad(e, scale),
@@ -324,7 +327,7 @@ export const CropImage = forwardRef(({img} : { img: PreviewImage }, ref) => {
                                 }}
                                 file={{
                                     value: fileNames[scale],
-                                    originalFileName: img.original.fileName,
+                                    originalFileName: img.fileName,
                                     scale: scale,
                                     onChange: newName => setFileNames(prev => ({ ...prev, [scale]: newName })),
                                     label: `Nome file per ${scale}`
