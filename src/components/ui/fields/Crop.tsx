@@ -1,20 +1,24 @@
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import Card from "../Card";
 import { String, Switch } from "./Input";
+import { FileProps } from "./Upload";
 
 
-const aspectRatios: Record<string, number> = {
+const scales: Record<string, number> = {
     "1:1": 1 / 1,
     "3:4": 3 / 4,
     "4:3": 4 / 3,
 };
 
-export interface CropData {
+export interface CropProps {
+    fileName: string;
     scale: string;
     top: number;
     left: number;
     width: number;
     height: number;
+ 
+    base64?: string;
 }
 
 export type ImageData = {
@@ -22,19 +26,14 @@ export type ImageData = {
     url: string;
 };
 
-interface ImageFile {
-    fileName: string;
-    size: number;
-    type: string;
-    progress: number;
-    url: string;
-    crops: Record<string, ImageData>;
-    cropData?: Record<string, CropData>;
+interface ImageProps extends FileProps {
+    variants: Record<string, CropProps>;
 }
+
 
 type ImageBounds = { width: number; height: number; offsetX: number; offsetY: number };
 
-export const CropImage = forwardRef(({img} : { img: ImageFile }, ref) => {
+export const CropImage = forwardRef(({img, title} : { img: ImageProps, title?: string }, ref) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const imgRefs = useRef<Record<string, HTMLImageElement | null>>({});
     const [imageBoundsMap, setImageBoundsMap] = useState<Record<string, ImageBounds>>({});
@@ -44,106 +43,91 @@ export const CropImage = forwardRef(({img} : { img: ImageFile }, ref) => {
             const canvas = canvasRef.current;
             const ctx = canvas?.getContext("2d");
             if (!canvas || !ctx) return;
+            
+            const variants: Record<string, CropProps> = {};
+            for (const scale of selectedScales) {
+                const currentImage = imgRefs.current[scale];
+                const bounds = imageBoundsMap[scale];
+                const data = cropData[scale];
+                if (!currentImage || !bounds || !data) return;
 
-            const crops: Record<string, ImageData> = {};
-            const cropDetails: Record<string, CropData> = {};
-
-            for (const aspect of selectedAspects) {
-                const img = imgRefs.current[aspect];
-                const bounds = imageBoundsMap[aspect];
-                const data = cropData[aspect];
-                if (!img || !bounds || !data) return;
-
-                const scale = img.naturalWidth / bounds.width;
+                const delta = currentImage.naturalWidth / bounds.width;
                 const { top, left, width, height } = data;
                 canvas.width = width;
                 canvas.height = height;
 
                 ctx.clearRect(0, 0, width, height);
                 ctx.drawImage(
-                    img,
-                    (left - bounds.offsetX) * scale,
-                    (top - bounds.offsetY) * scale,
-                    width * scale,
-                    height * scale,
+                    currentImage,
+                    (left - bounds.offsetX) * delta,
+                    (top - bounds.offsetY) * delta,
+                    width * delta,
+                    height * delta,
                     0, 0, width, height);
 
-                const crop = {
-                    fileName: fileNames[aspect],
-                    url: canvas.toDataURL("image/jpeg"),
-                };
-                crops[aspect] = crop;
-                cropDetails[aspect] = data;
+                variants[scale] = {
+                    fileName: cropData[scale].fileName,
+                    scale,
+                    top,
+                    left,
+                    width,
+                    height,
+                    base64: canvas.toDataURL("image/jpeg"),
+                }
             }
 
-            return { originalFileName, crops, cropDetails };
+            return { fileName: originalFileName, variants };
         }
     }));
 
-    const [selectedAspects, setSelectedAspects] = useState<string[]>(() => Object.keys(img.cropData ?? aspectRatios).filter(k => k !== "original"));
+    const [selectedScales, setSelectedScales] = useState<string[]>(() => Object.keys(img.variants ?? scales).filter(k => k !== "original"));
 
     const [originalFileName, setOriginalFileName] = useState<string>(img.fileName)
-    const [fileNames, setFileNames] = useState<Record<string, string>>(
-        Object.fromEntries(
-            Object.entries(img.crops).map(([scale, data]) => [scale, data.fileName])
-        )
-    );
 
-    const [cropData, setCropData] = useState<Record<string, CropData>>(() =>
-        Object.fromEntries(
-            Object.keys(aspectRatios).map(scale => [
-                scale,
-                img.cropData?.[scale] ?? {
-                    scale,
-                    top: 50,
-                    left: 50,
-                    width: 100,
-                    height: 100
-                },
-            ])
-        )
-    );
+    const [cropData, setCropData] = useState<Record<string, CropProps>>(img.variants ?? {});
 
-    const [dragging, setDragging] = useState<{ [aspect: string]: boolean }>({});
-    const [resizing, setResizing] = useState<{ [aspect: string]: boolean }>({});
-    const [dragOffset, setDragOffset] = useState<{ [aspect: string]: { x: number, y: number } }>({});
-    const [resizeStart, setResizeStart] = useState<{ [aspect: string]: { mouseX: number, mouseY: number, width: number, height: number } }>({});
+    const [dragging, setDragging] = useState<{ [scale: string]: boolean }>({});
+    const [resizing, setResizing] = useState<{ [scale: string]: boolean }>({});
+    const [dragOffset, setDragOffset] = useState<{ [scale: string]: { x: number, y: number } }>({});
+    const [resizeStart, setResizeStart] = useState<{ [scale: string]: { mouseX: number, mouseY: number, width: number, height: number } }>({});
 
     const handleLoad = (e: React.SyntheticEvent<HTMLImageElement>, scale: string) => {
-        const img = e.currentTarget;
+        const currentImage = e.currentTarget;
 
         setImageBoundsMap(prev => ({
             ...prev,
-            [scale]: { width: img.width, height: img.height, offsetX: 0, offsetY: 0 }
+            [scale]: { width: currentImage.width, height: currentImage.height, offsetX: 0, offsetY: 0 }
         }));
 
         setCropData(prev => {
             if (prev[scale]) return prev; 
 
-            const ratio = aspectRatios[scale];
-            const maxWidth = Math.min(img.width, img.height * ratio);
-            const maxHeight = Math.min(img.height, img.width / ratio);
+            const ratio = scales[scale];
+            const maxWidth = Math.min(currentImage.width, currentImage.height * ratio);
+            const maxHeight = Math.min(currentImage.height, currentImage.width / ratio);
 
             return {
                 ...prev,
                 [scale]: {
+                    fileName: img.fileName,
                     scale,
-                    top: (img.height - maxHeight) / 2,
-                    left: (img.width - maxWidth) / 2,
+                    top: (currentImage.height - maxHeight) / 2,
+                    left: (currentImage.width - maxWidth) / 2,
                     width: maxWidth,
                     height: maxHeight,
+                    base64: ''
                 }
             };
         });
     };
 
-    const calculateCropForAspect = (
+    const calculateCropByScale = (
         scale: string,
-        img: HTMLImageElement,
-        cropDataState: Record<string, CropData>
-    ): CropData | null => {
-        const { width, height } = img.getBoundingClientRect();
-        const ratio = aspectRatios[scale];
+        image: HTMLImageElement,
+        cropDataState: Record<string, CropProps>
+    ): CropProps | null => {
+        const { width, height } = image.getBoundingClientRect();
+        const ratio = scales[scale];
         const crop = cropDataState[scale];
         if (!crop) return null;
 
@@ -169,10 +153,10 @@ export const CropImage = forwardRef(({img} : { img: ImageFile }, ref) => {
             setCropData(prevCropData => {
                 const newCropData = { ...prevCropData };
                 Object.keys(imageBoundsMap).forEach(scale => {
-                    const img = imgRefs.current[scale];
-                    if (!img) return;
+                    const currentImage = imgRefs.current[scale];
+                    if (!currentImage) return;
 
-                    const updatedCrop = calculateCropForAspect(scale, img, newCropData);
+                    const updatedCrop = calculateCropByScale(scale, currentImage, newCropData);
                     if (updatedCrop) {
                         newCropData[scale] = updatedCrop;
                     }
@@ -181,10 +165,10 @@ export const CropImage = forwardRef(({img} : { img: ImageFile }, ref) => {
             });
 
             Object.keys(imageBoundsMap).forEach(scale => {
-                const img = imgRefs.current[scale];
-                if (!img) return;
+                const currentImage = imgRefs.current[scale];
+                if (!currentImage) return;
 
-                const { width, height } = img.getBoundingClientRect();
+                const { width, height } = currentImage.getBoundingClientRect();
                 setImageBoundsMap(prev => ({
                     ...prev,
                     [scale]: { width, height, offsetX: 0, offsetY: 0 }
@@ -196,10 +180,9 @@ export const CropImage = forwardRef(({img} : { img: ImageFile }, ref) => {
         return () => window.removeEventListener('resize', handleResize);
     }, [imageBoundsMap]);
 
-    useEffect(() => {
-        setCropData(prev => Object.fromEntries(selectedAspects.map(a => [a, prev[a]])));
-        setFileNames(prev => Object.fromEntries(selectedAspects.map(a => [a, prev[a] ?? a])));
-    }, [img.url, selectedAspects]);
+    /*useEffect(() => {
+        setCropData(prev => Object.fromEntries(selectedScales.map(a => [a, prev[a]])));
+    }, [img.url, selectedScales]);*/
 
     const handleMouseDown = (e: React.MouseEvent, scale: string, type: "move" | "resize") => {
         e.stopPropagation();
@@ -229,12 +212,12 @@ export const CropImage = forwardRef(({img} : { img: ImageFile }, ref) => {
     };
 
     const handleMouseMove = (e: React.MouseEvent) => {
-        selectedAspects.forEach(scale => {
+        selectedScales.forEach(scale => {
             const bounds = imageBoundsMap[scale];
             const crop = cropData[scale];
             const offset = dragOffset[scale];
             const start = resizeStart[scale];
-            const ratio = aspectRatios[scale];
+            const ratio = scales[scale];
             if (!bounds || !crop) return;
 
             if (dragging[scale] && offset) {
@@ -277,10 +260,10 @@ export const CropImage = forwardRef(({img} : { img: ImageFile }, ref) => {
         setDragging({});
         setResizing({});
     };
-
+    console.log(cropData, "ffffffffffffffffffffffffffffffff");
     return (
         <div onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp}>
-            <h3>Crop Image</h3>
+            {title && <h3>{title}</h3>}
             <div className="mb-2">
                 <h6>Original Image</h6>
                 <ImageEditorItem
@@ -290,27 +273,26 @@ export const CropImage = forwardRef(({img} : { img: ImageFile }, ref) => {
                     }}
                     file={{
                         value: originalFileName,
-                        originalFileName: img.fileName,
-                        onChange: newName => setOriginalFileName(newName),
+                        onChange: setOriginalFileName,
                     }}
                 />
             </div>
             <div className="mb-2">
-                {Object.keys(aspectRatios).map((scale) => (
+                {Object.keys(scales).map((scale) => (
                     <Card key={scale}>
                         <Switch
                             name={scale}
                             label={scale}
-                            value={selectedAspects.includes(scale)}
+                            value={selectedScales.includes(scale)}
                             onChange={(e) => {
-                                setSelectedAspects(prev =>
+                                setSelectedScales(prev =>
                                     e.target.checked
                                         ? [...prev, scale]
                                         : prev.filter(a => a !== scale)
                                 );
                             }}
                         />
-                        {selectedAspects.includes(scale) && (
+                        {selectedScales.includes(scale) && (
                             <ImageEditorItem
                                 img={{
                                     src: img.url,
@@ -326,10 +308,9 @@ export const CropImage = forwardRef(({img} : { img: ImageFile }, ref) => {
                                     )
                                 }}
                                 file={{
-                                    value: fileNames[scale],
-                                    originalFileName: img.fileName,
+                                    value: cropData[scale]?.fileName ?? img.fileName,
                                     scale: scale,
-                                    onChange: newName => setFileNames(prev => ({ ...prev, [scale]: newName })),
+                                    onChange: fileName => setCropData(prev => ({ ...prev, [scale]: { ...prev[scale], fileName } })),
                                     label: `Nome file per ${scale}`
                                 }}
                             />
@@ -350,7 +331,7 @@ const CropBox = ({
     scale,
     handleMouseDown
 }: {
-    cropData: Record<string, CropData>;
+    cropData: Record<string, CropProps>;
     scale: string;
     handleMouseDown: (e: React.MouseEvent, scale: string, type: 'move' | 'resize') => void;
 }) => {
@@ -398,7 +379,6 @@ interface ImageEditorItemProps {
     };
     file: {
         value: string;
-        originalFileName: string;
         scale?: string;
         onChange: (newName: string) => void;
         label?: string;
@@ -431,7 +411,6 @@ const ImageEditorItem = ({
 interface FileNameEditorProps {
     value: string;
     onChange: (newName: string) => void;
-    originalFileName?: string;
     scale?: string;
     label?: string;
 }
@@ -439,14 +418,11 @@ interface FileNameEditorProps {
 export const FileNameEditor = ({
     value,
     onChange,
-    originalFileName = undefined,
+    label = undefined,
     scale = undefined,
-    label = "File name",
 }: FileNameEditorProps) => {
 
-    const ext = originalFileName?.split('.').pop()
-        ?? value?.split('.').pop()
-        ?? "";
+    const ext = value?.split('.').pop() ?? "";
 
     const scaleSuffix = scale && `_${scale.replace(":", "x")}`;
 
@@ -458,7 +434,7 @@ export const FileNameEditor = ({
             : base;
     };
 
-    const inputValue = stripFileName(value || originalFileName || "");
+    const inputValue = stripFileName(value || "");
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const baseName = e.target.value.trim();

@@ -64,12 +64,12 @@ const ModalDefault = ({
 }: ModalProps) => {
     const theme = useTheme("modal");
 
-    const [fullScreenClass, setFullScreenClass] = useState(size === "fullscreen" ? " modal-fullscreen" : "");
+    const [sizeClass, setSizeClass] = useState(size);
 
     const positions = {
         center: {
             coverClass: `modal modal-cover fade show d-block`,
-            dialogClass: `modal-dialog modal-${size || theme.Modal.size} ${fullScreenClass} ${wrapClass || theme.Modal.wrapClass}`,
+            dialogClass: `modal-dialog modal-${sizeClass || theme.Modal.size} ${wrapClass || theme.Modal.wrapClass}`,
             contentClass: `modal-content ${className || theme.Modal.className}`,
             headerClass: `modal-header ${headerClass || theme.Modal.headerClass}`,
             titleClass: `modal-title ${titleClass || theme.Modal.titleClass}`,
@@ -124,7 +124,7 @@ const ModalDefault = ({
         }
     }
 
-    const position = positions[fullScreenClass ? "center" : (display || theme.Modal.display) as keyof typeof positions];
+    const position = positions[sizeClass === "fullscreen" ? "center" : (display || theme.Modal.display) as keyof typeof positions];
 
     window.document.body.style.overflow = "hidden";
     const handleClose = () => {
@@ -145,11 +145,11 @@ const ModalDefault = ({
                         </div>
                         {(buttonFullscreen || onClose) && <div className={"ms-auto"}>
                             {buttonFullscreen && <ActionButton
-                                icon={fullScreenClass ? theme.Modal.iconCollapse : theme.Modal.iconExpand}
-                                className={"btn border-0 p-2"}
+                                icon={sizeClass === "fullscreen" ? theme.Modal.iconCollapse : theme.Modal.iconExpand}
+                                className={"border-0 p-2"}
                                 onClick={(e) => {
                                     e.preventDefault();
-                                    setFullScreenClass((prev) => prev === " modal-fullscreen" ? "" : " modal-fullscreen")
+                                    setSizeClass((prev) => prev === "fullscreen" ? size === "fullscreen" ? "lg" : size : "fullscreen")
                                 }}
                             />}
                             {onClose && <LoadingButton

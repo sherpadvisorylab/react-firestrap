@@ -4,102 +4,148 @@ import { ActionButton } from "../Buttons";
 import Badge from "../Badge";
 import Table from "../Table";
 import Percentage from "../Percentage";
-import { CropImage, FileNameEditor, ImageData, CropData } from "./Crop";
+import { CropImage, FileNameEditor } from "./Crop";
 import { Label } from "./Input";
 import { Wrapper } from "../GridSystem";
 import { UIProps } from "../..";
 import { Link } from "react-router-dom";
+import { render2Base64 } from "../../../libs/utils";
 
-interface DocumentFile {
+export interface FileProps {
+    key: string;
     fileName: string;
     size: number;
     type: string;
     progress: number;
     url: string;
+    base64?: string;
+    variants: Record<string, any>;
 } 
 
-interface ImageFile extends DocumentFile {
-    crops: Record<string, ImageData>;
-    cropData?: Record<string, CropData>;
-}
-
-type FileType = DocumentFile | ImageFile;
-
-const useFileUpload = <T extends FileType>(
+const useFileUpload = <T extends FileProps>(
     name: string,
+    value?: any,
     onChange?: (e: { target: { name: string; value: any } }) => void
 ) => {
-    const [files, setFiles] = useState<T[]>([]);
+    const [files, setFiles] = useState<T[]>(value ?? []);
+    const [editingFile, setEditingFile] = useState<T | null>(null);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
-
+    
+    const updateFiles = (newFiles: T[]) => {
+        setFiles(newFiles);
+        onChange?.({ target: { name, value: newFiles} });
+    };
+    
     const updateFileState = (fileName: string, updates: Partial<T>) => {
-        setFiles(prev =>
-            prev.map(f =>
+        setFiles(prev => {
+            const updatedFiles = prev.map(f =>
                 f.fileName === fileName ? { ...f, ...updates } : f
-            )
-        );
+            );
+            onChange?.({ target: { name, value: updatedFiles } });
+            return updatedFiles;
+        });
     };
 
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleSave = (updates: Partial<T>) => {
+        if (!editingFile) return;
+        const updatedFiles = files.map(file =>
+            file.key === editingFile.key ? { ...file, ...updates } : file
+        );
+        updateFiles(updatedFiles);
+        setEditingFile(null);
+    };
+
+    const handleEdit = (index: number) => setEditingFile(files[index]);
+    const handleClose = () => setEditingFile(null);
+
+    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFiles = Array.from(event.target.files || []);
 
-        selectedFiles.forEach(file => {
-            const newFile = {
-                fileName: file.name,
-                size: file.size,
-                type: file.type,
-                progress: 0,
-                url: '',
-                crops: {}, cropData: {} 
-            } as T;
-
-            setFiles(prev => {
-                const existingFileIndex = prev.findIndex(f => f.fileName === file.name);
-                if (existingFileIndex !== -1) {
-                    const newFiles = [...prev];
-                    newFiles[existingFileIndex] = newFile;
-                    return newFiles;
+        setFiles(prev => {
+            const updatedFiles = [...prev];
+            
+            selectedFiles.forEach(file => {
+                const newFile = {
+                    key: file.name,
+                    fileName: file.name,
+                    size: file.size,
+                    type: file.type,
+                    progress: 0,
+                    url: '',
+                    base64: '',
+                    variants: {}
+                } as T;
+                
+                const existingIndex = updatedFiles.findIndex(f => f.key === file.name);
+                if (existingIndex !== -1) {
+                    updatedFiles[existingIndex] = newFile;
                 } else {
-                    return [...prev, newFile];
+                    updatedFiles.push(newFile);
                 }
+
+                // Avvia il caricamento
+                const reader = new FileReader();
+                reader.onprogress = e => {
+                    if (e.lengthComputable) {
+                        const percent = Math.round((e.loaded / e.total) * 100);
+                        setFiles(prev => {
+                            const filesWithProgress = prev.map(f =>
+                                f.fileName === file.name ? { ...f, progress: percent } : f
+                            );
+                            onChange?.({ target: { name, value: filesWithProgress } });
+                            return filesWithProgress;
+                        });
+                    }
+                };
+
+                reader.onloadend = () => {
+                    setFiles(prev => {
+                        const filesWith99 = prev.map(f =>
+                            f.fileName === file.name ? { ...f, progress: 99 } : f
+                        );
+                        onChange?.({ target: { name, value: filesWith99 } });
+                        return filesWith99;
+                    });
+                    setTimeout(() => {
+                        setFiles(prev => {
+                            const finalFiles = prev.map(f =>
+                                f.fileName === file.name
+                                    ? {
+                                        ...f,
+                                        progress: 100,
+                                        url: URL.createObjectURL(file),
+                                        base64: `data:${file.type};base64,${render2Base64(reader.result as ArrayBuffer)}`
+                                    }
+                                    : f
+                            );
+                            onChange?.({ target: { name, value: finalFiles } });
+                            return finalFiles;
+                        });
+                    }, 500);
+                };
+
+                reader.readAsArrayBuffer(file);
             });
-
-            const reader = new FileReader();
-            reader.onprogress = e => {
-                if (e.lengthComputable) {
-                    const percent = Math.round((e.loaded / e.total) * 100);
-                    updateFileState(file.name, { progress: percent } as Partial<T>);
-                }
-            };
-
-            reader.onloadend = () => {
-                updateFileState(file.name, { progress: 99 } as Partial<T>);
-                setTimeout(() => {
-                    updateFileState(file.name, { 
-                        progress: 100, 
-                        url: URL.createObjectURL(file) 
-                    } as Partial<T>);
-                    onChange?.({ target: { name: name, value: files} });
-                }, 500);
-            };
-
-            reader.readAsArrayBuffer(file);
+            
+            return updatedFiles;
         });
-
+        
         if (fileInputRef.current) fileInputRef.current.value = "";
     };
 
-    const onUpload = () => fileInputRef.current?.click();
-
-    const handleRemove = (index: number) => setFiles(prev => prev.filter((_, i) => i !== index));
-
     return {
         files,
-        setFiles,
+        editingFile,
         fileInputRef,
-        handleFileChange,
-        onUpload,
-        handleRemove
+        handleChange,
+        handleUpload: () => fileInputRef.current?.click(),
+        handleRemove: (index: number) => {
+            const updatedFiles = files.filter((_, i) => i !== index);
+            updateFiles(updatedFiles);
+        },
+        handleSave,
+        handleEdit,
+        handleClose
     };
 };
 
@@ -112,6 +158,7 @@ export interface UploadDocumentProps extends UIProps {
     editable?: boolean;
     multiple?: boolean;
     accept?: string;
+    max?: number;
 }
 
 export interface UploadImageProps extends UploadDocumentProps {
@@ -121,7 +168,6 @@ export interface UploadImageProps extends UploadDocumentProps {
 
 interface FileInputProps {
     name: string;
-    elements: DocumentFile[] | ImageFile[];
     fileInputRef: React.RefObject<HTMLInputElement>;
     accept: string;
     onUpload: () => void;
@@ -135,21 +181,16 @@ interface FileInputProps {
     iconClass?: string;
 }
 
-interface EditFileModalProps {
+interface FileEditorProps {
     title: string;
-    file: DocumentFile | ImageFile;
+    file: FileProps;
     type: 'img' | 'document';
-    onSave: (
-        fileName: string,
-        crops?: Record<string, ImageData>,
-        cropDetails?: Record<string, CropData>,
-    ) => void;
-    onClose: () => void;
+    onSave?: (result: { fileName: string; variants: Record<string, any> }) => void;
+    onClose?: () => void;
 }   
 
 const FileInput = ({
     name,
-    elements,
     fileInputRef,
     accept              = "*/*",
     onUpload,
@@ -162,16 +203,15 @@ const FileInput = ({
     width               = undefined,
     iconClass           = undefined
 }: FileInputProps) => {
-    const max = multiple ? 100 : 1;
     return (
         <>
-            {elements.length < max && <ActionButton
+            <ActionButton
                 icon={icon}
                 label={label}
                 onClick={onUpload}
                 iconClass={iconClass}
                 style={{height: height, width: width}}
-            />}
+            />
 
             <input
                 name={name}
@@ -187,32 +227,28 @@ const FileInput = ({
     );
 };
 
-
-/* ------------------------ Modale modifica ---------------------- */
-const EditFileModal = ({
-    title = 'Editor',
+const FileEditor = ({
+    title,
     file,
     type,
-    onSave = () => { },
-    onClose = () => { }
-}: EditFileModalProps) => {
+    onSave = undefined,
+    onClose = undefined
+}: FileEditorProps) => {
     const [fileName, setFileName] = useState(file.fileName);
 
     // Ref per accedere ai metodi esposti dal componente CropImage
     const cropRef = useRef<{
         triggerSave: () => {
-            originalFileName: string;
-            crops: Record<string, ImageData>;
-            cropDetails: Record<string, CropData>;
+            fileName: string;
+            variants: Record<string, any>;
         };
     }>(null);
 
     const handleSave = async () => {
         if (cropRef.current) {
-            const { originalFileName, crops, cropDetails } = cropRef.current.triggerSave();
-            onSave?.(originalFileName, crops, cropDetails);
+            onSave?.(cropRef.current.triggerSave());
         } else {
-            onSave?.(fileName);
+            onSave?.({ fileName, variants: {} });
         }
     };
 
@@ -221,25 +257,28 @@ const EditFileModal = ({
             title={title}
             onSave={handleSave}
             onClose={onClose}
-            size="fullscreen"
+            size={type === 'img' ? "fullscreen" : undefined}
         >
             {type === 'document' &&
                 <FileNameEditor
                     value={fileName}
-                    onChange={setFileName} />}
+                    onChange={setFileName}
+                    label={"File name"}
+                />}
 
             {type === 'img' &&
                 <CropImage
                     ref={cropRef}
-                    img={file as ImageFile}
+                    img={file}
                 />
             }
         </Modal>
     )
 }
+const isUploadable = (files: FileProps[], max: number, multiple: boolean) => {
+    return files.length < max && (multiple || files.length === 0);
+}
 
-
-/* ------------------------ Caricamento documenti ---------------------- */
 export const UploadDocument = ({
     name,
     value       = undefined,
@@ -248,25 +287,14 @@ export const UploadDocument = ({
     required    = false,
     editable    = false,
     multiple    = false,
+    max         = 100,
     accept      = ".pdf,.doc,.docx,.txt,.iso",
     pre         = undefined,
     post        = undefined,
     wrapClass   = undefined,
     className   = undefined,
 }: UploadDocumentProps) => {
-    const [editingIndex, setEditingIndex] = useState<number | null>(null);
-    const { files, setFiles, fileInputRef, handleFileChange, onUpload, handleRemove } = useFileUpload<DocumentFile>(name, onChange);
-
-    const handleFileRename = (newName: string) => {
-        if (editingIndex === null) return;
-
-        const updatedFiles = files.map((file, i) =>
-            i === editingIndex ? { ...file, fileName: newName } : file
-        );
-
-        setFiles(updatedFiles);
-        setEditingIndex(null);
-    };
+    const { files, editingFile, fileInputRef, handleChange, handleUpload, handleRemove, handleSave, handleEdit, handleClose } = useFileUpload<FileProps>(name, value, onChange);
 
     return (
         <Wrapper className={wrapClass}>
@@ -274,20 +302,20 @@ export const UploadDocument = ({
             <div className={className}>
                 <div className="d-flex justify-content-between align-items-center">
                     {label && <Label label={label} required={required} />}
-                    <FileInput
+                    {isUploadable(files, max, multiple) && <FileInput
                         name={name}
-                        elements={files}
                         fileInputRef={fileInputRef}
                         accept={accept}
-                        onUpload={onUpload}
-                        onChange={handleFileChange}
+                        onUpload={handleUpload}
+                        onChange={handleChange}
                         label={"Upload"}
                         icon={"upload"}
                         required={required}
                         multiple={multiple}
-                    />
+                    />}
                 </div>
                 {files.length > 0 && <Table
+                    onClick={(index) => editable && handleEdit(index)}
                     header={[
                         { label: 'Name', key: 'name' },
                         { label: 'Kilobyte', key: 'kilobyte' },
@@ -302,20 +330,19 @@ export const UploadDocument = ({
                         ),
                         actions: (
                             <>
-                                {editable && <ActionButton onClick={() => setEditingIndex(i)} icon='pencil' className="border-0 text-primary" />}
-                                {<ActionButton onClick={() => handleRemove(i)} icon='x' className="border-0 text-primary" />}
+                                {<ActionButton onClick={() => handleRemove(i)} icon='x' className="p-1" />}
                             </>
                         )
                     }))}
                 />}
             </div>
-            {editable && editingIndex !== null && (
-                <EditFileModal
+            {editable && editingFile && (
+                <FileEditor
                     title="Editor Document"
-                    file={files[editingIndex]}
+                    file={editingFile}
                     type="document"
-                    onSave={(result) => handleFileRename(result)}
-                    onClose={() => setEditingIndex(null)}
+                    onSave={handleSave}
+                    onClose={handleClose}
                 />
             )}
             {post}
@@ -332,6 +359,7 @@ export const UploadImage = ({
     multiple        = false,
     accept          = "image/*",
     required        = false,
+    max             = 100,
     previewHeight   = 100,
     previewWidth    = 100,
     pre             = undefined,
@@ -339,32 +367,21 @@ export const UploadImage = ({
     wrapClass       = undefined,
     className       = undefined,
 }: UploadImageProps) => {
-    const [editingIndex, setEditingIndex] = useState<number | null>(null);
-    const { files, setFiles, fileInputRef, handleFileChange, onUpload, handleRemove } = useFileUpload<ImageFile>(name, onChange);
-
-    const handleSave = (
-        fileName: string,
-        crops?: Record<string, ImageData>,
-        cropDetails?: Record<string, CropData>,
-    ) => {
-        if (editingIndex === null) return;
-
-        setFiles(prev => prev.map((img, i) =>
-            i === editingIndex
-                ? {
-                    ...img,
-                    fileName: fileName || img.fileName,
-                    crops: crops ?? {},
-                    cropData: cropDetails ?? {},
-                }
-                : img
-        ));
-
-        onChange?.({ target: { name: name, value: files} });
-        setEditingIndex(null);
-    };
+    const { files, editingFile, fileInputRef, handleChange, handleUpload, handleRemove, handleSave, handleEdit, handleClose } = useFileUpload<FileProps>(name, value, onChange);
 
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
+    const ScaleBadge = ({scales}: {scales: string[]}) => {
+        if (scales.length === 0) return null;
+
+        return <div className="position-absolute bottom-0 start-0 w-100 p-1 d-flex align-items-center justify-content-between">
+            {scales
+                .map((scale) => (
+                    <Badge key={scale}>{scale}</Badge>
+                ))
+            }
+        </div>
+    }
 
     return (
         <Wrapper className={wrapClass}>
@@ -372,7 +389,6 @@ export const UploadImage = ({
             <Wrapper className={className}>
                 {label && <Label label={label} required={required} />}
                 <div className="d-flex gap-2 flex-wrap">
-                    {/* anteprime */}
                     {files.map((img, i) => (
                         <div
                             key={i}
@@ -384,22 +400,14 @@ export const UploadImage = ({
                             {img.progress === 100 ? (
                                 <>
                                     <img
-                                        src={img.url}
+                                        src={img.base64 ?? img.url}
                                         alt={`preview-${i}`}
                                         className="img-thumbnail h-100 w-100"
                                     />
-                                    {editable && Object.keys(img.crops) &&
-                                        <div className="position-absolute bottom-0 start-0 w-100 p-1 d-flex align-items-center justify-content-between">
-                                            {Object.keys(img.crops)
-                                                .map((scale) => (
-                                                    <Badge key={scale}>{scale}</Badge>
-                                                ))
-                                            }
-                                        </div>
-                                    }
+                                    {editable && <ScaleBadge scales={Object.keys(img.variants)} />}
                                     
                                     <Link to={img.url} target="_blank" className="bg-dark opacity-75 position-absolute top-0 start-0 bottom-0 end-0 justify-content-end align-items-start" style={{ display: hoveredIndex === i ? "flex" : "none" }}>
-                                        {editable && <ActionButton onClick={() => setEditingIndex(i)} icon='pencil' className="p-1" />}
+                                        {editable && <ActionButton onClick={() => handleEdit(i)} icon='pencil' className="p-1" />}
                                         {<ActionButton onClick={() => handleRemove(i)} icon='x' className="p-1" />}
                                     </Link>
                                 </>
@@ -409,32 +417,29 @@ export const UploadImage = ({
                         </div>
                     ))}
 
-                    {/* aggiunta immagini */}
-                    <FileInput
+                    {isUploadable(files, max, multiple) && <FileInput
                         name={name}
-                        elements={files}
                         fileInputRef={fileInputRef}
                         accept={accept} 
-                        onUpload={onUpload}
-                        onChange={handleFileChange}
+                        onUpload={handleUpload}
+                        onChange={handleChange}
                         icon={"upload"}
                         required={required}
                         multiple={multiple}
                         height={previewHeight}
                         width={previewWidth}
                         iconClass="fs-1"
-                    />
+                    />}
                 </div>
             </Wrapper>
 
-            {/* modale modifica */}
-            {editable && editingIndex !== null &&
-                <EditFileModal
-                    title="Editor Document"
-                    file={files[editingIndex]}
+            {editable && editingFile &&
+                <FileEditor
+                    title="Editor Image"
+                    file={editingFile}
                     type="img"
-                    onSave={(fileName, crops, cropDetails) => handleSave(fileName, crops, cropDetails)}
-                    onClose={() => setEditingIndex(null)}
+                    onSave={handleSave}
+                    onClose={handleClose}
                 />
             }
             {post}

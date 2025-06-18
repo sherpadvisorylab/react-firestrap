@@ -338,3 +338,12 @@ export function isInteractiveElement(e: Event | React.MouseEvent, exclude?: stri
     }
     return isInteractive;
 }
+
+export const render2Base64 = (arrayBuffer: ArrayBuffer): string => {
+    const bytes = new Uint8Array(arrayBuffer);
+    let binary = '';
+    for (let i = 0; i < bytes.byteLength; i++) {
+        binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+};
