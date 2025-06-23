@@ -9,7 +9,7 @@ import { FormDatabase } from "./widgets/Form";
 type Primitive = string | number | boolean | undefined;
 
 interface FieldAdapter<TProps = any> {
-    getDefaults: (key: string) => Record<string, Primitive>;
+    getDefaults: (key: string) => Record<string, Primitive | any[]>;
     renderForm: (key: string) => React.ReactNode;
     __props: TProps;
 }

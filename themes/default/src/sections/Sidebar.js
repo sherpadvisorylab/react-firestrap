@@ -1,6 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
-import {useMenu, useTheme} from "react-firestrap";
+import {useMenu, useTheme, Menu} from "react-firestrap";
 
 // Props per il pulsante hamburger
 type HamburgerButtonProps = {
@@ -54,47 +53,6 @@ function Sidebar({ id, label = '', position = 'start', background = 'light', opa
         ? { width: "80%"}
         : { minWidth: '20%', overflowY: 'auto' }
 
-
-    const renderMenu = (items: any[]) => {
-        return items.map((item, index) => {
-            if (!item.path && !item.children) {
-                return (
-                    <li className="nav-item" key={index}>
-                        {item.title === "---" ? <hr /> : <label>{item.title}</label>}
-                    </li>
-                );
-            }
-
-            const hasChildren = item.children && item.children.length > 0;
-
-            return (
-                <li key={index} className="nav-item">
-                    <Link
-                        to={item.path || "#"}
-                        className={`nav-link${hasChildren ? " d-flex": ""}${item.active ? " active" : ""}`}
-                        onClick={item.onClick}
-                        data-bs-toggle="collapse"
-                        data-bs-target={`#${"collapse" + index}`}
-                    >
-                        {item.icon && <i className={theme.getIcon(item.icon)}></i>}
-                        <span className={"flex-grow-1 ms-" + (item.icon ? "2" : "4")}>{item.title}</span>
-                        {hasChildren && <i className={theme.getIcon("caret-right")}></i>}
-                    </Link>
-
-                    {/* Sotto-menu */}
-                    {hasChildren && (
-                        <div className="collapse" id={"collapse" + index}>
-                            <ul className="nav flex-column ms-4">
-                                {renderMenu(item.children)}
-                            </ul>
-                        </div>
-                    )}
-                </li>
-            );
-        });
-    };
-
-
     return (
         <aside
             className={className}
@@ -111,11 +69,19 @@ function Sidebar({ id, label = '', position = 'start', background = 'light', opa
             </div>
 
             <div className="offcanvas-body">
-                {menu.length > 0 && (
-                    <ul className={`navbar-nav navbar-${background} flex-column mb-auto`}>
-                        {renderMenu(menu)}
-                    </ul>
-                )}
+                <Menu context='sidebar' badges={{
+                    layouts: {type:'warning', children: <ActionButton icon='plus' className='btn-sm p-0' onClick={() => {
+                        console.log('ciao')
+                    }} />},
+                    pages: {type:'success', children: 'ciao'},
+                    categories: {type:'danger', children: 'ciao'},
+                    helper: {type:'info', children: 'ciao'},
+                    contents: {type:'light', children: 'ciao'},
+                    sections: {type:'dark', children: <>ciao<ActionButton icon='plus' className='btn-sm p-0' onClick={() => {
+                        console.log('ciao')
+                    }} /></>},
+                    menus: {type:'dark', children: 'ciao'},
+                }}/>
             </div>
         </aside>
     );

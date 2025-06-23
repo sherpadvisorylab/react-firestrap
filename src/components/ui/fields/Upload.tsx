@@ -8,8 +8,9 @@ import { CropImage, FileNameEditor } from "./Crop";
 import { Label } from "./Input";
 import { Wrapper } from "../GridSystem";
 import { UIProps } from "../..";
-import { Link } from "react-router-dom";
-import { render2Base64 } from "../../../libs/utils";
+import { base64ToUrl, render2Base64 } from "../../../libs/utils";
+import { PLACEHOLDER_IMAGE } from "../../../Theme";
+import Icon from "../Icon";
 
 export interface FileProps {
     key: string;
@@ -24,39 +25,40 @@ export interface FileProps {
 
 const useFileUpload = <T extends FileProps>(
     name: string,
-    value?: any,
+    value?: Array<T>,
     onChange?: (e: { target: { name: string; value: any } }) => void
 ) => {
     const [files, setFiles] = useState<T[]>(value ?? []);
-    const [editingFile, setEditingFile] = useState<T | null>(null);
+    const [currentFile, setCurrentFile] = useState<T | null>(null);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     
-    const updateFiles = (newFiles: T[]) => {
-        setFiles(newFiles);
-        onChange?.({ target: { name, value: newFiles} });
-    };
-    
-    const updateFileState = (fileName: string, updates: Partial<T>) => {
+    const updateFile = (key: string, updates: Partial<T>) => {
         setFiles(prev => {
             const updatedFiles = prev.map(f =>
-                f.fileName === fileName ? { ...f, ...updates } : f
+                f.key === key ? { ...f, ...updates } : f
             );
             onChange?.({ target: { name, value: updatedFiles } });
             return updatedFiles;
         });
     };
 
-    const handleSave = (updates: Partial<T>) => {
-        if (!editingFile) return;
-        const updatedFiles = files.map(file =>
-            file.key === editingFile.key ? { ...file, ...updates } : file
-        );
-        updateFiles(updatedFiles);
-        setEditingFile(null);
+    const removeFile = (key: string) => {
+        setFiles(prev => {
+            const updatedFiles = prev.filter(f => f.key !== key);
+            onChange?.({ target: { name, value: updatedFiles } });
+            return updatedFiles;
+        });
     };
 
-    const handleEdit = (index: number) => setEditingFile(files[index]);
-    const handleClose = () => setEditingFile(null);
+    const handleSave = (updates: Partial<T>) => {
+        if (!currentFile) return;
+ 
+        updateFile(currentFile.key, updates);
+        setCurrentFile(null);
+    };
+
+    const handleEdit = (index: number) => setCurrentFile(files[index]);
+    const handleClose = () => setCurrentFile(null);
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFiles = Array.from(event.target.files || []);
@@ -71,7 +73,6 @@ const useFileUpload = <T extends FileProps>(
                     size: file.size,
                     type: file.type,
                     progress: 0,
-                    url: '',
                     base64: '',
                     variants: {}
                 } as T;
@@ -83,44 +84,21 @@ const useFileUpload = <T extends FileProps>(
                     updatedFiles.push(newFile);
                 }
 
-                // Avvia il caricamento
                 const reader = new FileReader();
                 reader.onprogress = e => {
                     if (e.lengthComputable) {
                         const percent = Math.round((e.loaded / e.total) * 100);
-                        setFiles(prev => {
-                            const filesWithProgress = prev.map(f =>
-                                f.fileName === file.name ? { ...f, progress: percent } : f
-                            );
-                            onChange?.({ target: { name, value: filesWithProgress } });
-                            return filesWithProgress;
-                        });
+                        updateFile(newFile.key, { progress: percent } as Partial<T>);
                     }
                 };
 
                 reader.onloadend = () => {
-                    setFiles(prev => {
-                        const filesWith99 = prev.map(f =>
-                            f.fileName === file.name ? { ...f, progress: 99 } : f
-                        );
-                        onChange?.({ target: { name, value: filesWith99 } });
-                        return filesWith99;
-                    });
+                    updateFile(newFile.key, { progress: 99 } as Partial<T>);
                     setTimeout(() => {
-                        setFiles(prev => {
-                            const finalFiles = prev.map(f =>
-                                f.fileName === file.name
-                                    ? {
-                                        ...f,
-                                        progress: 100,
-                                        url: URL.createObjectURL(file),
-                                        base64: `data:${file.type};base64,${render2Base64(reader.result as ArrayBuffer)}`
-                                    }
-                                    : f
-                            );
-                            onChange?.({ target: { name, value: finalFiles } });
-                            return finalFiles;
-                        });
+                        updateFile(newFile.key, {
+                            progress: 100,
+                            base64: `data:${file.type};base64,${render2Base64(reader.result as ArrayBuffer)}`
+                        } as Partial<T>);
                     }, 500);
                 };
 
@@ -135,13 +113,12 @@ const useFileUpload = <T extends FileProps>(
 
     return {
         files,
-        editingFile,
+        currentFile,
         fileInputRef,
         handleChange,
         handleUpload: () => fileInputRef.current?.click(),
-        handleRemove: (index: number) => {
-            const updatedFiles = files.filter((_, i) => i !== index);
-            updateFiles(updatedFiles);
+        handleRemove: (key: string) => {
+            removeFile(key);
         },
         handleSave,
         handleEdit,
@@ -151,7 +128,7 @@ const useFileUpload = <T extends FileProps>(
 
 export interface UploadDocumentProps extends UIProps {
     name: string;
-    value?: string;
+    value?: FileProps[];
     onChange?: (e: { target: { name: string; value: any } }) => void;
     label?: string;
     required?: boolean;
@@ -236,7 +213,6 @@ const FileEditor = ({
 }: FileEditorProps) => {
     const [fileName, setFileName] = useState(file.fileName);
 
-    // Ref per accedere ai metodi esposti dal componente CropImage
     const cropRef = useRef<{
         triggerSave: () => {
             fileName: string;
@@ -279,6 +255,18 @@ const isUploadable = (files: FileProps[], max: number, multiple: boolean) => {
     return files.length < max && (multiple || files.length === 0);
 }
 
+const urlCache = new Map<string, string>();
+export const getFileUrl = (file: FileProps, suffix: string = "origin"): string => {
+    if (file.base64) {
+        const fileKey = `${file.fileName} ${suffix}`;
+        if (!urlCache.has(fileKey)) {
+            urlCache.set(fileKey, base64ToUrl(file.base64, file.type) ?? PLACEHOLDER_IMAGE);
+        }
+        return urlCache.get(fileKey) ?? PLACEHOLDER_IMAGE;  
+    }
+    return file.url;
+};
+
 export const UploadDocument = ({
     name,
     value       = undefined,
@@ -294,7 +282,7 @@ export const UploadDocument = ({
     wrapClass   = undefined,
     className   = undefined,
 }: UploadDocumentProps) => {
-    const { files, editingFile, fileInputRef, handleChange, handleUpload, handleRemove, handleSave, handleEdit, handleClose } = useFileUpload<FileProps>(name, value, onChange);
+    const { files, currentFile, fileInputRef, handleChange, handleUpload, handleRemove, handleSave, handleEdit, handleClose } = useFileUpload<FileProps>(name, value, onChange);
 
     return (
         <Wrapper className={wrapClass}>
@@ -322,7 +310,7 @@ export const UploadDocument = ({
                         { label: 'Actions', key: 'actions' }
                     ]}
                     body={files.map((file, i) => ({
-                        name: file.progress === 100 ? <Link to={file.url} target="_blank">{file.fileName}</Link> : file.fileName,
+                        name: file.progress === 100 ? <a href={getFileUrl(file)} target="_blank" rel="noopener noreferrer">{file.fileName}</a> : file.fileName,
                         kilobyte: (
                             file.progress === 100 
                             ? (file.size / 1024).toFixed(2) + ' KB' 
@@ -330,16 +318,16 @@ export const UploadDocument = ({
                         ),
                         actions: (
                             <>
-                                {<ActionButton onClick={() => handleRemove(i)} icon='x' className="p-1" />}
+                                {<ActionButton onClick={() => handleRemove(file.key)} icon='x' className="p-1" />}
                             </>
                         )
                     }))}
                 />}
             </div>
-            {editable && editingFile && (
+            {editable && currentFile && (
                 <FileEditor
                     title="Editor Document"
-                    file={editingFile}
+                    file={currentFile}
                     type="document"
                     onSave={handleSave}
                     onClose={handleClose}
@@ -367,22 +355,21 @@ export const UploadImage = ({
     wrapClass       = undefined,
     className       = undefined,
 }: UploadImageProps) => {
-    const { files, editingFile, fileInputRef, handleChange, handleUpload, handleRemove, handleSave, handleEdit, handleClose } = useFileUpload<FileProps>(name, value, onChange);
+    const { files, currentFile, fileInputRef, handleChange, handleUpload, handleRemove, handleSave, handleEdit, handleClose } = useFileUpload<FileProps>(name, value, onChange);
 
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
-    const ScaleBadge = ({scales}: {scales: string[]}) => {
-        if (scales.length === 0) return null;
-
-        return <div className="position-absolute bottom-0 start-0 w-100 p-1 d-flex align-items-center justify-content-between">
-            {scales
-                .map((scale) => (
-                    <Badge key={scale}>{scale}</Badge>
-                ))
-            }
-        </div>
+    const ScaleBadge = ({scales}: {scales: Record<string, FileProps>}) => {
+        if(!scales) return undefined;
+        const keys = Object.keys(scales);
+        if (keys.length === 0) return null;
+        return keys
+            .map((key) => (
+                <Badge key={key}><a href={getFileUrl(scales[key], key)} className="text-white" target="_blank" rel="noopener noreferrer">{key}</a></Badge>
+            ))
+        
     }
-
+    
     return (
         <Wrapper className={wrapClass}>
             {pre}
@@ -400,16 +387,20 @@ export const UploadImage = ({
                             {img.progress === 100 ? (
                                 <>
                                     <img
-                                        src={img.base64 ?? img.url}
+                                        src={getFileUrl(img)}
                                         alt={`preview-${i}`}
                                         className="img-thumbnail h-100 w-100"
                                     />
-                                    {editable && <ScaleBadge scales={Object.keys(img.variants)} />}
                                     
-                                    <Link to={img.url} target="_blank" className="bg-dark opacity-75 position-absolute top-0 start-0 bottom-0 end-0 justify-content-end align-items-start" style={{ display: hoveredIndex === i ? "flex" : "none" }}>
+                                    
+                                    <div className="bg-dark opacity-75 position-absolute top-0 start-0 bottom-0 end-0 justify-content-end align-items-start" style={{ display: hoveredIndex === i ? "flex" : "none" }}>
+                                        <a href={getFileUrl(img)} target="_blank" className="p-1 text-white" rel="noopener noreferrer"><Icon icon="eye" /></a>
                                         {editable && <ActionButton onClick={() => handleEdit(i)} icon='pencil' className="p-1" />}
-                                        {<ActionButton onClick={() => handleRemove(i)} icon='x' className="p-1" />}
-                                    </Link>
+                                        <ActionButton onClick={() => handleRemove(img.key)} icon='x' className="p-1" />
+                                        {editable && <div className="position-absolute bottom-0 start-0 w-100 p-1 d-flex align-items-center justify-content-between">
+                                            <ScaleBadge scales={img.variants} />
+                                        </div>}
+                                    </div>
                                 </>
                             ) : (
                                 <Percentage max={100} min={0} val={img.progress} shape="circle" />
@@ -433,15 +424,15 @@ export const UploadImage = ({
                 </div>
             </Wrapper>
 
-            {editable && editingFile &&
+            {editable && currentFile && (
                 <FileEditor
                     title="Editor Image"
-                    file={editingFile}
+                    file={currentFile}
                     type="img"
                     onSave={handleSave}
                     onClose={handleClose}
                 />
-            }
+            )}
             {post}
         </Wrapper>
     );

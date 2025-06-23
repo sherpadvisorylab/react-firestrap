@@ -41,7 +41,7 @@ const applyOnChangeRecursive = ({
             console.log("ENHANCE", child);
             return React.cloneElement(child as any, {
                 wrapClass: `mb-3${props.wrapClass ? ' ' + props.wrapClass : ''}`,
-                value: record?.[name] ?? props.value ?? '',
+                value: record?.[name] ?? props.value ?? undefined,
                 onChange,
             });
         }
@@ -68,7 +68,7 @@ const applyOnChangeRecursive = ({
             ? {
                 wrapClass: `mb-3${props.wrapClass ? ' ' + props.wrapClass : ''}`,
                 name: parentName ? `${parentName}.${name}` : name,
-                value: record?.[name] ?? props.value ?? '',
+                value: record?.[name] ?? props.value ?? undefined,
                 onChange,
             }
             : {

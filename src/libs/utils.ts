@@ -347,3 +347,23 @@ export const render2Base64 = (arrayBuffer: ArrayBuffer): string => {
     }
     return btoa(binary);
 };
+
+export const base64ToBlob = (base64: string, type: string): Blob | undefined => {
+    try {
+        const byteCharacters = atob(base64.split(',')[1]);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        return new Blob([byteArray], { type });
+    } catch (error) {
+        console.warn('Failed to create blob from base64:', error);
+        return undefined;
+    }
+};
+
+export const base64ToUrl = (base64: string, type: string): string | undefined => {
+    const blob = base64ToBlob(base64, type);
+    return blob ? URL.createObjectURL(blob) : undefined;
+};

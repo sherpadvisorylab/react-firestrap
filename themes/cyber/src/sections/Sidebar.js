@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Menu } from 'react-firestrap';
+import { ActionButton, Menu } from 'react-firestrap';
 
 const Sidebar = () => {
     const handleSidebarMobile = () => {
@@ -11,7 +11,7 @@ const Sidebar = () => {
         <>
             <nav id='sidebar' className='app-sidebar app-sidebar-toggled'>
                 <div className="app-sidebar-content">
-                    <Menu context='sidebar' badges={[{type:'warning', text: 'ciao'}]}/>
+                    <Menu context='sidebar'/>
                 </div>
             </nav>
 
@@ -34,13 +34,13 @@ export const SidebarToggler = ({ device, toggle, dismiss }) => {
 
         if (isDesktop) {
             if (isCollapsed) {
-                appElement.classList.remove('app-sidebar-collapse');
+                appElement.classList.remove('app-sidebar-collapsed');
                 appElement.classList.add('app-sidebar-toggled');
                 sidebar.style.marginLeft = '0px'
                 setIsCollapsed(false)
             } else {
+                appElement.classList.add('app-sidebar-collapsed');
                 appElement.classList.remove('app-sidebar-toggled');
-                appElement.classList.add('app-sidebar-collapse');
                 sidebar.style.marginLeft = '-270px'
                 setIsCollapsed(true)
             }

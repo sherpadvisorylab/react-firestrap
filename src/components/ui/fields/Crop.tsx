@@ -1,7 +1,7 @@
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import Card from "../Card";
 import { String, Switch } from "./Input";
-import { FileProps } from "./Upload";
+import { FileProps, getFileUrl } from "./Upload";
 
 
 const scales: Record<string, number> = {
@@ -10,21 +10,16 @@ const scales: Record<string, number> = {
     "4:3": 4 / 3,
 };
 
-export interface CropProps {
+interface CropProps  {
     fileName: string;
+    type: string;
     scale: string;
     top: number;
     left: number;
     width: number;
     height: number;
- 
     base64?: string;
 }
-
-export type ImageData = {
-    fileName: string;
-    url: string;
-};
 
 interface ImageProps extends FileProps {
     variants: Record<string, CropProps>;
@@ -67,12 +62,13 @@ export const CropImage = forwardRef(({img, title} : { img: ImageProps, title?: s
 
                 variants[scale] = {
                     fileName: cropData[scale].fileName,
+                    type: cropData[scale].type,
                     scale,
                     top,
                     left,
                     width,
                     height,
-                    base64: canvas.toDataURL("image/jpeg"),
+                    base64: canvas.toDataURL(cropData[scale].type),
                 }
             }
 
@@ -110,6 +106,7 @@ export const CropImage = forwardRef(({img, title} : { img: ImageProps, title?: s
                 ...prev,
                 [scale]: {
                     fileName: img.fileName,
+                    type: img.type,
                     scale,
                     top: (currentImage.height - maxHeight) / 2,
                     left: (currentImage.width - maxWidth) / 2,
@@ -179,10 +176,6 @@ export const CropImage = forwardRef(({img, title} : { img: ImageProps, title?: s
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, [imageBoundsMap]);
-
-    /*useEffect(() => {
-        setCropData(prev => Object.fromEntries(selectedScales.map(a => [a, prev[a]])));
-    }, [img.url, selectedScales]);*/
 
     const handleMouseDown = (e: React.MouseEvent, scale: string, type: "move" | "resize") => {
         e.stopPropagation();
@@ -260,7 +253,7 @@ export const CropImage = forwardRef(({img, title} : { img: ImageProps, title?: s
         setDragging({});
         setResizing({});
     };
-    console.log(cropData, "ffffffffffffffffffffffffffffffff");
+
     return (
         <div onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp}>
             {title && <h3>{title}</h3>}
@@ -268,12 +261,13 @@ export const CropImage = forwardRef(({img, title} : { img: ImageProps, title?: s
                 <h6>Original Image</h6>
                 <ImageEditorItem
                     img={{
-                        src: img.url,
+                        src: getFileUrl(img),
                         alt: 'Original Image'
                     }}
                     file={{
                         value: originalFileName,
                         onChange: setOriginalFileName,
+                        label: 'Original File Name'
                     }}
                 />
             </div>
@@ -295,17 +289,11 @@ export const CropImage = forwardRef(({img, title} : { img: ImageProps, title?: s
                         {selectedScales.includes(scale) && (
                             <ImageEditorItem
                                 img={{
-                                    src: img.url,
+                                    src: getFileUrl(img),
                                     alt: `Crop ${scale}`,
                                     ref: el => imgRefs.current[scale] = el,
                                     onLoad: (e) => handleLoad(e, scale),
-                                    post: (
-                                        <CropBox
-                                            cropData={cropData}
-                                            scale={scale}
-                                            handleMouseDown={handleMouseDown}
-                                        />
-                                    )
+                                    post: <CropBox cropData={cropData} scale={scale} handleMouseDown={handleMouseDown} />
                                 }}
                                 file={{
                                     value: cropData[scale]?.fileName ?? img.fileName,
@@ -323,8 +311,6 @@ export const CropImage = forwardRef(({img, title} : { img: ImageProps, title?: s
     );
 });
 
-
-/* ------------------------ Riquadro Crop ---------------------- */
 
 const CropBox = ({
     cropData,
@@ -367,7 +353,6 @@ const CropBox = ({
     )
 }
 
-/* ------------------------------------- */
 
 interface ImageEditorItemProps {
     img: {
@@ -405,8 +390,6 @@ const ImageEditorItem = ({
     </>)
 }
 
-
-/* --------------------------------------- */
 
 interface FileNameEditorProps {
     value: string;

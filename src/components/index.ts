@@ -32,6 +32,7 @@ export { default as TabDynamic } from './ui/TabDynamic';
 export { default as Tab } from './ui/Tab';
 export * from './ui/Tab';
 export { default as Table } from './ui/Table';
+export { default as Icon } from './ui/Icon';
 
 export * from './ui/fields/Input';
 export * from './ui/fields/Select';
