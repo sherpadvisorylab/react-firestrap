@@ -1,10 +1,10 @@
 import React from 'react';
 
 export interface UIProps {
-    wrapClass?: string;
-    className?: string;
     pre?: React.ReactNode;
     post?: React.ReactNode;
+    wrapClass?: string;
+    className?: string;
 }
 
 export { default as Brand } from './blocks/Brand';

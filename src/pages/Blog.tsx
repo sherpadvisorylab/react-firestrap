@@ -31,10 +31,9 @@ function Blog() {
                     return record.title
                 }}
                 columns={columns}
-                Form={
-                    <BlogPost data={{ lang: 'Italiano', voice: 'Informative', style: 'Descriptive', limit: '3' }} />
-                }
-            />
+            >
+                <BlogPost data={{ lang: 'Italiano', voice: 'Informative', style: 'Descriptive', limit: '3' }} />
+            </Grid>
         </>
     )
 }

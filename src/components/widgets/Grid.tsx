@@ -1,18 +1,17 @@
-import React, {useEffect, useMemo, useRef, useState} from 'react';
+import React, {useEffect, useMemo, useState, useCallback} from 'react';
 import {useTheme} from "../../Theme";
 import Table, {TableHeaderProp} from "../ui/Table";
 import Gallery from "../ui/Gallery";
 import Card from "../ui/Card";
 import db from "../../libs/database";
 import Modal from "../ui/Modal";
-import {generateUniqueId, normalizeKey, safeClone, trimSlash, ucfirst} from "../../libs/utils";
+import {safeClone, trimSlash, ucfirst} from "../../libs/utils";
 import {useLocation} from "react-router-dom";
 import {converter} from "../../libs/converter";
-import ComponentEnhancer, {extractComponentProps} from "../ComponentEnhancer";
-import setLog from "../../libs/log";
+import {extractComponentProps} from "../ComponentEnhancer";
 import {RecordArray, RecordProps} from "../../integrations/google/firedatabase";
-//todo: fare pulizia dei //todo: da togliere
-//todo: gestire refDomElem poiche non viene mai scritto
+import Form, {FormRef} from "./Form";
+
 type ColumnFunction = (args: {
     value: any;
     record: any;
@@ -42,12 +41,13 @@ type GridProps = {
                        setRecords: React.Dispatch<React.SetStateAction<RecordArray | undefined>>,
                        setLoader?: React.Dispatch<React.SetStateAction<boolean>>
     ) => Promise<void> | void;
-    onInsertRecord?: (record: RecordProps) => Promise<RecordProps>;
-    onUpdateRecord?: (record: RecordProps, key: string) => Promise<RecordProps>;
-    onDeleteRecord?: (record: RecordProps, key: string) => Promise<boolean>;
-    onFinallyRecord?: (action: string, record: RecordProps, key: string) => Promise<RecordProps>;
+    // Form handlers for external control
+    onInsert?: (record: any) => Promise<void>;
+    onUpdate?: (record: any) => Promise<void>;
+    onDelete?: (record: any) => Promise<void>;
+    onFinally?: (record: any, action: 'create' | 'update' | 'delete') => Promise<void>;
     onClick?: (record: RecordProps) => void;
-    Form?: any;
+    children?: React.ReactNode | ((props: { record?: RecordProps, key?: string }) => React.ReactNode);
     scroll?: boolean;
     type?: "table" | "gallery";
     showLoader?: boolean;
@@ -57,26 +57,12 @@ type GridProps = {
     wrapClass?: string;
 };
 
-type RecordForm = {
-    data: RecordProps;
-    savePath: string;
-    key?: string;
-    title?: string;
-    form?: React.ReactNode;
-    onInsert?: (record: RecordProps) => Promise<RecordProps>;
-    onUpdate?: (record: RecordProps, key: string) => Promise<RecordProps>;
-    onDelete?: (record: RecordProps, key: string) => Promise<boolean>;
-    onFinally?: (action: string, record: RecordProps, key: string) => Promise<RecordProps>;
-    genKey: (record: RecordProps) => string;
-};
-
 interface OpenModalParams {
     title?: string;
     data?: RecordProps;
     key ?: string;
     savePath?: string;
 }
-
 
 const Grid = (props: GridProps) => {
     return props.dataArray === undefined
@@ -110,12 +96,12 @@ const GridArray = ({
                        setPrimaryKey    = undefined,
                        onLoadRecord     = undefined,
                        onDisplayBefore  = undefined,
-                       onInsertRecord   = undefined,
-                       onUpdateRecord   = undefined,
-                       onDeleteRecord   = undefined,
-                       onFinallyRecord  = undefined,
+                       onInsert         = undefined,
+                       onUpdate         = undefined,
+                       onDelete         = undefined,
+                       onFinally        = undefined,
                        onClick          = undefined,
-                       Form             = undefined,
+                       children         = undefined,
                        scroll           = false,
                        type             = "table",
                        showLoader       = false,
@@ -127,9 +113,14 @@ const GridArray = ({
     const theme = useTheme("grid");
 
     const [loader, setLoader] = useState(false);
-    const [record, setRecord] = useState<RecordForm | undefined>(undefined);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const refDomElem = useRef<Record<string, HTMLElement | null>>({});
+    const [modalData, setModalData] = useState<{
+        record?: RecordProps, 
+        key?: string, 
+        title?: string,
+        dataStoragePath?: string
+    } | undefined>(undefined);
+    const [formRef, setFormRef] = useState<FormRef | null>(null);
 
     const [beforeRecords, setBeforeRecords] = useState<RecordArray | undefined>(undefined);
     useEffect(() => {
@@ -145,15 +136,14 @@ const GridArray = ({
         return safeClone(dataArray);
     }, [dataArray, onDisplayBefore, beforeRecords]);
 
-
     // 1. Calcolo colonne
     const header: Column[] = useMemo(() => {
         if (columns) return columns;
         if (!records || records.length === 0) return [];
 
         return (
-            Form && typeof Form !== 'function'
-                ? extractComponentProps(Form, (child) => ({
+            children && typeof children !== 'function'
+                ? extractComponentProps(children, (child) => ({
                     label: converter.toCamel(child.props.name, " "),
                     key: child.props.name,
                     sort: true,
@@ -174,7 +164,7 @@ const GridArray = ({
                     return acc;
                 }, [])
         );
-    }, [columns, records, Form]);
+    }, [columns, records, children]);
 
     // 2. Funzioni di formattazione colonne
     const columnsFunc: ColumnMap = useMemo(() => {
@@ -226,7 +216,8 @@ const GridArray = ({
 
     const closeModal = () => {
         setIsModalOpen(false);
-        setRecord(undefined);
+        setModalData(undefined);
+        setFormRef(null);
     };
 
     const openModal = (
@@ -237,118 +228,42 @@ const GridArray = ({
             savePath    = ""
         }: OpenModalParams
     ): void => {
-        setRecord({
+        const formDataStoragePath = key 
+            ? `${dataStoragePath}/${key}`
+            : dataStoragePath;
+
+        setModalData({
+            record: data || {} as RecordProps,
             key: key,
-            data: data || {} as RecordProps,
             title: title,
-            form: Form && <ComponentEnhancer
-                components={typeof Form === "function"
-                    ? <Form record={data} />
-                    : Form
-                }
-                record={data}
-                handleChange={handleChange}
-            />,
-            savePath: savePath,
-            onInsert: onInsertRecord,
-            onUpdate: onUpdateRecord,
-            onDelete: onDeleteRecord,
-            onFinally: onFinallyRecord,
-            genKey: setPrimaryKey || (() => generateUniqueId())
+            dataStoragePath: formDataStoragePath
         });
         setIsModalOpen(true);
     };
 
-    const getValue = (e: React.ChangeEvent<any>) => {
-        const { type, value, checked } = e.target;
-
-        if (type === 'checkbox') {
-            return checked ? value : null;
-        }
-
-        return typeof value === 'string' ? value.trim() : value;
+    const handleSave = async (e: React.MouseEvent<HTMLButtonElement>) => {
+        if (!formRef) return;
+        
+        await formRef.handleSave(e, !modalData?.key);
+        
+        closeModal();
     };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name } = e.target;
-        const value = getValue(e);
-
-        setRecord((prevState) => {
-            if (!prevState) return undefined;
-
-            return {
-                ...prevState,
-                data: {
-                    ...prevState.data,
-                    [name]: value,
-                },
-            };
-        });
+    const handleDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
+        if (!formRef) return;
+        
+        await formRef.handleDelete(e);
+        
+        closeModal();
     };
 
-    const handleSave = async () => {
-        if(!record) return;
-
-        const data = (
-            record.key
-            ? record.onUpdate && await record.onUpdate(record.data, record.key)
-            : record.onInsert && await record.onInsert(record.data)
-        ) || record.data;
-        const key = record.key || normalizeKey(record.genKey(data));
-        if (!key) {
-            console.error("Save Failed: Key not generated correctly.");
-            return;
-        }
-        dataStoragePath && db.set(`${dataStoragePath}/${key}${record.savePath}`, data)
-            .then(() => {
-                if (!record.key && key && refDomElem.current[key]) {
-                    refDomElem.current[key]?.click();
-                }
-                console.log('Data updated successfully in Firebase');
-            })
-            .catch((error) => {
-                console.error('Error updating data in Firebase:', error);
-            })
-            .finally(async() => {
-                closeModal();
-
-                const action = record.key ? "update" : "create";
-                log && setLog(dataStoragePath, action, record.data, key);
-                return record.onFinally && await record.onFinally(action, record.data, key);
-            });
-    };
-
-    const handleDelete = async () => {
-        if(!record?.key) return;
-
-        const key = record.key;
-        if (record.onDelete && await record.onDelete(record.data, key)) {
-            return;
-        }
-
-        dataStoragePath && db.remove(`${dataStoragePath}/${key}`)
-            .then(() => {
-                console.log('Element deleted successfully from Firebase');
-            })
-            .catch((error) => {
-                console.error('Error deleting element from Firebase:', error);
-            })
-            .finally(async() => {
-                closeModal();
-
-                log && setLog(dataStoragePath, "delete", record.data, key);
-                return record.onFinally && await record.onFinally("delete", record.data, key);
-
-            });
-    };
-
-    const actionAddNew = Form && (!allowedActions || allowedActions.includes("add")) && <button className="btn btn-primary" onClick={() => {
+    const actionAddNew = children && (!allowedActions || allowedActions.includes("add")) && <button className="btn btn-primary" onClick={() => {
         openModal({
             title: setModalHeader?.(),
         })
     }}>Aggiungi</button>
 
-    const canEdit = Form && (!allowedActions || allowedActions.includes("edit"));
+    const canEdit = children && (!allowedActions || allowedActions.includes("edit"));
 
     const handleClick = (index: number) => {
         const data = dataArray?.[index];
@@ -369,6 +284,7 @@ const GridArray = ({
             });
         }
     }
+
     const getComponent = () => {
         switch (type) {
             case "gallery":
@@ -402,6 +318,11 @@ const GridArray = ({
         }
     }
 
+    const setFormRefCallback = useCallback((ref: FormRef | null) => {
+        setFormRef(ref);
+        console.log("GRID: formRef", ref);
+    }, []);
+
     return (<>
         <Card
             wrapClass={wrapClass}
@@ -422,22 +343,33 @@ const GridArray = ({
             showLoader={loader || showLoader}
             showArrow={theme.Grid.Card.showArrow}
         >{getComponent()}</Card>
-        {record && isModalOpen && (
+        {modalData && isModalOpen && (
             <Modal
                 size={modalSize || theme.Grid.Modal.size}
-                title={record.title || (record.key ? "Modifica" : "Aggiungi")}
+                title={modalData.title || (modalData.key ? "Modifica" : "Aggiungi")}
                 onClose={closeModal}
                 onSave={handleSave}
-                onDelete={record.key && (!allowedActions || allowedActions.includes("delete")) ? handleDelete : undefined}
+                onDelete={modalData.key && (!allowedActions || allowedActions.includes("delete")) ? handleDelete : undefined}
                 wrapClass={theme.Grid.Modal.wrapClass}
                 className={theme.Grid.Modal.className}
                 headerClass={theme.Grid.Modal.headerClass}
                 titleClass={theme.Grid.Modal.titleClass}
                 bodyClass={theme.Grid.Modal.bodyClass}
                 footerClass={theme.Grid.Modal.footerClass}
-            ><div className={"row"}>
-                {record.form}
-            </div>
+            >
+                <Form
+                    dataStoragePath={modalData.dataStoragePath}
+                    defaultValues={modalData.record}
+                    log={log}
+                    onInsert={onInsert}
+                    onUpdate={onUpdate}
+                    onDelete={onDelete}
+                    onFinally={onFinally}
+                    setPrimaryKey={setPrimaryKey}
+                    ref={setFormRefCallback}
+                >
+                    {children}
+                </Form>
             </Modal>
         )}
     </>);

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, forwardRef, useImperativeHandle, useRef, useCallback } from 'react';
 import { useLocation } from "react-router-dom";
 import { Wrapper } from "../ui/GridSystem";
 import ComponentEnhancer from "../ComponentEnhancer";
@@ -22,6 +22,7 @@ interface BaseFormProps {
     onUpdate?: (record: any) => Promise<void>;
     onDelete?: (record: any) => Promise<void>;
     onFinally?: (record: any, action: 'create' | 'update' | 'delete') => Promise<void>;
+    setPrimaryKey?: (record: RecordProps) => string;
     log?: boolean;
     showNotice?: boolean;
     showBack?: boolean;
@@ -44,16 +45,23 @@ interface FormProps extends BaseFormProps {
     children?: React.ReactNode | ((fields: FormTree) => React.ReactNode);
     defaultValues?: any;
 }
-function Form(props: FormProps) {
+
+export interface FormRef {
+    handleSave: (e: React.MouseEvent<HTMLButtonElement>, generateKey?: boolean) => Promise<void>;
+    handleDelete: (e: React.MouseEvent<HTMLButtonElement>) => Promise<void>;
+    getRecord: () => RecordProps | undefined;
+}
+
+function Form(props: FormProps, ref?: React.Ref<FormRef>) {
     const { defaultValues, children, ...rest } = props;
 
     const formChildren = children as React.ReactNode;
     return defaultValues
-        ? <FormData children={formChildren} defaultValues={defaultValues} {...rest} />
-        : <FormDatabase children={formChildren} defaultValues={defaultValues} {...rest} />;
+        ? <FormData children={formChildren} defaultValues={defaultValues} {...rest} ref={ref} />
+        : <FormDatabase children={formChildren} defaultValues={defaultValues} {...rest} ref={ref} />;
 }
 
-export function FormDatabase(props: FormDefaultProps) {
+export const FormDatabase = forwardRef<FormRef, FormDefaultProps>((props, ref) => {
     const { dataStoragePath, defaultValues, ...rest } = props;
     const location = useLocation();
 
@@ -73,16 +81,15 @@ export function FormDatabase(props: FormDefaultProps) {
         return <p className={"p-4"}><i className={"spinner-border spinner-border-sm"}></i> Caricamento in corso...</p>;
     }
 
-    return <FormData {...rest} defaultValues={record} dataStoragePath={dbStoragePath} />;
-}
+    return <FormData {...rest} defaultValues={record} dataStoragePath={dbStoragePath} ref={ref} />;
+});
 
 type NoticeProps = {
     type: "danger" | "success" | "info" | "warning" | "primary" | "secondary" | "light" | "dark";
     message: string;
 };
 
-
-export function FormData({
+const FormData = forwardRef<FormRef, FormDefaultProps>(({
     children,
     header = undefined,
     footer = undefined,
@@ -93,6 +100,7 @@ export function FormData({
     onUpdate = undefined,
     onDelete = undefined,
     onFinally = undefined,
+    setPrimaryKey = undefined,
     log = false,
     showNotice = true,
     showBack = false,
@@ -100,21 +108,23 @@ export function FormData({
     headerClass = undefined,
     className = undefined,
     footerClass = undefined
-}: FormDefaultProps) {
+}, ref) => {
     const theme = useTheme("form");
 
     const [record, setRecord] = useState<RecordProps | undefined>(defaultValues);
-    const [notification, setNotification] = useState<NoticeProps | undefined>(undefined);
 
-    console.log("FORM", record);
-    const notice = ({ message, type = "danger" }: NoticeProps) => {
+    const recordRef = useRef(record);
+    useEffect(() => { recordRef.current = record; console.log("recordRef ENTRO!!!", recordRef.current); }, [record]);
+
+    const [notification, setNotification] = useState<NoticeProps | undefined>(undefined);
+    const notice = useCallback(({ message, type = "danger" }: NoticeProps) => {
         if (showNotice) {
             setNotification({ type, message });
             setTimeout(() => setNotification(undefined), 5000);
         }
-    };
+    }, [showNotice]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const path = e.target.name.split(".");
         const value = e.target.value;
     
@@ -128,7 +138,6 @@ export function FormData({
             }
 
             const lastKey = path[path.length - 1];
-
             if (value == null || value === "") {
                 if (Array.isArray(target) && !isNaN(Number(lastKey))) {
                   target.splice(Number(lastKey), 1);
@@ -139,12 +148,11 @@ export function FormData({
                 target[lastKey] = value;
             }
             
-            console.log("handleChange", path, value, updated);
+            // console.log("handleChange", path, value, updated);
 
             return updated;
         });
-    };
-    
+    }, []);
 
     const cleanedRecord = (record: RecordProps | undefined): RecordProps => {
         const cleaned: RecordProps = {};
@@ -170,34 +178,48 @@ export function FormData({
         return cleaned;
     }
 
-    const handleSave = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleSave = useCallback(async (e: React.MouseEvent<HTMLButtonElement>, newStoragePath?: string) => {
         e.preventDefault();
         
         showNotice && setNotification(undefined);
-        defaultValues && onInsert && await onInsert(record);
-        !defaultValues && onUpdate && await onUpdate(record);
-        dataStoragePath && await db.set(dataStoragePath, cleanedRecord(record));
+        defaultValues && onInsert && await onInsert(recordRef.current);
+        !defaultValues && onUpdate && await onUpdate(recordRef.current);
 
-        await handleFinally(defaultValues ? "update" : "create");
-    };
+        const recordStoragePath = newStoragePath ?? dataStoragePath;
+        recordStoragePath && await db.set(recordStoragePath, cleanedRecord(recordRef.current));
+        await handleFinally(newStoragePath ? "create" : "update");
+        
+    }, [dataStoragePath, onInsert, onUpdate, onFinally, defaultValues, showNotice]);
 
-    const handleDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    const handleDelete = useCallback(async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
-
+        
         showNotice && setNotification(undefined);
         dataStoragePath && await db.remove(dataStoragePath);
-
+        
         await handleFinally("delete");
-    };
+    }, [onDelete, onFinally, showNotice]);
 
-    const handleFinally = async (action: 'create' | 'update' | 'delete') => {
-        log && dataStoragePath && setLog(dataStoragePath, action, record);
-
-        onFinally && await onFinally(record, action);
+    const handleFinally = useCallback(async (action: 'create' | 'update' | 'delete') => {
+        log && dataStoragePath && setLog(dataStoragePath, action, recordRef.current);
+                
+        onFinally && await onFinally(recordRef.current, action);
 
         notice({ message: `Record ${action}ed successfully`, type: "success" });
-    }
+    }, [log, dataStoragePath, onFinally, notice]);
 
+    useImperativeHandle(ref, () => ({
+        handleSave: async (e: React.MouseEvent<HTMLButtonElement>, generateKey?: boolean) => {
+            const storagePath = generateKey && recordRef.current 
+                ? dataStoragePath + '/' + (setPrimaryKey?.(recordRef.current) ?? Date.now())
+                : undefined;
+            return handleSave(e, storagePath);
+        },
+        handleDelete,
+        getRecord: () => recordRef.current
+    }), [handleSave, handleDelete]);
+
+    console.log("FORMMMMMM", record, recordRef.current, "REFF", ref);
     return (
         <Wrapper className={wrapClass || theme.Form.wrapClass}>
             {notification && (
@@ -205,14 +227,20 @@ export function FormData({
                     {notification.message}
                 </Alert>
             )}
-            <Card
+            {ref 
+            ? <ComponentEnhancer
+                components={children}
+                record={record}
+                handleChange={handleChange}
+            />
+            : <Card
                 header={header || <Breadcrumbs pre={(defaultValues ? "Update " : "Insert ")} path={dataStoragePath ?? "Record"} />}
                 footer={(footer || dataStoragePath ||onInsert || onUpdate || onDelete || showBack) && <>
                     {footer}
                     {(onInsert || dataStoragePath) && !defaultValues && <LoadingButton
                         className={theme.Form.buttonSaveClass}
                         label={"Insert"}
-                        onClick={handleSave}
+                        onClick={e => handleSave(e, dataStoragePath)}
                     />}
                     {(onUpdate || dataStoragePath) && defaultValues && <LoadingButton
                         className={theme.Form.buttonSaveClass}
@@ -239,9 +267,10 @@ export function FormData({
                     handleChange={handleChange}
                 />
             </Card>
+            }
         </Wrapper>
     )
-}
+});
 
 function defaultFormRenderer(tree: FormTree): React.ReactNode {
     return Object.entries(tree).map(([key, value]) => {
@@ -282,4 +311,4 @@ export function FormModel({
     );
 }
 
-export default Form;
+export default forwardRef(Form);

@@ -1,20 +1,18 @@
 import React, { useState, useRef, ChangeEvent, DragEvent, useEffect } from 'react';
 import Papa, { ParseResult } from 'papaparse';
 import { useTheme } from '../../../Theme';
+import { Wrapper } from '../GridSystem';
+import { Icon, UIProps } from '../../..';
 
 interface CsvRow {
   [key: string]: string;
 }
 
-interface CsvParserProps {
+interface CsvParserProps extends UIProps {
   name: string;
   onDataLoaded: (data: CsvRow[], file: File) => void;
   label?: string;
   icon?: string;
-  pre?: React.ReactNode;
-  post?: React.ReactNode;
-  wrapClass?: string;
-  className?: string;
 }
 
 export const FileCSVUploader: React.FC<CsvParserProps> = ({
@@ -26,6 +24,7 @@ export const FileCSVUploader: React.FC<CsvParserProps> = ({
   post,
   wrapClass,
   className,
+  ...rest
 }) => {
   const theme = useTheme("button");
   const [data, setData] = useState<CsvRow[]>([]);
@@ -72,30 +71,27 @@ export const FileCSVUploader: React.FC<CsvParserProps> = ({
   };
 
   return (
-    <>
+    <Wrapper className={wrapClass}>
+      {pre}
       <div
         data-name={name}
-        className={"fileinput-button " + (wrapClass || "text-end")}
+        className={"fileinput-button " + (className || "")}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
         onDragLeave={handleDragLeave}
       >
-        {pre}
         <input
           type="file"
           ref={fileInputRef}
           onChange={handleFileChange}
           accept=".csv"
-          className={className}
         />
-        {icon && <i className={(label ? "me-1 " : "") + theme.getIcon(icon)}></i>}
-        <span>{label || "Drag or click to upload"}</span>
-        {post}
+        <Icon icon={icon} label={label || "Drag or click to upload"} />
       </div>
 
       {error && <p style={{ color: 'red' }}>Errore: {error}</p>}
-
-    </>
+      {post}
+    </Wrapper>
   );
 };
 

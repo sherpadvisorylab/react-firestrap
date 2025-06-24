@@ -323,8 +323,8 @@ export const ListGroup = ({
                     isDisable ? ' disabled' : ''
                 }${isLoading ? ' loading' : ''}`;   
 
-                return <>
-                    {onClick && <div
+                return onClick  
+                    ? <div
                         key={index}
                         onClick={(e) => {
                             if (!isLoading && !isInteractiveElement(e)) {
@@ -335,9 +335,10 @@ export const ListGroup = ({
                         style={{cursor: "pointer"}}
                     >
                         {child}
-                    </div>}
-                    {!onClick && <span key={index} className={fullItemClass}>{child}</span>}
-                </>;
+                    </div>
+                    : <span key={index} className={fullItemClass}>
+                        {child}
+                    </span>
             })}
         </div>
         {post}

@@ -8,25 +8,24 @@ function Users() {
     <Grid
         dataStoragePath={"/users"}
         setPrimaryKey={(record) => record.email.replace('@', '-')}
-        Form={<>
-            <String name={"username"}
-                    label={"Username"}
-            />
-            <Email name={"email"}
-                   label={"Email"}
-                   required={true}
-                   updatable={false}
-            />
-            <Select name={"permission"}
-                    label={"Permission"}
-                    options={[
-                        {value: "admin", label: "Admin"},
-                        {value: "user", label: "User"},
-                    ]}
-                    required={true}
-            />
-        </>}
-    />
+    >
+      <String name={"username"}
+              label={"Username"}
+      />
+      <Email name={"email"}
+            label={"Email"}
+            required={true}
+            updatable={false}
+      />
+      <Select name={"permission"}
+              label={"Permission"}
+              options={[
+                  {value: "admin", label: "Admin"},
+                  {value: "user", label: "User"},
+              ]}
+              required={true}
+      />
+    </Grid>
   );
 }
 
