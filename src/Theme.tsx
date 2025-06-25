@@ -54,8 +54,9 @@ const defaultTheme = {
             rowCols: "4"
         },
         Modal: {
+            mode: "form",
             size: "lg", 
-            display: "center",
+            position: "center",
             wrapClass: "",
             className: "",
             headerClass: "",
@@ -130,7 +131,7 @@ const defaultTheme = {
     },
     Modal: {
         size: "lg",
-        display: "center",
+        position: "center",
         wrapClass: "",
         className: "",
         headerClass: "",

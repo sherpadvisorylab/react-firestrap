@@ -37,11 +37,11 @@ const applyOnChangeRecursive = ({
             handleChange?.(event);
         });
         
-        if ((child.type as any)?.enhance) {
+        if ((type as any)?.enhance) {
             console.log("ENHANCE", child);
             return React.cloneElement(child as any, {
                 wrapClass: `mb-3${props.wrapClass ? ' ' + props.wrapClass : ''}`,
-                value: record?.[name] ?? props.value ?? undefined,
+                value: (name ? record?.[name] : record) ?? props.value ?? undefined,
                 onChange,
             });
         }

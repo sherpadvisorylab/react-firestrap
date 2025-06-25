@@ -35,8 +35,9 @@ export const theme = {
             rowCols: "4"
         },
         Modal: {
+            mode: "form",
             size: "lg",
-            display: "center",
+            position: "center",
             wrapClass: "",
             className: "",
             headerClass: "justify-content-between",
@@ -111,7 +112,7 @@ export const theme = {
     },
     Modal: {
         size: "lg",
-        display: "center",
+        position: "center",
         wrapClass: "",
         className: "",
         headerClass: "justify-content-between",

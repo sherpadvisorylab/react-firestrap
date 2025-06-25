@@ -14,7 +14,7 @@ interface ModalProps extends UIProps {
     onSave?: (e: React.MouseEvent<HTMLButtonElement>) => Promise<void>;
     onDelete?: (e: React.MouseEvent<HTMLButtonElement>) => Promise<void>;
     size?: "sm" | "md" | "lg" | "xl" | "fullscreen";
-    display?: "center" | "top" | "left" | "right" | "bottom";
+    position?: "center" | "top" | "left" | "right" | "bottom";
     buttonFullscreen?: boolean;
     headerClass?: string;
     titleClass?: string;
@@ -50,7 +50,7 @@ const ModalDefault = ({
                           onSave            = undefined,
                           onDelete          = undefined,
                           size              = undefined,
-                          display           = undefined,
+                          position          = undefined,
                           buttonFullscreen  = true,
                           pre               = undefined,
                           post              = undefined,
@@ -124,7 +124,7 @@ const ModalDefault = ({
         }
     }
 
-    const position = positions[sizeClass === "fullscreen" ? "center" : (display || theme.Modal.display) as keyof typeof positions];
+    const pos = positions[sizeClass === "fullscreen" ? "center" : (position || theme.Modal.position) as keyof typeof positions];
 
     window.document.body.style.overflow = "hidden";
     const handleClose = () => {
@@ -133,14 +133,14 @@ const ModalDefault = ({
     }
 
     return createPortal(<>
-        <Wrapper className={position.coverClass}>
-            <div className={position.dialogClass}>
+        <Wrapper className={pos.coverClass}>
+            <div className={pos.dialogClass}>
                 {pre}
-                <Wrapper className={position.contentClass}>
-                    {(header || title || buttonFullscreen || onClose) && <div className={position.headerClass}>
+                <Wrapper className={pos.contentClass}>
+                    {(header || title || buttonFullscreen || onClose) && <div className={pos.headerClass}>
                         <div>
-                            {title && <h3 className={position.titleClass}>{title}</h3>}
-                            {(title && header) && <div className={position.subTitleClass}>{header}</div>}
+                            {title && <h3 className={pos.titleClass}>{title}</h3>}
+                            {(title && header) && <div className={pos.subTitleClass}>{header}</div>}
                             {!title && header}
                         </div>
                         {(buttonFullscreen || onClose) && <div className={"ms-auto"}>
@@ -158,8 +158,8 @@ const ModalDefault = ({
                             />}
                         </div>}
                     </div>}
-                    <div className={position.bodyClass}>{children}</div>
-                    {(footer || onSave || onDelete || onClose) && <div className={position.footerClass}>
+                    <div className={pos.bodyClass}>{children}</div>
+                    {(footer || onSave || onDelete || onClose) && <div className={pos.footerClass}>
                         {footer}
                         {onSave && <LoadingButton
                             className="btn-primary"
@@ -189,7 +189,7 @@ const ModalDefault = ({
                 {post}
             </div>
         </Wrapper>
-        <Wrapper className={position.backdropClass}/>
+        <Wrapper className={pos.backdropClass}/>
     </>, document.body);
 };
 

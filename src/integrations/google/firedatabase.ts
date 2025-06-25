@@ -121,6 +121,15 @@ const db = {
             handleError(`reading data in Firebase for ${path}`, error, exception);
         }
     },
+    update: async (path: string, data: any, exception: boolean = false): Promise<void> => {
+        const dbRef = getDatabase().ref(path);
+        try {
+            await dbRef.update(data);
+            consoleLog(`Data successfully merged in Firebase for ${path}`);
+        } catch (error) {
+            handleError(`updating data in Firebase for ${path}`, error, exception);
+        }
+    },
     set: async (path: string, data: any, exception: boolean = false): Promise<void> => {
         const dbRef = getDatabase().ref(path);
         try {

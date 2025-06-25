@@ -8,33 +8,39 @@ import Modal from "../ui/Modal";
 import {safeClone, trimSlash, ucfirst} from "../../libs/utils";
 import {useLocation} from "react-router-dom";
 import {converter} from "../../libs/converter";
-import {extractComponentProps} from "../ComponentEnhancer";
+import ComponentEnhancer, {extractComponentProps} from "../ComponentEnhancer";
 import {RecordArray, RecordProps} from "../../integrations/google/firedatabase";
 import Form, {FormRef} from "./Form";
 
-type ColumnFunction = (args: {
+type ColumnFormatter = (args: {
     value: any;
     record: any;
     key?: string;
-}) => string;
+}) => React.ReactNode;
 
 type Column = TableHeaderProp & {
-    onDisplay?: ColumnFunction;
+    onDisplay?: ColumnFormatter;
 };
 
-type ColumnMap = Record<string, ColumnFunction>;
+type ColumnFormatters = Record<string, ColumnFormatter>;
+
+type ConverterKey = keyof typeof converter;
 
 type GridProps = {
     columns?: Column[];
-    format?: { [key: string]: string | ColumnFunction };
+    format?: { [key: string]: ConverterKey | ColumnFormatter };
     dataStoragePath?: string;
     dataArray?: RecordArray;
-    Header?: string | React.ReactNode;
-    HeaderAction?: string | React.ReactNode;
-    Footer?: string | React.ReactNode;
+    header?: string | React.ReactNode;
+    headerAction?: string | React.ReactNode;
+    footer?: string | React.ReactNode;
     allowedActions?: Array<"add" | "edit" | "delete">;
-    modalSize?: string;
-    setModalHeader?: (record?: RecordProps) => string;
+    modal?: {
+        mode?: "form" | "empty";
+        size?: "sm" | "md" | "lg" | "xl" | "fullscreen";
+        position?: "center" | "top" | "left" | "right" | "bottom";
+        setHeader?: (record?: RecordProps) => string;
+    };
     setPrimaryKey?: (record: RecordProps) => string;
     onLoadRecord?: (record: RecordProps, index: number) => RecordProps | boolean;
     onDisplayBefore?: (records: RecordArray,
@@ -47,7 +53,7 @@ type GridProps = {
     onDelete?: (record: any) => Promise<void>;
     onFinally?: (record: any, action: 'create' | 'update' | 'delete') => Promise<void>;
     onClick?: (record: RecordProps) => void;
-    children?: React.ReactNode | ((props: { record?: RecordProps, key?: string }) => React.ReactNode);
+    children?: React.ReactNode;
     scroll?: boolean;
     type?: "table" | "gallery";
     showLoader?: boolean;
@@ -60,8 +66,7 @@ type GridProps = {
 interface OpenModalParams {
     title?: string;
     data?: RecordProps;
-    key ?: string;
-    savePath?: string;
+    key?: string;
 }
 
 const Grid = (props: GridProps) => {
@@ -87,12 +92,11 @@ const GridArray = ({
                        format           = {},
                        dataStoragePath  = undefined,
                        dataArray        = undefined,
-                       Header           = undefined,
-                       HeaderAction     = undefined,
-                       Footer           = undefined,
+                       header           = undefined,
+                       headerAction     = undefined,
+                       footer           = undefined,
                        allowedActions   = undefined,
-                       modalSize        = "lg",
-                       setModalHeader   = undefined,
+                       modal            = undefined,
                        setPrimaryKey    = undefined,
                        onLoadRecord     = undefined,
                        onDisplayBefore  = undefined,
@@ -129,6 +133,8 @@ const GridArray = ({
         onDisplayBefore(safeClone(dataArray), setBeforeRecords, setLoader);
     }, [dataArray, onDisplayBefore]);
 
+    const canEdit = children && (!allowedActions || allowedActions.includes("edit"));
+
     const records = useMemo(() => {
         if (!dataArray) return undefined;
         if (onDisplayBefore) return beforeRecords;
@@ -137,7 +143,7 @@ const GridArray = ({
     }, [dataArray, onDisplayBefore, beforeRecords]);
 
     // 1. Calcolo colonne
-    const header: Column[] = useMemo(() => {
+    const tableHeaders: Column[] = useMemo(() => {
         if (columns) return columns;
         if (!records || records.length === 0) return [];
 
@@ -167,8 +173,8 @@ const GridArray = ({
     }, [columns, records, children]);
 
     // 2. Funzioni di formattazione colonne
-    const columnsFunc: ColumnMap = useMemo(() => {
-        return (header).reduce((acc: ColumnMap, column: Column) => {
+    const columnFormatters: ColumnFormatters = useMemo(() => {
+        return (tableHeaders).reduce((acc: ColumnFormatters, column: Column) => {
             const key = column.key;
             const formatKey = format?.[column.key];
 
@@ -176,16 +182,14 @@ const GridArray = ({
                 acc[key] = column.onDisplay;
             } else if (formatKey && typeof formatKey === "function") {
                 acc[key] = formatKey;
-            } else if (formatKey) {
-                const convFunc = (converter[formatKey]
-                        ? formatKey
-                        : `to${ucfirst(formatKey)}`
-                );
-                acc[key] = ({ value }) => (converter[convFunc]?.(value)) || value;
+            } else if (formatKey && converter[formatKey]) {
+                acc[key] = ({ value }) => (converter[formatKey]?.(value));
+            } else {
+                acc[key] = ({ value }) => value;
             }
             return acc;
         }, {});
-    }, [header, format]);
+    }, [tableHeaders, format]);
 
     // 3. Applicazione columnsFunc e onLoadRecord
     const body: RecordArray | undefined = useMemo(() => {
@@ -199,8 +203,8 @@ const GridArray = ({
             const result = (transformed === true ? item : transformed);
             //@todo secondo me non serve
             const displayRow = {...result};
-            for (const key of Object.keys(columnsFunc)) {
-                displayRow[key] = columnsFunc[key]({
+            for (const key of Object.keys(columnFormatters)) {
+                displayRow[key] = columnFormatters[key]({
                     value: result[key],
                     record: result,
                     key: item?._key
@@ -210,22 +214,21 @@ const GridArray = ({
             acc.push(displayRow);
             return acc;
         }, []);
-    }, [records, onLoadRecord, columnsFunc]);
+    }, [records, onLoadRecord, columnFormatters]);
 
     console.log("GRID", dataArray, dataStoragePath, body, records);
 
-    const closeModal = () => {
+    const closeModal = useCallback(() => {
         setIsModalOpen(false);
         setModalData(undefined);
         setFormRef(null);
-    };
+    }, []);
 
-    const openModal = (
+    const openModal = useCallback((
         {
             title       = undefined,
             data        = undefined,
-            key         = undefined,
-            savePath    = ""
+            key         = undefined
         }: OpenModalParams
     ): void => {
         const formDataStoragePath = key 
@@ -233,39 +236,31 @@ const GridArray = ({
             : dataStoragePath;
 
         setModalData({
-            record: data || {} as RecordProps,
+            record: data,
             key: key,
             title: title,
             dataStoragePath: formDataStoragePath
         });
         setIsModalOpen(true);
-    };
+    }, [dataStoragePath]);
 
-    const handleSave = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    const handleSave = useCallback(async (e: React.MouseEvent<HTMLButtonElement>) => {
         if (!formRef) return;
         
         await formRef.handleSave(e, !modalData?.key);
         
         closeModal();
-    };
+    }, [formRef, modalData?.key, closeModal]);
 
-    const handleDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    const handleDelete = useCallback(async (e: React.MouseEvent<HTMLButtonElement>) => {
         if (!formRef) return;
         
         await formRef.handleDelete(e);
         
         closeModal();
-    };
+    }, [formRef, closeModal]);
 
-    const actionAddNew = children && (!allowedActions || allowedActions.includes("add")) && <button className="btn btn-primary" onClick={() => {
-        openModal({
-            title: setModalHeader?.(),
-        })
-    }}>Aggiungi</button>
-
-    const canEdit = children && (!allowedActions || allowedActions.includes("edit"));
-
-    const handleClick = (index: number) => {
+    const handleClick = useCallback((index: number) => {
         const data = dataArray?.[index];
 
         if (!data) {
@@ -278,14 +273,38 @@ const GridArray = ({
 
         if (canEdit && record?._key) {
             openModal({
-                title: setModalHeader?.(record),
+                title: modal?.setHeader?.(record) || "Modifica",
                 data: record,
                 key: record._key
             });
         }
-    }
+    }, [dataArray, onClick, canEdit, openModal, modal?.setHeader]);
 
-    const getComponent = () => {
+    const setFormRefCallback = useCallback((ref: FormRef | null) => {
+        setFormRef(ref);
+        console.log("GRID: formRef", ref);
+    }, []);
+
+    const addNewButton = useMemo(() => {
+        if (!children || (allowedActions && !allowedActions.includes("add"))) {
+            return null;
+        }
+        
+        return (
+            <button 
+                className="btn btn-primary" 
+                onClick={() => {
+                    openModal({
+                        title: modal?.setHeader?.() || "Aggiungi",
+                    })
+                }}
+            >
+                Aggiungi
+            </button>
+        );
+    }, [children, allowedActions, openModal, modal?.setHeader]);
+
+    const displayComponent = useMemo(() => {
         switch (type) {
             case "gallery":
                 return <Gallery
@@ -304,7 +323,7 @@ const GridArray = ({
             case "table":
             default:
                 return <Table
-                    header={header}
+                    header={tableHeaders}
                     body={body}
                     onClick={(onClick || canEdit) ? handleClick : undefined}
                     wrapClass={theme.Grid.Table.wrapperClass}
@@ -316,48 +335,14 @@ const GridArray = ({
                     selectedClass={!canEdit && (theme.Grid.Table.selectedClass)}
                 />;
         }
-    }
+    }, [type, body, onClick, canEdit, handleClick, groupBy, tableHeaders]);
 
-    const setFormRefCallback = useCallback((ref: FormRef | null) => {
-        setFormRef(ref);
-        console.log("GRID: formRef", ref);
-    }, []);
+    const modalComponent = useMemo((): React.ReactNode => {
+        if (!modalData) return null;
 
-    return (<>
-        <Card
-            wrapClass={wrapClass}
-            header={(Header || HeaderAction || actionAddNew) &&  <>
-                {Header || <span />}
-                {(HeaderAction || actionAddNew) &&  (
-                <span>
-                    {HeaderAction}
-                    {actionAddNew}
-                </span>
-                )}
-            </>}
-            footer={Footer}
-            className={(theme.Grid.Card.className + (sticky ? ' sticky-' + sticky : '')).trim()}
-            headerClass={theme.Grid.Card.headerClass}
-            bodyClass={theme.Grid.Card.bodyClass}
-            footerClass={theme.Grid.Card.footerClass}
-            showLoader={loader || showLoader}
-            showArrow={theme.Grid.Card.showArrow}
-        >{getComponent()}</Card>
-        {modalData && isModalOpen && (
-            <Modal
-                size={modalSize || theme.Grid.Modal.size}
-                title={modalData.title || (modalData.key ? "Modifica" : "Aggiungi")}
-                onClose={closeModal}
-                onSave={handleSave}
-                onDelete={modalData.key && (!allowedActions || allowedActions.includes("delete")) ? handleDelete : undefined}
-                wrapClass={theme.Grid.Modal.wrapClass}
-                className={theme.Grid.Modal.className}
-                headerClass={theme.Grid.Modal.headerClass}
-                titleClass={theme.Grid.Modal.titleClass}
-                bodyClass={theme.Grid.Modal.bodyClass}
-                footerClass={theme.Grid.Modal.footerClass}
-            >
-                <Form
+        switch (modal?.mode || theme.Grid.Modal.mode) {
+            case "form":
+                return <Form
                     dataStoragePath={modalData.dataStoragePath}
                     defaultValues={modalData.record}
                     log={log}
@@ -370,6 +355,49 @@ const GridArray = ({
                 >
                     {children}
                 </Form>
+            case "empty":
+            default:
+                console.log("GRID: modalData", modalData);
+                return <ComponentEnhancer components={children} record={modalData.record} />;
+        }
+    }, [modalData, modal?.mode, theme.Grid.Modal.mode, children, log, onInsert, onUpdate, onDelete, onFinally, setPrimaryKey, setFormRefCallback]);
+
+    return (<>
+        <Card
+            wrapClass={wrapClass}
+            header={(header || headerAction || addNewButton) &&  <>
+                {header || <span />}
+                {(headerAction || addNewButton) &&  (
+                <span>
+                    {headerAction}
+                    {addNewButton}
+                </span>
+                )}
+            </>}
+            footer={footer}
+            className={(theme.Grid.Card.className + (sticky ? ' sticky-' + sticky : '')).trim()}
+            headerClass={theme.Grid.Card.headerClass}
+            bodyClass={theme.Grid.Card.bodyClass}
+            footerClass={theme.Grid.Card.footerClass}
+            showLoader={loader || showLoader}
+            showArrow={theme.Grid.Card.showArrow}
+        >{displayComponent}</Card>
+        {modalData && isModalOpen && (
+            <Modal
+                size={modal?.size || theme.Grid.Modal.size}
+                position={modal?.position || theme.Grid.Modal.position}
+                title={modalData.title}
+                onClose={closeModal}
+                onSave={modal?.mode === "form" ? handleSave : undefined}
+                onDelete={modal?.mode === "form" && modalData.key && (!allowedActions || allowedActions.includes("delete")) ? handleDelete : undefined}
+                wrapClass={theme.Grid.Modal.wrapClass}
+                className={theme.Grid.Modal.className}
+                headerClass={theme.Grid.Modal.headerClass}
+                titleClass={theme.Grid.Modal.titleClass}
+                bodyClass={theme.Grid.Modal.bodyClass}
+                footerClass={theme.Grid.Modal.footerClass}
+            >
+                {modalComponent}
             </Modal>
         )}
     </>);
