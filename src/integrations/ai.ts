@@ -195,7 +195,10 @@ const fetchChatGPTApi = async (
         },
         body: body
     })
-        .then(response => apiLog(TYPE_CHATGPT, strategy, response))
+        .then(response => { 
+            console.log('Laaaaaaaaaaaa')
+            console.log(response)
+            return apiLog(TYPE_CHATGPT, strategy, response)})
         .then(response => {
             if (!response?.choices) return null;
             return parseContent(response.choices[0].message.content)

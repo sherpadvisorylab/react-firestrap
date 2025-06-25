@@ -28,9 +28,9 @@ interface Section {
 
 interface Post {
   title: string;
-  description: string;
   outline: Outline[];
   sections: Section;
+  description: string;
 }
 
 interface ConfigVariables {
@@ -43,13 +43,13 @@ interface ConfigVariables {
 const initialSection: SectionContent = { title: '', paragraphs: [] };
 const initialPost: Post = {
   title: '',
-  description: '',
   outline: [],
   sections: {
     intro: initialSection,
     sections: [],
     conclusion: initialSection
-  }
+  },
+  description: ''
 };
 
 export default function BlogPost({
@@ -60,7 +60,7 @@ export default function BlogPost({
     limit: '3'
   },
   promptTopic = 'GENERATE_BLOG_POST_TITLES',
-  onChange = ()=>{},
+  onChange = () => { },
   value = undefined
 }: {
   data?: ConfigVariables,
@@ -91,7 +91,6 @@ export default function BlogPost({
   };
 
   const updatePost = (field: keyof Post) => (value: any) => {
-    console.log('updatePost', field, value);
     setPost(prev => ({ ...prev, [field]: value }));
     onChange(post);
   };
@@ -121,7 +120,7 @@ export default function BlogPost({
     }));
   };
 
-  type ResetType = 'all' | 'fromTitle' | 'fromDescription' | 'fromOutline';
+  type ResetType = 'all' | 'fromTitle' | 'fromOutline' | 'fromSections' | 'fromDescription';
 
   const resetPost = (type: ResetType = 'all') => {
     if (type === 'all') {
@@ -137,22 +136,27 @@ export default function BlogPost({
           return {
             ...prev,
             title: '',
-            description: '',
             outline: [],
-            sections: { intro: initialSection, sections: [], conclusion: initialSection }
-          };
-        case 'fromDescription':
-          return {
-            ...prev,
-            description: '',
-            outline: [],
-            sections: { intro: initialSection, sections: [], conclusion: initialSection }
+            sections: { intro: initialSection, sections: [], conclusion: initialSection },
+            description: ''
           };
         case 'fromOutline':
           return {
             ...prev,
             outline: [],
-            sections: { intro: initialSection, sections: [], conclusion: initialSection }
+            sections: { intro: initialSection, sections: [], conclusion: initialSection },
+            description: ''
+          };
+        case 'fromSections':
+          return {
+            ...prev,
+            sections: { intro: initialSection, sections: [], conclusion: initialSection },
+            description: ''
+          };
+        case 'fromDescription':
+          return {
+            ...prev,
+            description: ''
           };
         default:
           return prev;
@@ -229,21 +233,6 @@ export default function BlogPost({
 
           {post.title && (
             <AssistantAI
-              key={refreshKey + '-desc'}
-              name='description'
-              initialValue={post.title || ''}
-              promptTopic='GENERATE_BLOG_POST_DESCRIPTIONS'
-              configVariables={configVariables}
-              onChange={updatePost('description')}
-              onReset={() => resetPost('fromDescription')}
-              autoStart={true}
-            >
-              <TextArea name='description' label='Description' value={post.description} rows={3} />
-            </AssistantAI>
-          )}
-
-          {post.description && (
-            <AssistantAI
               key={refreshKey + '-outline'}
               name='outline'
               initialValue={post.title || ''}
@@ -272,6 +261,7 @@ export default function BlogPost({
               promptTopic='GENERATE_COMPLETE_BLOG_POST_FROM_OUTLINE'
               configVariables={configVariables}
               onChange={updatePost('sections')}
+              onReset={() => resetPost('fromSections')}
               viewMode='carousel'
             >
               <Tab>
@@ -311,6 +301,21 @@ export default function BlogPost({
                   </TabItem>
                 ))}
               </Tab>
+            </AssistantAI>
+          )}
+
+          {post.sections.intro.title && (
+            <AssistantAI
+              key={refreshKey + '-desc'}
+              name='description'
+              initialValue={post.title || ''}
+              promptTopic='GENERATE_BLOG_POST_DESCRIPTIONS'
+              configVariables={configVariables}
+              onChange={updatePost('description')}
+              onReset={() => resetPost('fromDescription')}
+              autoStart={true}
+            >
+              <TextArea name='description' label='Description' value={post.description} rows={3} />
             </AssistantAI>
           )}
 
