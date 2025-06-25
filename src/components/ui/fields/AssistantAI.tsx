@@ -32,20 +32,16 @@ interface AssistantAIProps {
     onReset?: () => void;
 }
 
-/**
- * Pulisce e formatta il testo selezionato dalla risposta AI.
- */
-function cleanSelectedText(selectedText: string): string {
+/* Pulisce e formatta il testo selezionato dalla risposta AI */
+const cleanSelectedText = (selectedText: string): string => {
     return selectedText
         .replace(/^Outline \d+:\s*\n*/i, '')
         .replace(/([•\-]\s*[^\n]+)/g, '$1\n')
         .trim();
 }
 
-/**
- * Restituisce il contenuto formattato per la visualizzazione in base alla viewMode.
- */
-function getResponseContent(response: ResponseItem, viewMode: 'list' | 'carousel'): React.ReactNode {
+/* Restituisce il contenuto formattato per la visualizzazione in base alla viewMode */
+const getResponseContent = (response: ResponseItem, viewMode: 'list' | 'carousel'): React.ReactNode => {
     if (viewMode === 'carousel') {
         if ('outline' in response && Array.isArray(response.outline)) {
             const formatted = response.outline.map(section => {
@@ -109,24 +105,8 @@ const AssistantAI = ({
                 throw new Error('Failed to get response');
             }
 
-            let outputArray: any[] = [];
-
-            // Handle single object response
-            if (!Array.isArray(response) && typeof response === 'object') {
-                if (response.output) {
-                    outputArray = Array.isArray(response.output) ? response.output : [response.output];
-                } else {
-                    setSelectedResponse(response);
-                    onChange(response);
-                    setIsLoading(false);
-                    return;
-                }
-            } else {
-                // Handle array response
-                outputArray = Array.isArray(response) ? response : [response];
-            }
-
-            setResponsesAI(outputArray);
+            handleResponsesAI(response);
+            
         } catch (err) {
             setError('Failed to generate content. Please try again.');
             console.error('AI Error:', err);
@@ -135,7 +115,30 @@ const AssistantAI = ({
         }
     }
 
-    const handleResponse = (e: React.MouseEvent, index?: number) => {
+    // gestione risposte AI
+    const handleResponsesAI = (response: any) => {
+        let outputArray: any[] = [];
+
+        // single object
+        if (!Array.isArray(response) && typeof response === 'object') {
+            if (response.output) {
+                outputArray = Array.isArray(response.output) ? response.output : [response.output];
+            } else {
+                setSelectedResponse(response);
+                onChange(response);
+                setIsLoading(false);
+                return;
+            }
+        } else {
+            // array
+            outputArray = Array.isArray(response) ? response : [response];
+        }
+
+        setResponsesAI(outputArray);
+    }
+
+    // gestione selezione risposta
+    const handleSelectedResponse = (e: React.MouseEvent, index?: number) => {
         const selectedText = e.currentTarget.textContent || '';
         const cleanedText = cleanSelectedText(selectedText);
         let selectedElement: string | {} = selectedText;
@@ -146,8 +149,6 @@ const AssistantAI = ({
         setSelectedResponse(cleanedText);
         onChange(selectedElement);
     }
-
-    
 
     return (
         <Card
@@ -184,14 +185,14 @@ const AssistantAI = ({
                                 data-index={index}
                                 className="carousel-item-content"
                                 style={{ whiteSpace: 'pre-line', textAlign: 'left', cursor: 'pointer' }}
-                                onClick={(event) => handleResponse(event, index)}
+                                onClick={(event) => handleSelectedResponse(event, index)}
                             >
                                 {getResponseContent(response, viewMode)}
                             </div>
                         ))}
                     </Carousel>
                 ) : (
-                    <ListGroup onClick={handleResponse}>
+                    <ListGroup onClick={handleSelectedResponse}>
                         {responsesAI.map((response, index) => getResponseContent(response, viewMode))}
                     </ListGroup>
                 )
