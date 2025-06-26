@@ -177,8 +177,7 @@ export default function BlogPost({
   return (
     <>
       <h1>Create Blog Post</h1>
-      <Row>
-        <Col xs={5}>
+      <Form>
           <div className='d-flex flex-column gap-2 mb-3'>
             <Select
               name='lang'
@@ -319,9 +318,8 @@ export default function BlogPost({
             </AssistantAI>
           )}
 
-        </Col>
-        <Col xs={7}></Col>
-      </Row>
+      </Form>
+
     </>
   );
 }

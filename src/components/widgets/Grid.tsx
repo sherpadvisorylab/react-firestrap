@@ -8,7 +8,7 @@ import Modal from "../ui/Modal";
 import {safeClone, trimSlash, ucfirst} from "../../libs/utils";
 import {useLocation} from "react-router-dom";
 import {converter} from "../../libs/converter";
-import ComponentEnhancer, {extractComponentProps} from "../ComponentEnhancer";
+import FormEnhancer, {extractComponentProps} from "../FormEnhancer";
 import {RecordArray, RecordProps} from "../../integrations/google/firedatabase";
 import Form, {FormRef} from "./Form";
 
@@ -40,6 +40,7 @@ type GridProps = {
         size?: "sm" | "md" | "lg" | "xl" | "fullscreen";
         position?: "center" | "top" | "left" | "right" | "bottom";
         setHeader?: (record?: RecordProps) => string;
+        onOpen?: (data?: ModalProps) => React.ReactNode;
     };
     setPrimaryKey?: (record: RecordProps) => string;
     onLoadRecord?: (record: RecordProps, index: number) => RecordProps | boolean;
@@ -62,6 +63,13 @@ type GridProps = {
     log?: boolean;
     wrapClass?: string;
 };
+
+interface ModalProps {
+    record?: RecordProps;
+    key?: string;
+    title?: string;
+    dataStoragePath?: string;
+}
 
 interface OpenModalParams {
     title?: string;
@@ -118,12 +126,7 @@ const GridArray = ({
 
     const [loader, setLoader] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [modalData, setModalData] = useState<{
-        record?: RecordProps, 
-        key?: string, 
-        title?: string,
-        dataStoragePath?: string
-    } | undefined>(undefined);
+    const [modalData, setModalData] = useState<ModalProps | undefined>(undefined);
     const [formRef, setFormRef] = useState<FormRef | null>(null);
 
     const [beforeRecords, setBeforeRecords] = useState<RecordArray | undefined>(undefined);
@@ -133,7 +136,7 @@ const GridArray = ({
         onDisplayBefore(safeClone(dataArray), setBeforeRecords, setLoader);
     }, [dataArray, onDisplayBefore]);
 
-    const canEdit = children && (!allowedActions || allowedActions.includes("edit"));
+    const canEdit = (children || modal) && (!allowedActions || allowedActions.includes("edit"));
 
     const records = useMemo(() => {
         if (!dataArray) return undefined;
@@ -286,8 +289,8 @@ const GridArray = ({
     }, []);
 
     const addNewButton = useMemo(() => {
-        if (!children || (allowedActions && !allowedActions.includes("add"))) {
-            return null;
+        if ((children || modal) && (allowedActions && !allowedActions.includes("add"))) {
+            return;
         }
         
         return (
@@ -339,7 +342,8 @@ const GridArray = ({
 
     const modalComponent = useMemo((): React.ReactNode => {
         if (!modalData) return null;
-
+        
+        const component = modal?.onOpen?.(modalData) || children;
         switch (modal?.mode || theme.Grid.Modal.mode) {
             case "form":
                 return <Form
@@ -353,14 +357,18 @@ const GridArray = ({
                     setPrimaryKey={setPrimaryKey}
                     ref={setFormRefCallback}
                 >
-                    {children}
+                    {component}
                 </Form>
             case "empty":
             default:
-                console.log("GRID: modalData", modalData);
-                return <ComponentEnhancer components={children} record={modalData.record} />;
+                return <FormEnhancer 
+                    components={component} 
+                    record={modalData.record} 
+                    dataStoragePath={modalData.dataStoragePath} 
+                    parentName={modalData.key}
+                />;
         }
-    }, [modalData, modal?.mode, theme.Grid.Modal.mode, children, log, onInsert, onUpdate, onDelete, onFinally, setPrimaryKey, setFormRefCallback]);
+    }, [modalData, modal?.mode, modal?.onOpen, children, log, onInsert, onUpdate, onDelete, onFinally, setPrimaryKey, setFormRefCallback]);
 
     return (<>
         <Card

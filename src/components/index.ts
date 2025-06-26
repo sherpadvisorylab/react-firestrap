@@ -46,6 +46,7 @@ export { default as Menu } from './blocks/Menu';
 export { default as Form } from './widgets/Form';
 export { default as Grid } from './widgets/Grid';
 export { default as ImageEditor } from './widgets/ImageEditor';
+export { asForm} from './FormEnhancer';
 export { default as Component } from './Component';
 export { ComponentBlock } from './Component';
 export * from './Template';

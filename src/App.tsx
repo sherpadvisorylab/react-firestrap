@@ -92,7 +92,13 @@ function App({
     );
 
     function getRoute(key: string, item: MenuItem, index: number): React.ReactElement {
-        const pageSource = `./pages${item.path === "/" ? "/Home" : convert.toCamel(item.path)}.js`;
+        const component = item.component ? "/" + item.component :
+            (item.path === "/" 
+                ? "/Home"
+                : convert.toCamel(item.path.split("*")[0])
+            );
+        const pageSource = `./pages${component}.js`;
+
         const PageComponent = item.page || React.lazy(() =>
             importPage(pageSource)
                 .then((mod): { default: React.ComponentType<any> } => {

@@ -3,7 +3,7 @@ import { Label, ListGroup, TextArea } from './Input';
 import { ActionButton, LoadingButton } from '../Buttons';
 import { getPrompt, PROMPTS, setPrompt } from '../../../conf/Prompt';
 import fetchAI from '../../../integrations/ai';
-import ComponentEnhancer from '../../ComponentEnhancer';
+import FormEnhancer from '../../FormEnhancer';
 import Loader from '../Loader';
 import Carousel from '../../blocks/Carousel';
 import Card from '../Card';
@@ -198,7 +198,7 @@ const AssistantAI = ({
                 )
             )}
             {selectedResponse && !error &&
-                <ComponentEnhancer
+                <FormEnhancer
                     components={children}
                     record={{ [name]: selectedResponse }}
                 />

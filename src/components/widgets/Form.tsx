@@ -1,7 +1,7 @@
 import React, { useEffect, useState, forwardRef, useImperativeHandle, useRef, useCallback } from 'react';
 import { useLocation } from "react-router-dom";
 import { Wrapper } from "../ui/GridSystem";
-import ComponentEnhancer from "../ComponentEnhancer";
+import FormEnhancer from "../FormEnhancer";
 import { trimSlash } from "../../libs/utils";
 import db from "../../libs/database";
 import Card from "../ui/Card";
@@ -228,7 +228,7 @@ const FormData = forwardRef<FormRef, FormDefaultProps>(({
                 </Alert>
             )}
             {ref 
-            ? <ComponentEnhancer
+            ? <FormEnhancer
                 components={children}
                 record={record}
                 handleChange={handleChange}
@@ -261,7 +261,7 @@ const FormData = forwardRef<FormRef, FormDefaultProps>(({
                 bodyClass={className || theme.Form.Card.bodyClass}
                 footerClass={footerClass || theme.Form.Card.footerClass}
             >
-                <ComponentEnhancer
+                <FormEnhancer
                     components={children}
                     record={record}
                     handleChange={handleChange}

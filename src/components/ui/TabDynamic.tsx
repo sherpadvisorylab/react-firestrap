@@ -1,6 +1,6 @@
 import React, {useMemo, useState} from 'react';
 import {ActionButton} from "./Buttons";
-import ComponentEnhancer from "../ComponentEnhancer";
+import FormEnhancer, { asForm } from "../FormEnhancer";
 import {converter} from "../../libs/converter";
 import { TabLayouts, TabPosition } from './Tab';
 
@@ -52,7 +52,7 @@ const TabDynamic = ({
     const components = useMemo(
         () =>
           Array.from({ length: Math.max(min, records?.length) }, (_, i) =>
-            <ComponentEnhancer
+            <FormEnhancer
                 parentName={`${name}.${i}`}
                 components={children}
                 record={records?.[i]}
@@ -119,5 +119,4 @@ const TabDynamic = ({
     );
 }
 
-TabDynamic.enhance = true;
-export default TabDynamic;
+export default asForm(TabDynamic);

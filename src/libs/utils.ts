@@ -61,7 +61,6 @@ export const normalizeKey = (key?: string): string => {
     if(!key) return '';
 
     return trimSlash(key)
-        .trim()
         .replaceAll("/", "|")
         .replaceAll(" ", "-")
         .replaceAll("'", "-")
@@ -74,7 +73,9 @@ export const normalizeKey = (key?: string): string => {
         .replaceAll("]", "-")
         .replaceAll("_", "-")
         .toLowerCase()
-        .replace(/[^a-z0-9\-|]+/g, "");
+        .replace(/[^a-z0-9\-|]+/g, "")
+        .replace(/^-+|-+$/g, "")
+        .replace(/-+/g, "-");
 };
 
 

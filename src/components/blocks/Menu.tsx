@@ -71,7 +71,7 @@ const Menu = ({
     return (
       <li className={`${item.active ? 'active ' : ''}${itemClass ?? theme.Menu.itemClass}`}>
         <Link
-          to={item.path}
+          to={item.path.split("*")[0]}
           className={linkClass ?? theme.Menu.linkClass}
           {...(hasChildren && {
 
