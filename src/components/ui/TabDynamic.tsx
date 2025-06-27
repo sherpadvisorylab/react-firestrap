@@ -20,6 +20,10 @@ interface TabDynamicProps {
     tabPosition?: TabPosition;
 }
 
+const getValues = (value: any) => {
+    if(!value || Array.isArray(value)) return value;
+    return undefined;
+}
 const TabDynamic = ({
                  children,
                  name,
@@ -28,7 +32,7 @@ const TabDynamic = ({
                  onRemove       = undefined,
                  value          = undefined,
                  label          = "Tab",
-                 min            = 1,
+                 min            = 2,
                  max            = undefined,
                  activeIndex    = 0,
                  title          = undefined,
@@ -37,11 +41,10 @@ const TabDynamic = ({
 }: TabDynamicProps) => {
     const [active, setActive] = useState(activeIndex);
     const [release, setRelease] = useState(0);
-    const [internalValue, setInternalValue] = useState(() =>
-        Array.from({ length: min }, () => ({}))
+    const [records, setRecords] = useState<any[]>(() =>
+        getValues(value) ?? Array.from({ length: min }, () => ({}))
       );    
-    const records = value ?? internalValue;
-
+console.log("ASDADSAD", records, value,  getValues(value) );
     const setLabel = (index: number) => {
         return (label.includes("{")
             ? converter.parse(records?.[index], label) || "New " + (index + 1)
@@ -55,11 +58,11 @@ const TabDynamic = ({
             <FormEnhancer
                 parentName={`${name}.${i}`}
                 components={children}
-                record={records?.[i]}
+                record={value?.[i]}
                 handleChange={onChange}
             />
           ),
-        [records, children, name, onChange, min, release]
+        [value, children, name, onChange, min, release]
     );
       
     const handleAdd = () => {
@@ -67,16 +70,16 @@ const TabDynamic = ({
         onAdd?.(next);
         onChange?.({ target: { name: `${name}.${components.length}`, value: {} } });
 
-        !value && setInternalValue(next);
-        
+        setRecords(next);
+        console.log("handleAdd", next, components);
         setActive(components.length);
     }
 
     const handleRemove = (index: number) => {
         onRemove?.(index);
         onChange?.({ target: { name: `${name}.${index}` } });
-
-        !value && setInternalValue(prev => prev.filter((_, i) => i !== index));
+        //TODO: quando si rimuove l'arr
+        setRecords(prev => prev.filter((_, i) => i !== index));
 
         if(index == components.length - 1) {
             setActive(index - 1);

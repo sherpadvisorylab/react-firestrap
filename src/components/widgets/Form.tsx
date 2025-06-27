@@ -56,6 +56,8 @@ function Form(props: FormProps, ref?: React.Ref<FormRef>) {
     const { defaultValues, children, ...rest } = props;
 
     const formChildren = children as React.ReactNode;
+
+    console.log("Form", defaultValues, children, rest);
     return defaultValues
         ? <FormData children={formChildren} defaultValues={defaultValues} {...rest} ref={ref} />
         : <FormDatabase children={formChildren} defaultValues={defaultValues} {...rest} ref={ref} />;
@@ -77,6 +79,7 @@ export const FormDatabase = forwardRef<FormRef, FormDefaultProps>((props, ref) =
         });
     }, [dbStoragePath]);
 
+    console.log("FormDatabase", defaultValues, record);
     if (!record) {
         return <p className={"p-4"}><i className={"spinner-border spinner-border-sm"}></i> Caricamento in corso...</p>;
     }
@@ -112,9 +115,12 @@ const FormData = forwardRef<FormRef, FormDefaultProps>(({
     const theme = useTheme("form");
 
     const [record, setRecord] = useState<RecordProps | undefined>(defaultValues);
-
+    
+    console.log("FormData", defaultValues, children, record, dataStoragePath);
     const recordRef = useRef(record);
-    useEffect(() => { recordRef.current = record; console.log("recordRef ENTRO!!!", recordRef.current); }, [record]);
+    useEffect(() => { 
+        recordRef.current = record;
+     }, [record]);
 
     const [notification, setNotification] = useState<NoticeProps | undefined>(undefined);
     const notice = useCallback(({ message, type = "danger" }: NoticeProps) => {
@@ -140,9 +146,19 @@ const FormData = forwardRef<FormRef, FormDefaultProps>(({
             const lastKey = path[path.length - 1];
             if (value == null || value === "") {
                 if (Array.isArray(target) && !isNaN(Number(lastKey))) {
-                  target.splice(Number(lastKey), 1);
+                    target.splice(Number(lastKey), 1);
                 } else {
-                  delete (target as Record<string, any>)[lastKey];
+                    delete (target as Record<string, any>)[lastKey];
+                    //TODO: da ottimizzare. nel tabdynamic se rimuovi un tab intermedio questo pezzo è necessario per ricostruire l'array poiche per qualche motivo non era un array ma un oggetto.
+                    //il problema è a monte quando si crea la struttura dati.
+                    const keys = Object.keys(target);
+                    if (keys.every(k => !isNaN(Number(k)))) {
+                        const arr = keys
+                            .sort((a, b) => Number(a) - Number(b))
+                            .map(k => target[k]);
+                        Object.keys(target).forEach(k => delete target[k]);
+                        arr.forEach((item, idx) => target[idx] = item);
+                    }
                 }
             } else {
                 target[lastKey] = value;
@@ -219,7 +235,7 @@ const FormData = forwardRef<FormRef, FormDefaultProps>(({
         getRecord: () => recordRef.current
     }), [handleSave, handleDelete]);
 
-    console.log("FORMMMMMM", record, recordRef.current, "REFF", ref);
+    console.log("FORMMMMMM", defaultValues, record, recordRef.current, "REFF", ref);
     return (
         <Wrapper className={wrapClass || theme.Form.wrapClass}>
             {notification && (

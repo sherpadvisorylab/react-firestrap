@@ -69,11 +69,7 @@ const applyOnChangeRecursive = ({
         if (name && record?.[name] === undefined) {
             console.warn(`The property "${name}" is not present in the record`, child);
         }
-        if (name) {
-            console.log("CE IL NAMEEEE", props);
-        } else {
-            console.log("non ce il nNANAANANN", props);
-        }
+
         return React.cloneElement(child as any, props.onChange || name
             ? {
                 wrapClass: `mb-3${props.wrapClass ? ' ' + props.wrapClass : ''}`,

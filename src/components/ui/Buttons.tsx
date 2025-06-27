@@ -61,7 +61,7 @@ export const LoadingButton = ({
                     setDisable(false);
                 }}
             >
-                {loader && <i className={theme.LoadingButton.spinnerClass}></i>}
+                {loader && <i className={(label ? "me-1 " : "") + theme.LoadingButton.spinnerClass}></i>}
                 {(icon && !loader) && <i className={(label ? "me-1 " : "") + (iconClass ? iconClass + " " : "") + theme.getIcon(icon)}></i>}
                 {label}
                 {badge && !loader && <span className={"position-absolute end-0 top-0 badge " + (badgeClass || theme.LoadingButton.badgeClass)}>{badge}</span>}

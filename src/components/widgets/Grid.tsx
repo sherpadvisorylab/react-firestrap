@@ -348,7 +348,7 @@ const GridArray = ({
             case "form":
                 return <Form
                     dataStoragePath={modalData.dataStoragePath}
-                    defaultValues={modalData.record}
+                    defaultValues={modalData.record ?? {}}
                     log={log}
                     onInsert={onInsert}
                     onUpdate={onUpdate}
