@@ -62,6 +62,7 @@ type GridProps = {
     sticky?: "top" | "bottom";
     log?: boolean;
     wrapClass?: string;
+    ref?: FormRef
 };
 
 interface ModalProps {
@@ -120,14 +121,15 @@ const GridArray = ({
                        groupBy          = undefined,
                        sticky           = undefined,
                        log              = false,
-                       wrapClass        = undefined
+                       wrapClass        = undefined,
+                       ref              =undefined
 }: GridProps) => {
     const theme = useTheme("grid");
 
     const [loader, setLoader] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalData, setModalData] = useState<ModalProps | undefined>(undefined);
-    const [formRef, setFormRef] = useState<FormRef | null>(null);
+    const [formRef, setFormRef] = useState<FormRef | undefined>(ref);
 
     const [beforeRecords, setBeforeRecords] = useState<RecordArray | undefined>(undefined);
     useEffect(() => {
@@ -224,7 +226,7 @@ const GridArray = ({
     const closeModal = useCallback(() => {
         setIsModalOpen(false);
         setModalData(undefined);
-        setFormRef(null);
+        setFormRef(undefined);
     }, []);
 
     const openModal = useCallback((
@@ -284,7 +286,7 @@ const GridArray = ({
     }, [dataArray, onClick, canEdit, openModal, modal?.setHeader]);
 
     const setFormRefCallback = useCallback((ref: FormRef | null) => {
-        setFormRef(ref);
+        setFormRef(ref ?? undefined);
         console.log("GRID: formRef", ref);
     }, []);
 
