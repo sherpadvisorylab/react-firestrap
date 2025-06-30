@@ -34,7 +34,7 @@ export const CropImage = forwardRef(({img, title} : { img: ImageProps, title?: s
     const [imageBoundsMap, setImageBoundsMap] = useState<Record<string, ImageBounds>>({});
 
     useImperativeHandle(ref, () => ({
-        triggerSave: () => {
+        handleSave  : () => {
             const canvas = canvasRef.current;
             const ctx = canvas?.getContext("2d");
             if (!canvas || !ctx) return;

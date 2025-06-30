@@ -214,7 +214,7 @@ const FileEditor = ({
     const [fileName, setFileName] = useState(file.fileName);
 
     const cropRef = useRef<{
-        triggerSave: () => {
+        handleSave: () => {
             fileName: string;
             variants: Record<string, any>;
         };
@@ -222,7 +222,7 @@ const FileEditor = ({
 
     const handleSave = async () => {
         if (cropRef.current) {
-            onSave?.(cropRef.current.triggerSave());
+            onSave?.(cropRef.current.handleSave());
         } else {
             onSave?.({ fileName, variants: {} });
         }
