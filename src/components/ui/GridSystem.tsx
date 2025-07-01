@@ -8,12 +8,12 @@ type ContainerProps = {
 
 type ColProps = ContainerProps & {
     defaultSize?: number;
-    xxl?: number;
-    xl?: number;
-    lg?: number;
-    md?: number;
-    sm?: number;
-    xs?: number;
+    xxl?: number | 'auto';
+    xl?: number | 'auto';
+    lg?: number | 'auto';
+    md?: number | 'auto';
+    sm?: number | 'auto';
+    xs?: number | 'auto';
 };
 
 export const Wrapper = ({

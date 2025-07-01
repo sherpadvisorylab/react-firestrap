@@ -41,6 +41,11 @@ onConfigChange((newConfig: Config) => {
     init(newConfig.firebase);
 });
 
+export const SYSTEM_FIELDS = {
+    key: ":key",
+    value: ":value",
+  };    
+
 const handleError = (action: string, error: any, exception: boolean) => {
     const message = `Error during ${action}: ${error}`;
     if (exception) {
@@ -198,7 +203,7 @@ const db = {
 
                             mapped[prop] = field.includes("{")
                                 ? converter.parse({ key, ...value }, field)
-                                : (field === "key" ? key : value[field]);
+                                : (field === SYSTEM_FIELDS.key ? key : field === SYSTEM_FIELDS.value ? value : value[field]);
                         }
 
                         records.push({

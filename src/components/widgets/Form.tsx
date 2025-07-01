@@ -218,7 +218,7 @@ const FormData = forwardRef<FormRef, FormDefaultProps>(({
 
     const handleFinally = useCallback(async (action: 'create' | 'update' | 'delete') => {
         log && dataStoragePath && setLog(dataStoragePath, action, recordRef.current);
-                
+        console.log("handleFinally", onFinally, action, recordRef.current);
         onFinally && await onFinally(recordRef.current, action);
 
         notice({ message: `Record ${action}ed successfully`, type: "success" });

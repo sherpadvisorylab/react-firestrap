@@ -62,7 +62,6 @@ type GridProps = {
     sticky?: "top" | "bottom";
     log?: boolean;
     wrapClass?: string;
-    ref?: FormRef
 };
 
 interface ModalProps {
@@ -121,15 +120,14 @@ const GridArray = ({
                        groupBy          = undefined,
                        sticky           = undefined,
                        log              = false,
-                       wrapClass        = undefined,
-                       ref              =undefined
+                       wrapClass        = undefined
 }: GridProps) => {
     const theme = useTheme("grid");
 
     const [loader, setLoader] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalData, setModalData] = useState<ModalProps | undefined>(undefined);
-    const [formRef, setFormRef] = useState<FormRef | undefined>(ref);
+    const [formRef, setFormRef] = useState<FormRef | undefined>(undefined);
 
     const [beforeRecords, setBeforeRecords] = useState<RecordArray | undefined>(undefined);
     useEffect(() => {
@@ -287,7 +285,7 @@ const GridArray = ({
 
     const setFormRefCallback = useCallback((ref: FormRef | null) => {
         setFormRef(ref ?? undefined);
-        console.log("GRID: formRef", ref);
+        console.log("GRID: formRef callback", ref);
     }, []);
 
     const addNewButton = useMemo(() => {
@@ -368,10 +366,11 @@ const GridArray = ({
                     record={modalData.record} 
                     dataStoragePath={modalData.dataStoragePath} 
                     parentName={modalData.key}
+                    formRef={setFormRefCallback}
                 />;
         }
     }, [modalData, modal?.mode, modal?.onOpen, children, log, onInsert, onUpdate, onDelete, onFinally, setPrimaryKey, setFormRefCallback]);
-
+    console.log("GRID: formRef", formRef);
     return (<>
         <Card
             wrapClass={wrapClass}
@@ -398,8 +397,8 @@ const GridArray = ({
                 position={modal?.position || theme.Grid.Modal.position}
                 title={modalData.title}
                 onClose={closeModal}
-                onSave={modal?.mode === "form" ? handleSave : undefined}
-                onDelete={modal?.mode === "form" && modalData.key && (!allowedActions || allowedActions.includes("delete")) ? handleDelete : undefined}
+                onSave={formRef?.handleSave ? handleSave : undefined}
+                onDelete={formRef?.handleDelete && modalData.key && (!allowedActions || allowedActions.includes("delete")) ? handleDelete : undefined}
                 wrapClass={theme.Grid.Modal.wrapClass}
                 className={theme.Grid.Modal.className}
                 headerClass={theme.Grid.Modal.headerClass}

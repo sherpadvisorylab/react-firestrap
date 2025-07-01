@@ -14,6 +14,7 @@ interface FormEnhancerProps {
     handleChange?: (event: React.ChangeEvent<any>) => void;
     parentName?: string;
     dataStoragePath?: string;
+    formRef?: any;
 }
 
 type ApplyOnChangeParams = {
@@ -23,14 +24,19 @@ type ApplyOnChangeParams = {
     onEnhance?: (child: React.ReactElement) => void;
     parentName?: string;
     dataStoragePath?: string;
+    formRef?: React.RefObject<any>;
 };
+
+const isForwardRef = (type: any) =>
+    typeof type === "object" && type !== null && type.$$typeof === Symbol.for("react.forward_ref");
 
 const applyOnChangeRecursive = ({
                                     children,
                                     record,
                                     handleChange,
                                     parentName = undefined,
-                                    dataStoragePath = undefined
+                                    dataStoragePath = undefined,
+                                    formRef = undefined
                                 }: ApplyOnChangeParams): React.ReactNode => {
     return React.Children.map(children, (child) => {
         console.log("SIAMO TUTTI", child);
@@ -52,6 +58,7 @@ const applyOnChangeRecursive = ({
                 value: record?.[name] ?? record ?? props.value ?? undefined,
                 dataStoragePath: props.dataStoragePath ?? dataStoragePath ?? undefined,
                 onChange,
+                ...(isForwardRef(type) ? { ref: formRef } : {})
             });
         }
 
@@ -62,6 +69,7 @@ const applyOnChangeRecursive = ({
                     record,
                     handleChange,
                     dataStoragePath,
+                    formRef
                 }),
             });
         }
@@ -75,7 +83,7 @@ const applyOnChangeRecursive = ({
                 wrapClass: `mb-3${props.wrapClass ? ' ' + props.wrapClass : ''}`,
                 name: parentName ? `${parentName}.${name}` : name,
                 value: record?.[name] ?? props.value ?? undefined,
-                onChange,
+                onChange
             }
             : {
                 className: `mb-3${props.className ? ' ' + props.className : ''}`,
@@ -88,12 +96,13 @@ const FormEnhancer = ({
                                record,
                                handleChange,
                                parentName = undefined,
-                               dataStoragePath = undefined
+                               dataStoragePath = undefined,
+                               formRef = undefined
 }: FormEnhancerProps ) => {
     const children = Array.isArray(components) ? components : [components];
     return (
         <>
-            {applyOnChangeRecursive({children, record, handleChange, parentName, dataStoragePath})}
+            {applyOnChangeRecursive({children, record, handleChange, parentName, dataStoragePath, formRef})}
         </>
     );
 }
@@ -116,7 +125,7 @@ export function extractComponentProps<T>(
 }
 
 
-  
+  //todo: da aggiungere forwardref
   export function asForm<P extends FormProps>(
     Component: React.ComponentType<P>
   ): React.ComponentType<P> {

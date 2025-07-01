@@ -1,7 +1,7 @@
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useEffect, useId, useMemo, useState} from 'react';
 import database from "../../../libs/database";
 import {Label} from "./Input";
-import {Wrapper} from "../GridSystem"
+import {Col, Row, Wrapper} from "../GridSystem"
 import {useTheme} from "../../../Theme";
 import {arraysEqual, arrayUnique, isEmpty, sanitizeKey} from "../../../libs/utils";
 import {DatabaseOptions, RecordProps} from "../../../integrations/google/firedatabase";
@@ -98,10 +98,14 @@ const getOptions = (
     return [
         ...options.map(normalizeOption),
         ...lookup
-    ].sort((a, b) => order?.dir === "desc"
-        ? b[order?.field || "label"].localeCompare(a[order?.field || "label"])
-        : a[order?.field || "label"].localeCompare(b[order?.field || "label"])
-    );
+    ].sort((a, b) => {
+        const field = order?.field || "label";
+        const aVal = (a[field] ?? "").toString();
+        const bVal = (b[field] ?? "").toString();
+        return order?.dir === "desc"
+        ? bVal.localeCompare(aVal)
+        : aVal.localeCompare(bVal)
+    });
 }
 
 export const Select = ({
@@ -155,12 +159,14 @@ export const Select = ({
         onChange?.({target: {name: name, value: opts[0].value}}, opts);
     }
 
+    const id = useId();
     return (
         <Wrapper className={wrapClass || theme.Select.wrapClass}>
-            {label && <Label label={label} required={required}/>}
+            {label && <Label label={label} required={required} htmlFor={id}/>}
             <Wrapper className={pre || post ? "input-group": ""}>
                 {pre && <span className="input-group-text">{pre}</span>}
                 <select
+                    id={id}
                     name={name}
                     className={`form-select ${className || theme.Select.className}`}
                     defaultValue={selectedValue}
@@ -260,29 +266,29 @@ export const Autocomplete = ({
         });
     };
 
-    const selectedItemsClass = selectedItems.length > 0 ? " p-0" : "";
+    const id = useId();
     return (
         <Wrapper className={wrapClass || theme.Autocomplete.wrapClass}>
-            {label && <Label label={label} required={required}/>}
+            {label && <Label label={label} required={required} htmlFor={id}/>}
             <Wrapper className={pre || post ? "input-group" : ""}>
                 {pre && <span className="input-group-text">{pre}</span>}
-                <div className={`d-flex flex-wrap mb-3 form-control${selectedItemsClass}`}>
+                <Row className={`align-items-center border rounded me-1`}>
                     {selectedItems.map(item => (
-                        <span className="bg-secondary p-1 ms-2 my-2" key={item}>
-                            <small>{item}</small>
-                            <button className={"btn p-1"} onClick={() => removeItem(item)}>x</button>
-                        </span>
+                        <Col xs="auto" className="ms-1 bg-secondary" key={item}>
+                            {item}<button className={"btn p-0"} onClick={() => removeItem(item)}>x</button>
+                        </Col>
                     ))}
-                    {(!max || selectedItems.length < max) && <input
+                    {(!max || selectedItems.length < max) && <Col><input
+                        id={id}
                         type={"text"}
-                        className={`border-0 p-0 bg-transparent w-100 ${className || theme.Autocomplete.className}`}
+                        className={`border-0 form-control w-100 ${className || theme.Autocomplete.className}`}
                         required={required && selectedItems.length < (min || 0)}
                         disabled={disabled || (!updatable && !isEmpty(value))}
                         placeholder={placeholder}
                         list={name}
                         onChange={handleChange}
-                    />}
-                </div>
+                    /></Col>}
+                </Row>
                 <datalist id={name}>
                     {opts.map((op) => {
                         const key = sanitizeKey(`dl-${name}-${op.value}`);
