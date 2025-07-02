@@ -19,7 +19,7 @@ type ColumnFormatter = (args: {
 }) => React.ReactNode;
 
 type Column = TableHeaderProp & {
-    onDisplay?: ColumnFormatter;
+    onDisplay?: ColumnFormatter | string;
 };
 
 type ColumnFormatters = Record<string, ColumnFormatter>;
@@ -95,6 +95,14 @@ const GridDatabase = (props: Omit<GridProps, 'dataArray'>) => {
     return <GridArray {...rest} dataArray={records} dataStoragePath={dbStoragePath} />;
 };
 
+const defaultHeader = (key: string) => {
+    return {
+        label: converter.toCamel(key, " "),
+        key,
+        sort: true,
+    };
+}
+
 const GridArray = ({
                        columns          = undefined,
                        format           = {},
@@ -152,11 +160,7 @@ const GridArray = ({
 
         return (
             children && typeof children !== 'function'
-                ? extractComponentProps(children, (child) => ({
-                    label: converter.toCamel(child.props.name, " "),
-                    key: child.props.name,
-                    sort: true,
-                }))
+                ? extractComponentProps(children, (props) => defaultHeader(props.name))
                 : Object.entries(records[0]).reduce((acc: Column[], [key, value]) => {
                     if (key.startsWith("_")) return acc;
                     if (
@@ -164,11 +168,7 @@ const GridArray = ({
                         typeof value !== 'object' ||
                         Array.isArray(value)
                     ) {
-                        acc.push({
-                            label: converter.toCamel(key, " "),
-                            key,
-                            sort: true,
-                        });
+                        acc.push(defaultHeader(key));
                     }
                     return acc;
                 }, [])
@@ -182,7 +182,7 @@ const GridArray = ({
             const formatKey = format?.[column.key];
 
             if (column?.onDisplay) {
-                acc[key] = column.onDisplay;
+                acc[key] = typeof column.onDisplay === "string" ? ({value}) => converter[column.onDisplay as keyof typeof converter]?.(value) : column.onDisplay;
             } else if (formatKey && typeof formatKey === "function") {
                 acc[key] = formatKey;
             } else if (formatKey && converter[formatKey]) {

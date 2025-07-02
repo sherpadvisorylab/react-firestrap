@@ -1,5 +1,6 @@
 import React from 'react';
 import {RecordProps} from "../integrations/google/firedatabase";
+import { FormRef } from './widgets/Form';
 
 type FormProps = {
     name?: string;
@@ -8,27 +9,43 @@ type FormProps = {
     dataStoragePath?: string;
 };
 
-interface FormEnhancerProps {
-    components: React.ReactNode | React.ReactNode[];
+interface EnhancerProps {
     record?: RecordProps;
     handleChange?: (event: React.ChangeEvent<any>) => void;
     parentName?: string;
     dataStoragePath?: string;
-    formRef?: any;
+    formRef?: React.Ref<FormRef>;
+}
+interface FormEnhancerProps extends EnhancerProps {
+    components: React.ReactNode;
 }
 
-type ApplyOnChangeParams = {
+interface ApplyOnChangeProps extends EnhancerProps {
     children: React.ReactNode;
-    record?: RecordProps;
-    handleChange?: (event: React.ChangeEvent<any>) => void;
-    onEnhance?: (child: React.ReactElement) => void;
-    parentName?: string;
-    dataStoragePath?: string;
-    formRef?: React.RefObject<any>;
 };
 
-const isForwardRef = (type: any) =>
+const checkForwardRef = (type: any) =>
     typeof type === "object" && type !== null && type.$$typeof === Symbol.for("react.forward_ref");
+
+const applyRef = (child: React.ReactNode, formRef: React.Ref<FormRef>): React.ReactNode => {
+    if (!React.isValidElement(child)) return child;
+
+    const {type, props} = child;
+    const isForwardRef = checkForwardRef(type);
+
+    if (isForwardRef) {
+        console.log("APPLY REF", child, formRef);
+        return React.cloneElement(child as any, { ref: formRef });
+    }
+    if (props.children) {
+        return React.cloneElement(child as any, {
+            children: applyRef(props.children, formRef)
+        });
+    }
+
+    return child;
+}
+
 
 const applyOnChangeRecursive = ({
                                     children,
@@ -37,8 +54,8 @@ const applyOnChangeRecursive = ({
                                     parentName = undefined,
                                     dataStoragePath = undefined,
                                     formRef = undefined
-                                }: ApplyOnChangeParams): React.ReactNode => {
-    return React.Children.map(children, (child) => {
+                                }: ApplyOnChangeProps): React.ReactNode => {
+    return React.Children.map(children, (child) => {    
         console.log("SIAMO TUTTI", child);
 
         if (!React.isValidElement(child)) return child;
@@ -53,12 +70,13 @@ const applyOnChangeRecursive = ({
         
         if ((type as any)?.__form) {
             console.log("ENHANCE", child, record, (name ? record?.[name] : record) ?? props.value ?? undefined);
+
             return React.cloneElement(child as any, {
                 wrapClass: `mb-3${props.wrapClass ? ' ' + props.wrapClass : ''}`,
                 value: record?.[name] ?? record ?? props.value ?? undefined,
                 dataStoragePath: props.dataStoragePath ?? dataStoragePath ?? undefined,
                 onChange,
-                ...(isForwardRef(type) ? { ref: formRef } : {})
+                ...(checkForwardRef(type) ? {ref: formRef} : {}),
             });
         }
 
@@ -68,6 +86,7 @@ const applyOnChangeRecursive = ({
                     children: props.children,
                     record,
                     handleChange,
+                    parentName,
                     dataStoragePath,
                     formRef
                 }),
@@ -100,6 +119,7 @@ const FormEnhancer = ({
                                formRef = undefined
 }: FormEnhancerProps ) => {
     const children = Array.isArray(components) ? components : [components];
+
     return (
         <>
             {applyOnChangeRecursive({children, record, handleChange, parentName, dataStoragePath, formRef})}
@@ -109,24 +129,30 @@ const FormEnhancer = ({
 
 export function extractComponentProps<T>(
     components: React.ReactNode | React.ReactNode[],
-    onEnhance: (child: React.ReactElement) => T
-): T[] {
+    onEnhance: (props: {[key: string]: any}) => T
+): T[] {    
     const children = Array.isArray(components) ? components : [components];
     const result: T[] = [];
 
-    applyOnChangeRecursive({
-        children,
-        onEnhance: (child) => {
-            result.push(onEnhance(child));
-        }
-    });
+    const extractRecursive = (nodes: React.ReactNode) => {
+        React.Children.forEach(nodes, (child) => {
+            if (!React.isValidElement(child)) return;
 
+            const {props} = child;
+            if (props.name) {
+                result.push(onEnhance(props));
+            } else if (props.children) {
+                extractRecursive(props.children);
+            }
+        });
+    };
+
+    extractRecursive(children);
     return result;
 }
 
 
-  //todo: da aggiungere forwardref
-  export function asForm<P extends FormProps>(
+export function asForm<P extends FormProps>(
     Component: React.ComponentType<P>
   ): React.ComponentType<P> {
     (Component as any).__form = true;

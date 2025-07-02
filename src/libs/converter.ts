@@ -169,6 +169,9 @@ export const converter: Converter = {
     },
     toUpper: (str) => str.toUpperCase(),
     toLower: (str) => str.toLowerCase(),
+    toNumberFormat: (num: string | number, locale = navigator.language) => {
+        return new Intl.NumberFormat(locale).format(Number(num));
+    },
     splitLast: (str, seps, regException = undefined) => {
         const splitter = (sep: string): [string, string] | null => {
             const split = str.split(sep);

@@ -63,13 +63,13 @@ function Table({
     }
 
     const getField = (item: RecordProps, key: string) => {
-        if (typeof item[key] === 'object' && !React.isValidElement(item[key]) && !Array.isArray(item[key])) {
-            return "";
-        }
-
-        return item[key];
-    }
-
+        const v = item[key];
+        if (React.isValidElement(v) || v == null || typeof v !== 'object') return v;
+        return Array.isArray(v) && !v.some(e => typeof e === 'object' && e)
+          ? v.join(", ")
+          : "";
+    };
+      
     if (!Array.isArray(body)) {
         return <p className={"p-4"}><i className={"spinner-border spinner-border-sm"}></i> Caricamento in corso...</p>;
     } else if(body.length === 0) {

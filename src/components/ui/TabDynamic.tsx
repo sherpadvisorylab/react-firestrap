@@ -58,7 +58,7 @@ console.log("ASDADSAD", records, value,  getValues(value) );
             <FormEnhancer
                 parentName={`${name}.${i}`}
                 components={children}
-                record={value?.[i]}
+                record={records?.[i]}
                 handleChange={onChange}
             />
           ),
