@@ -139,7 +139,13 @@ const FormData = forwardRef<FormRef, FormDefaultProps>(({
             let target = updated;
     
             for (let i = 0; i < path.length - 1; i++) {
-                if (!target[path[i]]) target[path[i]] = {};
+                if (!target[path[i]]) {
+                    if(path.length > i + 1 && !isNaN(Number(path[i + 1]))) {
+                        target[path[i]] = Array.from({ length: Number(path[i + 1]) + 1 }, () => ({}));
+                    } else {
+                        target[path[i]] = {};
+                    }
+                }
                 target = target[path[i]];
             }
 
