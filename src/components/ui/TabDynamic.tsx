@@ -41,45 +41,27 @@ const TabDynamic = ({
 
 
     const tabs = useMemo(() => {
-        console.log("tabs", value, label, min);
         return (Array.isArray(value) ? value : Array.from({ length: min }, () => ({})))?.map((_, index) => label.includes("{")
         ? converter.parse(value?.[index], label)
         : label + " " + (index + 1))
     }, [value, label, min, release]);
 
-    console.log("ASDADSAD", active, value, tabs );
-
     const components = typeof children === 'function'
-    ? children(value?.[active])
+    ? children({record: value?.[active], records: value, currentIndex: active})
     : children;
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const [parent, indexStr, field] = e.target.name.split(".");
-        const index = parseInt(indexStr);
-        console.log("handleChange", e, parent, index, field);
-
-        /*setRecords(prev => {
-            const updated = [ ...prev ];
-            updated[index] = { ...updated[index], [field]: e.target.value };
-            return updated;
-        });*/
-        onChange?.(e);
-    }
     
     const component = useMemo(() => {
-        console.log("component", active, value, components, children);
         return <FormEnhancer
             key={`${name}-${active}-${release}`}
             parentName={`${name}.${active}`}
             components={components}
             record={value?.[active]}
-            handleChange={handleChange}
+            handleChange={onChange}
         />
     }, [active, components, name, release]);
 
       
     const handleAdd = () => {
-        console.log(value, typeof value, Array.isArray(value));
         const next = Array.isArray(value) 
             ? [...value, {}] 
             : Array.from({ length: tabs.length + 1 }, () => ({}));
@@ -88,7 +70,6 @@ const TabDynamic = ({
 
         setActive(next.length - 1);
         setRelease(prev => prev + 1);
-        console.log("handleAdd", next, value);
     }
 
     const handleRemove = (index: number) => {

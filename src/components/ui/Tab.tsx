@@ -35,14 +35,14 @@ export const TabLayouts: Record<TabPosition, (props: TabLayoutProps) => JSX.Elem
     ),
     left: ({menu, content}) => (
         <div className="d-flex">
-            <ul className="nav nav-pills flex-column">{menu}</ul>
+            <ul className="nav nav-pills flex-column me-2">{menu}</ul>
             <div className="tab-content flex-fill">{content}</div>
         </div>
     ),
     right: ({menu, content}) => (
         <div className="d-flex">
             <div className="tab-content flex-fill">{content}</div>
-            <ul className="nav nav-pills flex-column">{menu}</ul>
+            <ul className="nav nav-pills flex-column ms-2">{menu}</ul>
         </div>
     ),
     bottom: ({menu, content}) => (

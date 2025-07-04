@@ -131,7 +131,6 @@ export const Select = ({
                               className     = undefined,
 } : SelectProps) => {
     const theme = useTheme("select");
-
     const [selectedValue, setSelectedValue] = useState(value);
     useEffect(() => {
         if (value !== selectedValue) {
@@ -169,21 +168,14 @@ export const Select = ({
                     id={id}
                     name={name}
                     className={`form-select ${className || theme.Select.className}`}
-                    defaultValue={selectedValue}
+                    value={selectedValue}
                     required={required}
                     disabled={disabled || (!updatable && !isEmpty(selectedValue))}
                     onChange={onChange}
                     title={title}
                 >
                     {optionEmpty && <option value={optionEmpty.value}>{optionEmpty.label}</option>}
-                    {opts.map((op) => {
-                        const key = sanitizeKey(`sl-${name}-${op.value}`);
-                        return (
-                            <option value={op.value} key={key}>
-                                {op.label}
-                            </option>
-                        );
-                    })}
+                    {opts.map((op, index) => <option value={op.value} key={`${id}-${index}`}>{op.label}</option>)}
                 </select>
                 {post && <span className="input-group-text p-0">{post}</span>}
             </Wrapper>
@@ -290,14 +282,7 @@ export const Autocomplete = ({
                     /></Col>}
                 </Row>
                 <datalist id={name}>
-                    {opts.map((op) => {
-                        const key = sanitizeKey(`dl-${name}-${op.value}`);
-                        return (
-                            <option value={op.value} key={key}>
-                                {op.label}
-                            </option>
-                        );
-                    })}
+                    {opts.map((op, index) => <option value={op.value} key={`${id}-${index}`}>{op.label}</option>)}
                 </datalist>
                 {post && <span className="input-group-text">{post}</span>}
             </Wrapper>
