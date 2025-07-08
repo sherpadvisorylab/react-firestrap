@@ -288,7 +288,7 @@ export const UploadDocument = ({
         <Wrapper className={wrapClass}>
             {pre}
             <div className={className}>
-                <div className="d-flex justify-content-between align-items-center">
+                <div className={`d-flex align-items-center ${label ? 'justify-content-between' : 'justify-content-end'}`} >
                     {label && <Label label={label} required={required} />}
                     {isUploadable(files, max, multiple) && <FileInput
                         name={name}

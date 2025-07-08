@@ -58,7 +58,7 @@ const componentFormFields: ComponentFormFieldsMap = {
         return {
             __props: props,
             getDefaults: (key) => ({[key]: value}),
-            renderForm: (key) => <String name={key} label={label ?? key} {...rest} />
+            render: (key, value) => <String name={key} label={label ?? key} {...rest} value={value} />
         }
     },
     number: (props = {}) => {
@@ -66,7 +66,7 @@ const componentFormFields: ComponentFormFieldsMap = {
         return {
             __props: props,
             getDefaults: (key) => ({[key]: value}),
-            renderForm: (key) => <Number name={key} label={label ?? key} {...rest} />
+            render: (key, value) => <Number name={key} label={label ?? key} {...rest} value={value} />
         }
     },
     email: (props = {}) => {
@@ -74,7 +74,7 @@ const componentFormFields: ComponentFormFieldsMap = {
         return {
             __props: props,
             getDefaults: (key) => ({[key]: value}),
-            renderForm: (key) => <Email name={key} label={label ?? key} {...rest} />
+            render: (key, value) => <Email name={key} label={label ?? key} {...rest} value={value} />
         }
     },
     password: (props = {}) => {
@@ -82,7 +82,7 @@ const componentFormFields: ComponentFormFieldsMap = {
         return {
             __props: props,
             getDefaults: (key) => ({[key]: value}),
-            renderForm: (key) => <Password name={key} label={label ?? key} {...rest} />
+            render: (key, value) => <Password name={key} label={label ?? key} {...rest} value={value} />
         }
     },
     color: (props = {}) => {
@@ -90,7 +90,7 @@ const componentFormFields: ComponentFormFieldsMap = {
         return {
             __props: props,
             getDefaults: (key) => ({[key]: value}),
-            renderForm: (key) => <Color name={key} label={label ?? key} {...rest} />
+            render: (key, value) => <Color name={key} label={label ?? key} {...rest} value={value} />
         }
     },
     date: (props = {}) => {
@@ -98,7 +98,7 @@ const componentFormFields: ComponentFormFieldsMap = {
         return {
             __props: props,
             getDefaults: (key) => ({[key]: value}),
-            renderForm: (key) => <Date name={key} label={label ?? key} {...rest} />
+            render: (key, value) => <Date name={key} label={label ?? key} {...rest} value={value} />
         }
     },
     time: (props = {}) => {
@@ -106,7 +106,7 @@ const componentFormFields: ComponentFormFieldsMap = {
         return {
             __props: props,
             getDefaults: (key) => ({[key]: value}),
-            renderForm: (key) => <Time name={key} label={label ?? key} {...rest} />
+            render: (key, value) => <Time name={key} label={label ?? key} {...rest} value={value} />
         }
     },
     datetime: (props = {}) => {
@@ -114,7 +114,7 @@ const componentFormFields: ComponentFormFieldsMap = {
         return {
             __props: props,
             getDefaults: (key) => ({ [key]: value }),
-            renderForm: (key) => <DateTime name={key} label={label ?? key} {...rest} />
+            render: (key, value) => <DateTime name={key} label={label ?? key} {...rest} value={value} />
         }
     },
     week: (props = {}) => {
@@ -122,7 +122,7 @@ const componentFormFields: ComponentFormFieldsMap = {
         return {
             __props: props,
             getDefaults: (key) => ({ [key]: value }),
-            renderForm: (key) => <Week name={key} label={label ?? key} {...rest} />
+            render: (key, value) => <Week name={key} label={label ?? key} {...rest} value={value} />
         }
     },
     month: (props = {}) => {
@@ -130,7 +130,7 @@ const componentFormFields: ComponentFormFieldsMap = {
         return {
             __props: props,
             getDefaults: (key) => ({ [key]: value }),
-            renderForm: (key) => <Month name={key} label={label ?? key} {...rest} />
+            render: (key, value) => <Month name={key} label={label ?? key} {...rest} value={value} />
         }
     },
     textarea: (props = {}) => {
@@ -138,7 +138,7 @@ const componentFormFields: ComponentFormFieldsMap = {
         return {
             __props: props,
             getDefaults: (key) => ({[key]: value}),
-            renderForm: (key) => <TextArea name={key} label={label ?? key} {...rest} />
+            render: (key, value) => <TextArea name={key} label={label ?? key} {...rest} value={value} />
         }
     },
     checkbox: (props = {}) => {
@@ -146,7 +146,7 @@ const componentFormFields: ComponentFormFieldsMap = {
         return {
             __props: props,
             getDefaults: (key) => ({[key]: value}),
-            renderForm: (key) => <Checkbox name={key} label={label ?? key} {...rest} />
+            render: (key, value) => <Checkbox name={key} label={label ?? key} {...rest} value={value} />
         }
     },
     switch: (props = {}) => {
@@ -154,7 +154,7 @@ const componentFormFields: ComponentFormFieldsMap = {
         return {
             __props: props,
             getDefaults: (key) => ({[key]: value}),
-            renderForm: (key) => <Switch name={key} label={label ?? key} {...rest} />
+            render: (key, value) => <Switch name={key} label={label ?? key} {...rest} value={value} />
         }
     },
     select: (props = {}) => {
@@ -162,7 +162,7 @@ const componentFormFields: ComponentFormFieldsMap = {
         return {
             __props: props,
             getDefaults: (key) => ({[key]: value}),
-            renderForm: (key) => <Select name={key} label={label ?? key} {...rest} />
+            render: (key, value) => <Select name={key} label={label ?? key} {...rest} value={value} />
         }
     },
     autocomplete: (props = {}) => {
@@ -170,7 +170,7 @@ const componentFormFields: ComponentFormFieldsMap = {
         return {
             __props: props,
             getDefaults: (key) => ({[key]: value}),
-            renderForm: (key) => <Autocomplete name={key} label={label ?? key} {...rest} />
+            render: (key, value) => <Autocomplete name={key} label={label ?? key} {...rest} value={value} />
         }
     },
     checklist: (props = {}) => {
@@ -178,7 +178,7 @@ const componentFormFields: ComponentFormFieldsMap = {
         return {
             __props: props,
             getDefaults: (key) => ({[key]: value}),
-            renderForm: (key) => <Checklist name={key} label={label ?? key} {...rest} />
+            render: (key, value) => <Checklist name={key} label={label ?? key} {...rest} value={value} />
         }
     },
     uploadImage: (props = {}) => {
@@ -186,7 +186,7 @@ const componentFormFields: ComponentFormFieldsMap = {
         return {
             __props: props,
             getDefaults: (key) => ({[key]: value}),
-            renderForm: (key) => <UploadImage name={key} label={label ?? key} {...rest} />
+            render: (key, value) => <UploadImage name={key} label={label ?? key} {...rest} value={value} />
         }
     },
     uploadDocument: (props = {}) => {
@@ -194,7 +194,7 @@ const componentFormFields: ComponentFormFieldsMap = {
         return {
             __props: props,
             getDefaults: (key) => ({[key]: value}),
-            renderForm: (key) => <UploadDocument name={key} label={label ?? key} {...rest} />
+            render: (key, value) => <UploadDocument name={key} label={label ?? key} {...rest} value={value} />
         }
     },
     image: (props = {}) => {
@@ -207,7 +207,7 @@ const componentFormFields: ComponentFormFieldsMap = {
                 [`${key}:width`]: width,
                 [`${key}:height`]: height
             }),
-            renderForm: (key) => <>
+            render: (key) => <>
                 <String name={`${key}:src`} label="Image source" />
                 <String name={`${key}:alt`} label="Alt text" />
                 <Row>
@@ -222,7 +222,7 @@ const componentFormFields: ComponentFormFieldsMap = {
         return {
             __props: props,
             getDefaults: (key) => ({[key]: context}),
-            renderForm: (key) => <Select name={key} label={key} value={context} options={getContextMenu()}/>
+            render: (key) => <Select name={key} label={key} value={context} options={getContextMenu()}/>
         }
     }
 };

@@ -88,7 +88,7 @@ class Template {
                     console.warn(`[Template] Tipo di input non riconosciuto: "${tag}" per la variabile "${key}"`);
                     continue;
                 }
-                this.formFields[key] = field.renderForm(key);
+                this.formFields[key] = field.render(key);
                 Object.assign(this.defaultValues, field.getDefaults(key));
             }
 

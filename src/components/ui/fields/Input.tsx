@@ -231,6 +231,7 @@ export const TextArea = ({
     className = undefined,
     wrapClass = undefined
 }: TextAreaProps) => {
+    const id = useId();
     const handleDrop = React.useCallback((e: React.DragEvent<HTMLTextAreaElement>) => {
         e.preventDefault();
         
@@ -267,10 +268,11 @@ export const TextArea = ({
 
     return (
         <Wrapper className={wrapClass}>
-            {label && <Label required={required} label={label} />}
+            {label && <Label required={required} label={label} htmlFor={id} />}
             <Wrapper className={pre || post ? "input-group" : ""}>
                 {pre && <span className="input-group-text">{pre}</span>}
                 <textarea
+                    id={id}
                     name={name}
                     className={`form-control${className ? " " + className : ""}`}
                     ref={(el) => (useRef = el)}

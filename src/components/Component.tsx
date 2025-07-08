@@ -10,7 +10,7 @@ type Primitive = string | number | boolean | undefined;
 
 interface FieldAdapter<TProps = any> {
     getDefaults: (key: string) => Record<string, Primitive | any[]>;
-    renderForm: (key: string) => React.ReactNode;
+    render: (key: string, value?: any) => React.ReactNode;
     __props: TProps;
 }
 
@@ -74,7 +74,7 @@ export abstract class ComponentBlock {
 }
 
 function isFieldAdapter(obj: any): obj is FieldAdapter {
-    return typeof obj?.renderForm === 'function' && typeof obj?.getDefaults === 'function';
+    return typeof obj?.render === 'function' && typeof obj?.getDefaults === 'function';
 }
 
 function isComponentBlock(obj: any): obj is new () => ComponentBlock {
@@ -105,7 +105,7 @@ export function buildFormFields(
 
     for (const [key, value] of Object.entries(model)) {
         if (isFieldAdapter(value)) {
-            fields[key] = value.renderForm(key);
+            fields[key] = value.render(key);
             setDefaults(value.getDefaults(key));
         } else if (isComponentBlock(value)) {
             const instance = new value();
@@ -182,7 +182,7 @@ export function ComponentBlockSave(blockClass: new () => ComponentBlock, dbStora
     function detectFieldType(adapter: FieldAdapter): string {
         for (const [typeName, factory] of Object.entries(componentFormFields)) {
             const testAdapter = factory();
-            if (testAdapter.renderForm.toString() === adapter.renderForm.toString()) {
+            if (testAdapter.render.toString() === adapter.render.toString()) {
                 return typeName;
             }
         }
@@ -261,7 +261,7 @@ function ComponentBlockSave2(blockClass: new () => ComponentBlock, dbStoragePath
     function detectFieldType(adapter: FieldAdapter): string {
         for (const [typeName, factory] of Object.entries(componentFormFields)) {
             const testAdapter = factory();
-            if (testAdapter.renderForm.toString() === adapter.renderForm.toString()) {
+            if (testAdapter.render.toString() === adapter.render.toString()) {
                 return typeName;
             }
         }
