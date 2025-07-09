@@ -7,6 +7,7 @@ import { Number, String, TextArea } from '../components/ui/fields/Input';
 import { Select } from '../components/ui/fields/Select';
 import AssistantAI from '../components/ui/fields/AssistantAI'
 import Form from '../components/widgets/Form';
+import { ChangeHandler } from '../components';
 
 type PromptKey = keyof typeof PROMPTS;
 
@@ -86,7 +87,7 @@ export default function BlogPost({
     post.title && setDisabledVariables(true);
   }, [post.title]);
 
-  const handleConfigChange = (field: keyof ConfigVariables) => (e: { target: { value: string } }) => {
+  const handleConfigChange = (field: keyof ConfigVariables) => (e: ChangeHandler) => {
     setConfigVariables(prev => ({ ...prev, [field]: e.target.value }));
   };
 

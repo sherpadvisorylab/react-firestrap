@@ -58,7 +58,7 @@ const componentFormFields: ComponentFormFieldsMap = {
         return {
             __props: props,
             getDefaults: (key) => ({[key]: value}),
-            render: (key, value) => <String name={key} label={label ?? key} {...rest} value={value} />
+            render: (key, value, onChange) => <String name={key} label={label ?? key} {...rest} value={value} onChange={onChange} />
         }
     },
     number: (props = {}) => {
@@ -66,7 +66,7 @@ const componentFormFields: ComponentFormFieldsMap = {
         return {
             __props: props,
             getDefaults: (key) => ({[key]: value}),
-            render: (key, value) => <Number name={key} label={label ?? key} {...rest} value={value} />
+            render: (key, value, onChange) => <Number name={key} label={label ?? key} {...rest} value={value} onChange={onChange} />
         }
     },
     email: (props = {}) => {
@@ -74,7 +74,7 @@ const componentFormFields: ComponentFormFieldsMap = {
         return {
             __props: props,
             getDefaults: (key) => ({[key]: value}),
-            render: (key, value) => <Email name={key} label={label ?? key} {...rest} value={value} />
+            render: (key, value, onChange) => <Email name={key} label={label ?? key} {...rest} value={value} onChange={onChange} />
         }
     },
     password: (props = {}) => {
@@ -82,7 +82,7 @@ const componentFormFields: ComponentFormFieldsMap = {
         return {
             __props: props,
             getDefaults: (key) => ({[key]: value}),
-            render: (key, value) => <Password name={key} label={label ?? key} {...rest} value={value} />
+            render: (key, value, onChange) => <Password name={key} label={label ?? key} {...rest} value={value} onChange={onChange} />
         }
     },
     color: (props = {}) => {
@@ -90,7 +90,7 @@ const componentFormFields: ComponentFormFieldsMap = {
         return {
             __props: props,
             getDefaults: (key) => ({[key]: value}),
-            render: (key, value) => <Color name={key} label={label ?? key} {...rest} value={value} />
+            render: (key, value, onChange) => <Color name={key} label={label ?? key} {...rest} value={value} onChange={onChange} />
         }
     },
     date: (props = {}) => {
@@ -98,7 +98,7 @@ const componentFormFields: ComponentFormFieldsMap = {
         return {
             __props: props,
             getDefaults: (key) => ({[key]: value}),
-            render: (key, value) => <Date name={key} label={label ?? key} {...rest} value={value} />
+            render: (key, value, onChange) => <Date name={key} label={label ?? key} {...rest} value={value} onChange={onChange} />
         }
     },
     time: (props = {}) => {
@@ -106,7 +106,7 @@ const componentFormFields: ComponentFormFieldsMap = {
         return {
             __props: props,
             getDefaults: (key) => ({[key]: value}),
-            render: (key, value) => <Time name={key} label={label ?? key} {...rest} value={value} />
+            render: (key, value, onChange) => <Time name={key} label={label ?? key} {...rest} value={value} onChange={onChange} />
         }
     },
     datetime: (props = {}) => {
@@ -114,7 +114,7 @@ const componentFormFields: ComponentFormFieldsMap = {
         return {
             __props: props,
             getDefaults: (key) => ({ [key]: value }),
-            render: (key, value) => <DateTime name={key} label={label ?? key} {...rest} value={value} />
+            render: (key, value, onChange) => <DateTime name={key} label={label ?? key} {...rest} value={value} onChange={onChange} />
         }
     },
     week: (props = {}) => {
@@ -122,7 +122,7 @@ const componentFormFields: ComponentFormFieldsMap = {
         return {
             __props: props,
             getDefaults: (key) => ({ [key]: value }),
-            render: (key, value) => <Week name={key} label={label ?? key} {...rest} value={value} />
+            render: (key, value, onChange) => <Week name={key} label={label ?? key} {...rest} value={value} onChange={onChange} />
         }
     },
     month: (props = {}) => {
@@ -130,7 +130,7 @@ const componentFormFields: ComponentFormFieldsMap = {
         return {
             __props: props,
             getDefaults: (key) => ({ [key]: value }),
-            render: (key, value) => <Month name={key} label={label ?? key} {...rest} value={value} />
+            render: (key, value, onChange) => <Month name={key} label={label ?? key} {...rest} value={value} onChange={onChange} />
         }
     },
     textarea: (props = {}) => {
@@ -138,7 +138,7 @@ const componentFormFields: ComponentFormFieldsMap = {
         return {
             __props: props,
             getDefaults: (key) => ({[key]: value}),
-            render: (key, value) => <TextArea name={key} label={label ?? key} {...rest} value={value} />
+            render: (key, value, onChange) => <TextArea name={key} label={label ?? key} {...rest} value={value} onChange={onChange} />
         }
     },
     checkbox: (props = {}) => {
@@ -146,7 +146,7 @@ const componentFormFields: ComponentFormFieldsMap = {
         return {
             __props: props,
             getDefaults: (key) => ({[key]: value}),
-            render: (key, value) => <Checkbox name={key} label={label ?? key} {...rest} value={value} />
+            render: (key, value, onChange) => <Checkbox name={key} label={label ?? key} {...rest} value={value} onChange={onChange} />
         }
     },
     switch: (props = {}) => {
@@ -154,7 +154,7 @@ const componentFormFields: ComponentFormFieldsMap = {
         return {
             __props: props,
             getDefaults: (key) => ({[key]: value}),
-            render: (key, value) => <Switch name={key} label={label ?? key} {...rest} value={value} />
+            render: (key, value, onChange) => <Switch name={key} label={label ?? key} {...rest} value={value} onChange={onChange} />
         }
     },
     select: (props = {}) => {
@@ -162,7 +162,7 @@ const componentFormFields: ComponentFormFieldsMap = {
         return {
             __props: props,
             getDefaults: (key) => ({[key]: value}),
-            render: (key, value) => <Select name={key} label={label ?? key} {...rest} value={value} />
+            render: (key, value, onChange) => <Select name={key} label={label ?? key} {...rest} value={value} onChange={onChange} />
         }
     },
     autocomplete: (props = {}) => {
@@ -170,7 +170,7 @@ const componentFormFields: ComponentFormFieldsMap = {
         return {
             __props: props,
             getDefaults: (key) => ({[key]: value}),
-            render: (key, value) => <Autocomplete name={key} label={label ?? key} {...rest} value={value} />
+            render: (key, value, onChange) => <Autocomplete name={key} label={label ?? key} {...rest} value={value} onChange={onChange} />
         }
     },
     checklist: (props = {}) => {
@@ -178,7 +178,7 @@ const componentFormFields: ComponentFormFieldsMap = {
         return {
             __props: props,
             getDefaults: (key) => ({[key]: value}),
-            render: (key, value) => <Checklist name={key} label={label ?? key} {...rest} value={value} />
+            render: (key, value, onChange) => <Checklist name={key} label={label ?? key} {...rest} value={value} onChange={onChange} />
         }
     },
     uploadImage: (props = {}) => {
@@ -186,7 +186,7 @@ const componentFormFields: ComponentFormFieldsMap = {
         return {
             __props: props,
             getDefaults: (key) => ({[key]: value}),
-            render: (key, value) => <UploadImage name={key} label={label ?? key} {...rest} value={value} />
+            render: (key, value, onChange) => <UploadImage name={key} label={label ?? key} {...rest} value={value} onChange={onChange} />
         }
     },
     uploadDocument: (props = {}) => {
@@ -194,7 +194,7 @@ const componentFormFields: ComponentFormFieldsMap = {
         return {
             __props: props,
             getDefaults: (key) => ({[key]: value}),
-            render: (key, value) => <UploadDocument name={key} label={label ?? key} {...rest} value={value} />
+            render: (key, value, onChange) => <UploadDocument name={key} label={label ?? key} {...rest} value={value} onChange={onChange} />
         }
     },
     image: (props = {}) => {

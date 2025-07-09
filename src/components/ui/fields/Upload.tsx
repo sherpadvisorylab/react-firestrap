@@ -7,7 +7,7 @@ import Percentage from "../Percentage";
 import { CropImage, FileNameEditor } from "./Crop";
 import { Label } from "./Input";
 import { Wrapper } from "../GridSystem";
-import { UIProps } from "../..";
+import { FormFieldProps, UIProps } from "../..";
 import { base64ToUrl, render2Base64 } from "../../../libs/utils";
 import { PLACEHOLDER_IMAGE } from "../../../Theme";
 import Icon from "../Icon";
@@ -126,12 +126,7 @@ const useFileUpload = <T extends FileProps>(
     };
 };
 
-export interface UploadDocumentProps extends UIProps {
-    name: string;
-    value?: FileProps[];
-    onChange?: (e: { target: { name: string; value: any } }) => void;
-    label?: string;
-    required?: boolean;
+export interface UploadDocumentProps extends FormFieldProps {
     editable?: boolean;
     multiple?: boolean;
     accept?: string;
@@ -220,12 +215,13 @@ const FileEditor = ({
         };
     }>(null);
 
-    const handleSave = async () => {
+    const handleSave = async (): Promise<boolean> => {
         if (cropRef.current) {
             onSave?.(cropRef.current.handleSave());
         } else {
             onSave?.({ fileName, variants: {} });
         }
+        return true;
     };
 
     return (

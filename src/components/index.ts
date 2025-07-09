@@ -1,10 +1,21 @@
 import React from 'react';
 
+export type ChangeHandler = React.ChangeEvent<any> | { target: { name: string; value?: any } };
+
+  
 export interface UIProps {
     pre?: React.ReactNode;
     post?: React.ReactNode;
     wrapClass?: string;
     className?: string;
+}
+
+export interface FormFieldProps extends UIProps {
+    name: string;
+    label?: string;
+    value?: any;
+    required?: boolean;
+    onChange?: (e: ChangeHandler) => void;
 }
 
 export { default as Brand } from './blocks/Brand';

@@ -2,6 +2,7 @@ import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } f
 import Card from "../Card";
 import { String, Switch } from "./Input";
 import { FileProps, getFileUrl } from "./Upload";
+import { ChangeHandler } from "../..";
 
 
 const scales: Record<string, number> = {
@@ -419,7 +420,7 @@ export const FileNameEditor = ({
 
     const inputValue = stripFileName(value || "");
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = (e: ChangeHandler) => {
         const baseName = e.target.value.trim();
         onChange(`${baseName}${scaleSuffix ?? ''}.${ext}`);
     };

@@ -11,7 +11,7 @@ interface ModalProps extends UIProps {
     header?: React.ReactNode;
     footer?: React.ReactNode | false;
     onClose?: () => void;
-    onSave?: (e: React.MouseEvent<HTMLButtonElement>) => Promise<void>;
+    onSave?: (e: React.MouseEvent<HTMLButtonElement>) => Promise<boolean>;
     onDelete?: (e: React.MouseEvent<HTMLButtonElement>) => Promise<void>;
     size?: "sm" | "md" | "lg" | "xl" | "fullscreen";
     position?: "center" | "top" | "left" | "right" | "bottom";
@@ -166,8 +166,10 @@ const ModalDefault = ({
                             label={"Save"}
                             onClick={async (e) => {
                                 e.preventDefault();
-                                await onSave(e);
-                                handleClose()
+                                
+                                if (await onSave(e)) {
+                                    handleClose()
+                                }
                             }}
                         />}
                         {onDelete && <LoadingButton

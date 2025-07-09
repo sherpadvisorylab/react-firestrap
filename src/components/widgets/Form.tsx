@@ -47,7 +47,7 @@ interface FormProps extends BaseFormProps {
 }
 
 export interface FormRef {
-    handleSave: (e: React.MouseEvent<HTMLButtonElement>, generateKey?: boolean) => Promise<void>;
+    handleSave: (e: React.MouseEvent<HTMLButtonElement>, generateKey?: boolean) => Promise<boolean>;
     handleDelete: (e: React.MouseEvent<HTMLButtonElement>) => Promise<void>;
     getRecord: () => RecordProps | undefined;
 }
@@ -157,20 +157,20 @@ const FormData = forwardRef<FormRef, FormDefaultProps>(({
                     delete (target as Record<string, any>)[lastKey];
                     //TODO: da ottimizzare. nel tabdynamic se rimuovi un tab intermedio questo pezzo è necessario per ricostruire l'array poiche per qualche motivo non era un array ma un oggetto.
                     //il problema è a monte quando si crea la struttura dati.
-                    const keys = Object.keys(target);
+                    /*const keys = Object.keys(target);
                     if (keys.every(k => !isNaN(Number(k)))) {
                         const arr = keys
                             .sort((a, b) => Number(a) - Number(b))
                             .map(k => target[k]);
                         Object.keys(target).forEach(k => delete target[k]);
                         arr.forEach((item, idx) => target[idx] = item);
-                    }
+                    }*/
                 }
             } else {
                 target[lastKey] = value;
             }
             
-            // console.log("handleChange", path, value, updated);
+             console.log("FORM handleChange", path, value, updated);
 
             return updated;
         });
@@ -200,17 +200,24 @@ const FormData = forwardRef<FormRef, FormDefaultProps>(({
         return cleaned;
     }
 
-    const handleSave = useCallback(async (e: React.MouseEvent<HTMLButtonElement>, newStoragePath?: string) => {
+    const handleSave = useCallback(async (e: React.MouseEvent<HTMLButtonElement>, newStoragePath?: string): Promise<boolean> => {
         e.preventDefault();
-        
+                
         showNotice && setNotification(undefined);
+        const emptyRequiredFields = document.querySelectorAll('[required]:not([value]), [required][value=""]');
+        if (emptyRequiredFields.length > 0) {
+            showNotice && setNotification({ message: "Please fill in all required fields", type: "warning" });
+            return false;
+        }
+
         defaultValues && onInsert && await onInsert(recordRef.current);
         !defaultValues && onUpdate && await onUpdate(recordRef.current);
 
         const recordStoragePath = newStoragePath ?? dataStoragePath;
         recordStoragePath && await db.set(recordStoragePath, cleanedRecord(recordRef.current));
         await handleFinally(newStoragePath ? "create" : "update");
-        
+
+        return true;
     }, [dataStoragePath, onInsert, onUpdate, onFinally, defaultValues, showNotice]);
 
     const handleDelete = useCallback(async (e: React.MouseEvent<HTMLButtonElement>) => {

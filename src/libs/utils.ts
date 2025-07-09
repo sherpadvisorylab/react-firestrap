@@ -1,6 +1,7 @@
 import React from 'react';
 import {converter} from "./converter";
 import {getConfig} from "../Config";
+import { RecordProps } from '../integrations/google/firedatabase';
 
 export const decodeJWT = (token: string): any => {
     try {
@@ -367,4 +368,10 @@ export const base64ToBlob = (base64: string, type: string): Blob | undefined => 
 export const base64ToUrl = (base64: string, type: string): string | undefined => {
     const blob = base64ToBlob(base64, type);
     return blob ? URL.createObjectURL(blob) : undefined;
+};
+
+export const getRecordValue = (record?: RecordProps, name?: string): any => {
+    if (!record || !name) return undefined;
+  
+    return name.split('.').reduce((acc: any, part: string) => acc?.[part], record);
 };
