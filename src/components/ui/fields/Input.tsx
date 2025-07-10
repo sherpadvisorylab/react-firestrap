@@ -1,7 +1,7 @@
 import React, {ChangeEvent, useId, useState} from 'react';
 import {isEmpty, isInteractiveElement} from "../../../libs/utils";
 import {Wrapper} from "../GridSystem";
-import { ActionButton, FormFieldProps, UIProps } from '../../..';
+import { ActionButton, FormFieldProps, Icon, UIProps } from '../../..';
 
 interface BaseInputProps extends FormFieldProps{
     placeholder?: string;
@@ -293,7 +293,6 @@ export const ListGroup = ({
     className       = undefined,
     itemClass       = undefined
 }: ListGroupProps) => {
-    const theme = useTheme('icon');
     const fullClassName = `list-group${className ? ' ' + className : ''}`;
 
     const handleDragStart = (e: React.DragEvent<HTMLSpanElement>, key: React.ReactNode) => {
@@ -336,7 +335,7 @@ export const ListGroup = ({
                         onDragStart={draggable ? (e) => handleDragStart(e, child) : undefined}
                         style={{ cursor: draggable ? 'grab' : 'default' }}
                     >
-                        {draggable && <i className={theme.getIcon('grip-vertical')}></i>}
+                        {draggable && <Icon icon='grip-vertical'/>}
                         {child}
                     </span>
             })}

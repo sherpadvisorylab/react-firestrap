@@ -207,7 +207,7 @@ const FormData = forwardRef<FormRef, FormDefaultProps>(({
         const emptyRequiredFields = document.querySelectorAll('[required]:not([value]), [required][value=""]');
         if (emptyRequiredFields.length > 0) {
             showNotice && setNotification({ message: "Please fill in all required fields", type: "warning" });
-            return false;
+            return true;
         }
 
         defaultValues && onInsert && await onInsert(recordRef.current);

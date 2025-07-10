@@ -60,7 +60,7 @@ const Repeat = ({
     const handleAdd = () => {
         const updated = [...records, {}];
         onAdd?.(updated);
-        onChange?.({ target: { name: `${name}.${records.length}`, value: {} } });
+        onChange?.({ target: { name: `${name}.${value.length}`, value: {} } });
         setRecords(updated);
         setRelease(prev => prev + 1);
     };
@@ -84,4 +84,4 @@ const Repeat = ({
     );
 };
 
-export default Repeat;
+export default asForm(Repeat);
