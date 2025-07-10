@@ -3,9 +3,10 @@ import { ActionButton } from "./Buttons";
 import FormEnhancer, { asForm } from "../FormEnhancer";
 import {converter} from "../../libs/converter";
 import { TabLayouts, TabPosition } from './Tab';
+import { path } from 'libs';
 
 interface TabDynamicProps {
-    children: React.ReactNode;
+    children: React.ReactNode | ((record: any) => React.ReactNode);
     name: string;
     onChange?: (event: { target: { name: string; value?: any } }) => void;
     onAdd?: (value: any[]) => void;
@@ -20,10 +21,6 @@ interface TabDynamicProps {
     tabPosition?: TabPosition;
 }
 
-const getValues = (value: any) => {
-    if(!value || Array.isArray(value)) return value;
-    return undefined;
-}
 const TabDynamic = ({
                  children,
                  name,
@@ -41,52 +38,54 @@ const TabDynamic = ({
 }: TabDynamicProps) => {
     const [active, setActive] = useState(activeIndex);
     const [release, setRelease] = useState(0);
-    const [records, setRecords] = useState<any[]>(() =>
-        getValues(value) ?? Array.from({ length: min }, () => ({}))
-      );    
-console.log("ASDADSAD", records, value,  getValues(value) );
-    const setLabel = (index: number) => {
-        return (label.includes("{")
-            ? converter.parse(records?.[index], label) || "New " + (index + 1)
-            : label + " " + (index + 1)
-        );
-    }
 
-    const components = useMemo(
-        () =>
-          Array.from({ length: Math.max(min, records?.length) }, (_, i) =>
-            <FormEnhancer
-                parentName={`${name}.${i}`}
-                components={children}
-                record={records?.[i]}
-                handleChange={onChange}
-            />
-          ),
-        [value, children, name, onChange, min, release]
-    );
+
+    const tabs = useMemo(() => {
+        return (Array.isArray(value) ? value : Array.from({ length: min }, () => ({})))?.map((_, index) => label.includes("{")
+        ? converter.parse(value?.[index], label)
+        : label + " " + (index + 1))
+    }, [value, label, min, release]);
+
+    const components = typeof children === 'function'
+    ? children({record: value?.[active], records: value, currentIndex: active})
+    : children;
+    
+    const component = useMemo(() => {
+        return <FormEnhancer
+            key={`${name}-${active}-${release}`}
+            parentName={`${name}.${active}`}
+            components={components}
+            record={value?.[active]}
+            handleChange={onChange}
+        />
+    }, [active, components, name, release]);
+
       
     const handleAdd = () => {
-        const next = [...records, {}];
+        const next = Array.isArray(value) 
+            ? [...value, {}] 
+            : Array.from({ length: tabs.length + 1 }, () => ({}));
         onAdd?.(next);
-        onChange?.({ target: { name: `${name}.${components.length}`, value: {} } });
+        onChange?.({ target: { name: `${name}.${next.length - 1}`, value: {} } });
 
-        setRecords(next);
-        console.log("handleAdd", next, components);
-        setActive(components.length);
+        setActive(next.length - 1);
+        setRelease(prev => prev + 1);
     }
 
     const handleRemove = (index: number) => {
+        const lastIndex = tabs.length - 1;
         onRemove?.(index);
+        //setRecords(next);
         onChange?.({ target: { name: `${name}.${index}` } });
-        //TODO: quando si rimuove l'arr
-        setRecords(prev => prev.filter((_, i) => i !== index));
 
-        if(index == components.length - 1) {
-            setActive(index - 1);
+        if(active >= lastIndex) {
+            setActive(prev => prev - 1);
         }
         setRelease(prev => prev + 1);
     }
 
+
+    
     const TabLayout = TabLayouts[tabPosition];
 
     return (
@@ -94,29 +93,26 @@ console.log("ASDADSAD", records, value,  getValues(value) );
             {title && <h3>{title}</h3>}
             <TabLayout
                 menu={<>
-                    {components.map((_, index) => 
+                    {tabs?.map((label, index) => 
                         <li key={`${name}-${index}`} className="nav-item me-1 position-relative">
                             <button
                                onClick={() => setActive(index)}
                                className={`nav-link ${index === active ? 'active' : ''}`}
                             >
-                                {setLabel(index)}
+                                {label}
                             </button>
-                            {(!readOnly && components.length -1 >= min && index === active) &&
+                            {(!readOnly && tabs.length -1 >= min && index === active) &&
                                 <ActionButton className="position-absolute top-0 end-0 p-0" icon="x"
                                               onClick={() => handleRemove(index)}/>}
                         </li>
                     )}
-                    {!readOnly && (!max || components.length < max) && <li key={components.length + 1} className="nav-item me-1">
+                    {!readOnly && (!max || tabs.length < max) && <li key={tabs.length + 1} className="nav-item me-1">
                         <ActionButton className="nav-link" icon="plus" onClick={handleAdd} />
                     </li>}
                 </>}
-                content={<div
-                    key={`${name}-${active}-${release}`}
-                    className="tab-pane fade show active"
-                  >
-                    {components[active]}
-                  </div>}
+                content={<div className="tab-pane fade show active">
+                    {component}
+                </div>}
             />
         </div>
     );

@@ -1,6 +1,7 @@
 import React from 'react';
 import {RecordProps} from "../integrations/google/firedatabase";
 import { FormRef } from './widgets/Form';
+import { getRecordValue } from '../libs/utils';
 
 type FormProps = {
     name?: string;
@@ -45,6 +46,8 @@ const applyRef = (child: React.ReactNode, formRef: React.Ref<FormRef>): React.Re
 
     return child;
 }
+
+
 
 
 const applyOnChangeRecursive = ({
@@ -93,15 +96,18 @@ const applyOnChangeRecursive = ({
             });
         }
 
-        if (name && record?.[name] === undefined) {
+        const value = getRecordValue(record, name);
+        if (name && value === undefined) {
             console.warn(`The property "${name}" is not present in the record`, child);
         }
-
+        if(name) {
+            console.log("CLONE ELEMENT", child, parentName, name, record, record?.[name]);
+        }
         return React.cloneElement(child as any, props.onChange || name
             ? {
                 wrapClass: `mb-3${props.wrapClass ? ' ' + props.wrapClass : ''}`,
                 name: parentName ? `${parentName}.${name}` : name,
-                value: record?.[name] ?? props.value ?? undefined,
+                value: value ?? props.value ?? undefined,
                 onChange
             }
             : {

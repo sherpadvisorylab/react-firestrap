@@ -5,6 +5,7 @@ import {Col, Row, Wrapper} from "../GridSystem"
 import {useTheme} from "../../../Theme";
 import {arraysEqual, arrayUnique, isEmpty, sanitizeKey} from "../../../libs/utils";
 import {DatabaseOptions, RecordProps} from "../../../integrations/google/firedatabase";
+import { FormFieldProps } from '../..';
 
 interface Option extends RecordProps {
     label: string;
@@ -20,23 +21,14 @@ interface OrderConfig {
     dir: 'asc' | 'desc';
 }
 
-interface BaseProps {
-    name: string;
-    value?: string | number | any[];
-    onChange?: (e: { target: { name: string; value: any } }, options?: Option[]) => void;
-    required?: boolean;
+interface BaseProps extends FormFieldProps {
     updatable?: boolean;
     disabled?: boolean;
-    label?: string;
     title?: string;
-    pre?: string;
-    post?: string;
     feedback?: string;
     options?: Option[] | string[] | number[];
     db?: DBConfig<Option>;
     order?: OrderConfig;
-    wrapClass?: string;
-    className?: string;
 }
 
 export interface SelectProps extends BaseProps {
@@ -131,7 +123,6 @@ export const Select = ({
                               className     = undefined,
 } : SelectProps) => {
     const theme = useTheme("select");
-
     const [selectedValue, setSelectedValue] = useState(value);
     useEffect(() => {
         if (value !== selectedValue) {
@@ -148,7 +139,7 @@ export const Select = ({
 
         return arrayUnique(
             selectedValue && !combinedOptions.length
-                ? [...combinedOptions, {label: "🔄 Caricamento...", value: selectedValue.toString()}]
+                ? [...combinedOptions, {label: `❌ ${selectedValue.toString()}`, value: selectedValue.toString()}]
                 : combinedOptions,
             'value'
         );
@@ -156,7 +147,7 @@ export const Select = ({
     }, [options, lookup, selectedValue, order]);
 
     if (!selectedValue && !optionEmpty && opts.length > 0) {
-        onChange?.({target: {name: name, value: opts[0].value}}, opts);
+        onChange?.({target: {name: name, value: opts[0].value}}); //, opts
     }
 
     const id = useId();
@@ -169,21 +160,14 @@ export const Select = ({
                     id={id}
                     name={name}
                     className={`form-select ${className || theme.Select.className}`}
-                    defaultValue={selectedValue}
+                    value={selectedValue}
                     required={required}
                     disabled={disabled || (!updatable && !isEmpty(selectedValue))}
                     onChange={onChange}
                     title={title}
                 >
                     {optionEmpty && <option value={optionEmpty.value}>{optionEmpty.label}</option>}
-                    {opts.map((op) => {
-                        const key = sanitizeKey(`sl-${name}-${op.value}`);
-                        return (
-                            <option value={op.value} key={key}>
-                                {op.label}
-                            </option>
-                        );
-                    })}
+                    {opts.map((op, index) => <option value={op.value} key={`${id}-${index}`}>{op.label}</option>)}
                 </select>
                 {post && <span className="input-group-text p-0">{post}</span>}
             </Wrapper>
@@ -246,7 +230,7 @@ export const Autocomplete = ({
         setSelectedItems(prevState => {
             const updatedItems = [...prevState, currentValue];
             setTimeout(() => {
-                onChange?.({target: {name: name, value: updatedItems}}, opts);
+                onChange?.({target: {name: name, value: updatedItems}}); //, opts
             }, 0);
 
             return updatedItems;
@@ -259,7 +243,7 @@ export const Autocomplete = ({
         setSelectedItems(prevState => {
             const updatedItems = prevState.filter(item => item !== currentValue);
             setTimeout(() => {
-                onChange?.({target: {name: name, value: updatedItems}}, opts);
+                onChange?.({target: {name: name, value: updatedItems}}); //, opts
             }, 0);
 
             return updatedItems;
@@ -272,7 +256,7 @@ export const Autocomplete = ({
             {label && <Label label={label} required={required} htmlFor={id}/>}
             <Wrapper className={pre || post ? "input-group" : ""}>
                 {pre && <span className="input-group-text">{pre}</span>}
-                <Row className={`align-items-center border rounded me-1`}>
+                <Row className={`align-items-center border rounded mx-1`}>
                     {selectedItems.map(item => (
                         <Col xs="auto" className="ms-1 bg-secondary" key={item}>
                             {item}<button className={"btn p-0"} onClick={() => removeItem(item)}>x</button>
@@ -290,14 +274,7 @@ export const Autocomplete = ({
                     /></Col>}
                 </Row>
                 <datalist id={name}>
-                    {opts.map((op) => {
-                        const key = sanitizeKey(`dl-${name}-${op.value}`);
-                        return (
-                            <option value={op.value} key={key}>
-                                {op.label}
-                            </option>
-                        );
-                    })}
+                    {opts.map((op, index) => <option value={op.value} key={`${id}-${index}`}>{op.label}</option>)}
                 </datalist>
                 {post && <span className="input-group-text">{post}</span>}
             </Wrapper>
@@ -345,7 +322,7 @@ export const Checklist = ({
         setSelectedItems(prevState => {
             const updatedItems = prevState.filter(item => item !== currentValue);
             setTimeout(() => {
-                onChange?.({target: {name: name, value: updatedItems}}, opts);
+                onChange?.({target: {name: name, value: updatedItems}}); //, opts
             }, 0);
 
             return updatedItems;
@@ -371,7 +348,7 @@ export const Checklist = ({
         setSelectedItems(prevState => {
             const updatedItems = [...prevState, currentValue];
             setTimeout(() => {
-                onChange?.({target: {name: name, value: updatedItems}}, opts);
+                onChange?.({target: {name: name, value: updatedItems}}); //, opts
             }, 0);
 
             return updatedItems;

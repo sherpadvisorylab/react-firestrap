@@ -42,8 +42,8 @@ onConfigChange((newConfig: Config) => {
 });
 
 export const SYSTEM_FIELDS = {
-    key: ":key",
-    value: ":value",
+    key: "@key",
+    value: "@value",
   };    
 
 const handleError = (action: string, error: any, exception: boolean) => {
@@ -200,9 +200,11 @@ const db = {
                         for (let i = 0; i < mapKeys.length; i++) {
                             const prop = mapKeys[i];
                             const field = fieldMap[prop];
-
                             mapped[prop] = field.includes("{")
-                                ? converter.parse({ key, ...value }, field)
+                                ? converter.parse(typeof value === "object" 
+                                    ? { [SYSTEM_FIELDS.key]: key, ...value } 
+                                    : { [SYSTEM_FIELDS.key]: key, [SYSTEM_FIELDS.value]: value } 
+                                , field)
                                 : (field === SYSTEM_FIELDS.key ? key : field === SYSTEM_FIELDS.value ? value : value[field]);
                         }
 

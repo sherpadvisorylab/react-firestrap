@@ -1,33 +1,16 @@
-import React, { ChangeEvent, useId, useState } from 'react';
-import { isEmpty, isInteractiveElement } from "../../../libs/utils";
-import { Wrapper } from "../GridSystem";
-import { ActionButton, UIProps, useTheme } from '../../..';
+import React, {ChangeEvent, useId, useState} from 'react';
+import {isEmpty, isInteractiveElement} from "../../../libs/utils";
+import {Wrapper} from "../GridSystem";
+import { ActionButton, FormFieldProps, UIProps } from '../../..';
 
-interface BaseInputProps extends UIProps {
-    name: string;
-    value?: string | number;
+interface BaseInputProps extends FormFieldProps{
     placeholder?: string;
-    label?: string;
     type?: string;
-    required?: boolean;
     updatable?: boolean;
     disabled?: boolean;
-    onChange?: (event: ChangeEvent<HTMLInputElement>) => void;
     feedback?: string;
     min?: number;
     max?: number;
-}
-
-export type InputProps = Omit<BaseInputProps, 'type'>;
-
-export interface CheckboxProps extends UIProps {
-    name: string;
-    value?: boolean;
-    onChange?: (event: ChangeEvent<HTMLInputElement>) => void;
-    label?: string;
-    title?: string;
-    required?: boolean;
-    valueChecked?: string;
 }
 
 interface LabelProps {
@@ -37,13 +20,15 @@ interface LabelProps {
     className?: string;
 }
 
-export interface TextAreaProps extends UIProps {
-    name: string;
-    value?: string;
-    onChange?: (event: ChangeEvent<HTMLTextAreaElement>) => void;
+export type InputProps = Omit<BaseInputProps, 'type'>;
+
+export interface CheckboxProps extends FormFieldProps { 
+    title?: string;
+    valueChecked?: string;
+}
+
+export interface TextAreaProps extends FormFieldProps    {
     placeholder?: string;
-    label?: string;
-    required?: boolean;
     updatable?: boolean;
     disabled?: boolean;
     rows?: number;
@@ -232,6 +217,7 @@ export const TextArea = ({
     className = undefined,
     wrapClass = undefined
 }: TextAreaProps) => {
+    const id = useId();
     const handleDrop = React.useCallback((e: React.DragEvent<HTMLTextAreaElement>) => {
         e.preventDefault();
         
@@ -263,15 +249,17 @@ export const TextArea = ({
         requestAnimationFrame(() => {
             const newPosition = caretPosition + text.length;
             target.setSelectionRange(newPosition, newPosition);
+            console.log("TEXT AREA handleDrop", newValue, newPosition, target);
         });
     }, [name, value, onChange]);
-
+console.log("TEXT AREA", name, value, onChange);
     return (
         <Wrapper className={wrapClass}>
-            {label && <Label required={required} label={label} />}
+            {label && <Label required={required} label={label} htmlFor={id} />}
             <Wrapper className={pre || post ? "input-group" : ""}>
                 {pre && <span className="input-group-text">{pre}</span>}
                 <textarea
+                    id={id}
                     name={name}
                     className={`form-control${className ? " " + className : ""}`}
                     ref={(el) => (useRef = el)}

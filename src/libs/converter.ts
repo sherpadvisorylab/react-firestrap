@@ -122,6 +122,7 @@ interface Converter extends ConverterCore {
 
 export const converter: Converter = {
     parse: (values, pattern) => {
+        if (typeof pattern !== 'string') return pattern;
         const parse = pattern.replace(/{([^}:]+)(?::([^}:]+))?(?::([^}:]+))?}/g, (_, Key, Func, format) => {
             const [pre, key] = ((Key || '').indexOf('(') === -1 ? ['', Key] : Key.split('(', 2));
             const [func, post] = ((Func || '').indexOf(')') === -1 ? [Func, ''] : Func.split(')', 2));

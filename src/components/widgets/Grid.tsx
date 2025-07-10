@@ -5,7 +5,7 @@ import Gallery from "../ui/Gallery";
 import Card from "../ui/Card";
 import db from "../../libs/database";
 import Modal from "../ui/Modal";
-import {safeClone, trimSlash, ucfirst} from "../../libs/utils";
+import {getRecordValue, safeClone, trimSlash, ucfirst} from "../../libs/utils";
 import {useLocation} from "react-router-dom";
 import {converter} from "../../libs/converter";
 import FormEnhancer, {extractComponentProps} from "../FormEnhancer";
@@ -208,7 +208,7 @@ const GridArray = ({
             const displayRow = {...result};
             for (const key of Object.keys(columnFormatters)) {
                 displayRow[key] = columnFormatters[key]({
-                    value: result[key],
+                    value: getRecordValue(result, key),
                     record: result,
                     key: item?._key
                 });
@@ -247,13 +247,14 @@ const GridArray = ({
         setIsModalOpen(true);
     }, [dataStoragePath]);
 
-    const handleSave = useCallback(async (e: React.MouseEvent<HTMLButtonElement>) => {
-        if (!formRef) return;
-        
-        await formRef.handleSave(e, !modalData?.key);
-        
-        closeModal();
-    }, [formRef, modalData?.key, closeModal]);
+    const handleSave = useCallback(
+        async (e: React.MouseEvent<HTMLButtonElement>) =>
+          formRef?.handleSave(e, !modalData?.key).then(success => {
+            success && closeModal();
+            return success;
+          }) ?? true,
+        [formRef, modalData?.key, closeModal]
+      );
 
     const handleDelete = useCallback(async (e: React.MouseEvent<HTMLButtonElement>) => {
         if (!formRef) return;
