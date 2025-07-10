@@ -473,7 +473,7 @@ function Helper() {
                 <Col xs={12} className='mb-5'>
                   <h2 id='repeat'>Repeat</h2>
                   <Card className='mb-3' title=''>
-                    <Repeat>
+                    <Repeat name=''>
                       <String name='repeat' label='Repeat 1' className='mb-3' placeholder='Lorem ipsum.' />
                       <String name='repeat' label='Repeat 2' className='mb-3' placeholder='Lorem ipsum.' />
                       <String name='repeat' label='Repeat 3' className='mb-3' placeholder='Lorem ipsum.' />

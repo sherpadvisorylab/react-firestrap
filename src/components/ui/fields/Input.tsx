@@ -1,9 +1,9 @@
-import React, {ChangeEvent, useId, useState} from 'react';
-import {isEmpty, isInteractiveElement} from "../../../libs/utils";
-import {Wrapper} from "../GridSystem";
-import { ActionButton, UIProps } from '../../..';
+import React, { ChangeEvent, useId, useState } from 'react';
+import { isEmpty, isInteractiveElement } from "../../../libs/utils";
+import { Wrapper } from "../GridSystem";
+import { ActionButton, UIProps, useTheme } from '../../..';
 
-interface BaseInputProps extends UIProps{
+interface BaseInputProps extends UIProps {
     name: string;
     value?: string | number;
     placeholder?: string;
@@ -55,6 +55,7 @@ export interface ListGroupProps extends UIProps {
     children: React.ReactNode[];
     onClick?: (event: React.MouseEvent<HTMLDivElement>, index: number) => void;
     label?: string;
+    draggable?: boolean;
     actives?: number[];
     disables?: number[];
     loaders?: number[];
@@ -83,7 +84,7 @@ export const Input = ({
     return (
         <Wrapper className={wrapClass}>
             {label && <Label label={label} required={required} htmlFor={id} />}
-            <Wrapper className={pre || post ? "input-group": ""}>
+            <Wrapper className={pre || post ? "input-group" : ""}>
                 {pre && <span className="input-group-text">{pre}</span>}
                 <input
                     id={id}
@@ -242,7 +243,7 @@ export const TextArea = ({
         
         // Get caret position using modern or fallback API
         const caretPosition = (() => {
-            const position = document.caretPositionFromPoint?.(e.clientX, e.clientY) 
+            const position = document.caretPositionFromPoint?.(e.clientX, e.clientY)
                 ?? (document as any).caretRangeFromPoint?.(e.clientX, e.clientY);
             return position && 'offset' in position ? position.offset : target.value.length;
         })();
@@ -251,11 +252,11 @@ export const TextArea = ({
         const newValue = (value ?? '').slice(0, caretPosition) + text + (value ?? '').slice(caretPosition);
         
         // Trigger onChange if provided
-        onChange?.({ 
-            target: { 
-                value: newValue, 
-                name 
-            } 
+        onChange?.({
+            target: {
+                value: newValue,
+                name
+            }
         } as ChangeEvent<HTMLTextAreaElement>);
         
         // Set cursor position after inserted text
@@ -295,6 +296,7 @@ export const ListGroup = ({
     onClick         = undefined,
     label           = undefined,
     actives         = undefined,
+    draggable       = undefined,
     disables        = undefined,
     loaders         = undefined,
     pre             = undefined,
@@ -303,7 +305,12 @@ export const ListGroup = ({
     className       = undefined,
     itemClass       = undefined
 }: ListGroupProps) => {
+    const theme = useTheme('icon');
     const fullClassName = `list-group${className ? ' ' + className : ''}`;
+
+    const handleDragStart = (e: React.DragEvent<HTMLSpanElement>, key: React.ReactNode) => {
+        e.dataTransfer.setData('text/plain', `{{${key}}}`)
+    }
 
     return <Wrapper className={wrapClass}>
         {pre}
@@ -313,17 +320,13 @@ export const ListGroup = ({
                 const isActive = actives?.includes(index);
                 const isDisable = disables?.includes(index);
                 const isLoading = loaders?.includes(index);
-                const fullItemClass = `list-group-item${
-                    itemClass ? ' ' + itemClass : ''
-                }${
-                    onClick ? ' list-group-item-action' : ''
-                }${
-                    isActive ? ' active' : ''
-                }${
-                    isDisable ? ' disabled' : ''
-                }${isLoading ? ' loading' : ''}`;   
+                const fullItemClass = `list-group-item ps-1 ${itemClass ? ' ' + itemClass : ''
+                    }${onClick ? ' list-group-item-action' : ''
+                    }${isActive ? ' active' : ''
+                    }${isDisable ? ' disabled' : ''
+                    }${isLoading ? ' loading' : ''}`;
 
-                return onClick  
+                return onClick
                     ? <div
                         key={index}
                         onClick={(e) => {
@@ -332,11 +335,20 @@ export const ListGroup = ({
                             }
                         }}
                         className={fullItemClass}
-                        style={{cursor: "pointer"}}
+                        style={{ cursor: "pointer" }}
                     >
                         {child}
                     </div>
-                    : <span key={index} className={fullItemClass}>
+
+                    :
+                    <span
+                        key={index}
+                        className={fullItemClass}
+                        draggable={draggable}
+                        onDragStart={draggable ? (e) => handleDragStart(e, child) : undefined}
+                        style={{ cursor: draggable ? 'grab' : 'default' }}
+                    >
+                        {draggable && <i className={theme.getIcon('grip-vertical')}></i>}
                         {child}
                     </span>
             })}

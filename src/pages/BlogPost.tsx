@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { getPromptLangs, getPromptStyles, getPromptVoices, PROMPTS } from '../conf/Prompt';
+import { getPrompt, getPromptLangs, getPromptStyles, getPromptVoices, PROMPTS } from '../conf/Prompt';
 import { Col, Row } from '../components/ui/GridSystem';
 import Tab, { TabItem } from '../components/ui/Tab';
 import { ActionButton } from '../components/ui/Buttons';
@@ -222,7 +222,7 @@ export default function BlogPost({
           <AssistantAI
             name='title'
             key={refreshKey + '-title'}
-            promptTopic={promptTopic}
+            promptTopic={getPrompt(promptTopic)}
             configVariables={configVariables}
             onChange={updatePost('title')}
             onReset={() => resetPost('fromTitle')}
@@ -235,7 +235,7 @@ export default function BlogPost({
               key={refreshKey + '-outline'}
               name='outline'
               initialValue={post.title || ''}
-              promptTopic='GENERATE_BLOG_POST_OUTLINE'
+              promptTopic={getPrompt('GENERATE_BLOG_POST_OUTLINE')}
               configVariables={configVariables}
               onChange={updatePost('outline')}
               viewMode='carousel'
@@ -257,7 +257,7 @@ export default function BlogPost({
               key={refreshKey + '-outlines'}
               name='sections'
               initialValue={post.outline.length > 0 ? formatOutlineForAI(post.outline) : ''}
-              promptTopic='GENERATE_COMPLETE_BLOG_POST_FROM_OUTLINE'
+              promptTopic={getPrompt('GENERATE_COMPLETE_BLOG_POST_FROM_OUTLINE')}
               configVariables={configVariables}
               onChange={updatePost('sections')}
               onReset={() => resetPost('fromSections')}
@@ -308,7 +308,7 @@ export default function BlogPost({
               key={refreshKey + '-desc'}
               name='description'
               initialValue={post.title || ''}
-              promptTopic='GENERATE_BLOG_POST_DESCRIPTIONS'
+              promptTopic={getPrompt('GENERATE_BLOG_POST_DESCRIPTIONS')}
               configVariables={configVariables}
               onChange={updatePost('description')}
               onReset={() => resetPost('fromDescription')}

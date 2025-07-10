@@ -1,4 +1,3 @@
-
 import { getPromptLang, getPromptStyle, getPromptVoice, PROMPTS, PROMPTS_ROLE } from "../conf/Prompt";
 import { fetchRest } from "../libs/fetch";
 import { consoleLog } from "../constant";
@@ -75,7 +74,7 @@ const parseContent = (str: string): any => {
     }
 }
 
-const apiLog = (aiType: string, strategy: string, response: any) => {
+const apiLog = (aiType: string, response: any, strategy?: string) => {
     consoleLog(aiType + "->response::", strategy, response);
     return response;
 }
@@ -145,11 +144,11 @@ To use ChatGPT, you must configure a valid OpenAI API key.
 
 const fetchChatGPTApi = async (
     prompt: string,
-    strategy: keyof typeof PROMPTS,
     options: {
         model?: string;
         temperature?: number;
-    } = {}
+    } = {},
+    strategy?: keyof typeof PROMPTS | undefined
 ): Promise<any> => {
     /* if (!config?.chatGptApiKey) {
         console.error(`
@@ -172,10 +171,13 @@ const fetchChatGPTApi = async (
         return;
     } */
 
-    const roles: Message[] = (PROMPTS_ROLE[strategy] || []).map(role => ({
-        role: 'system',
-        content: role
-    }));
+        const prompts = strategy !== undefined ? PROMPTS_ROLE[strategy] ?? [] : [];
+
+        const roles: Message[] = prompts.map((role: string) => ({
+          role: 'system',
+          content: role
+        }));
+        
 
     const body = {
         model: options.model || CHATGPT_MODEL,
@@ -198,7 +200,7 @@ const fetchChatGPTApi = async (
         .then(response => { 
             console.log('Laaaaaaaaaaaa')
             console.log(response)
-            return apiLog(TYPE_CHATGPT, strategy, response)})
+            return apiLog(TYPE_CHATGPT, response, strategy)})
         .then(response => {
             if (!response?.choices) return null;
             return parseContent(response.choices[0].message.content)
@@ -209,7 +211,6 @@ const fetchChatGPTApi = async (
 
 const fetchGeminiApi = async (
     search: string,
-    strategy: keyof typeof PROMPTS,
     {
         limit = 10,
         keywords = [],
@@ -218,7 +219,8 @@ const fetchGeminiApi = async (
         temperature = undefined,
         voice = undefined,
         style = undefined,
-    }: FetchAIOptions
+    }: FetchAIOptions,
+    strategy?: keyof typeof PROMPTS | undefined
 ): Promise<any> => {
     if (!config?.geminiApiKey) {
         console.error(`
@@ -255,7 +257,12 @@ To use Google Gemini (formerly Bard), you must configure a valid API key.
         return `**Role:** ${role}\n**Specialization:** ${specialization}\n\nYour question: ${question}`;
     }
 
-    const prompt = promptRole(promptAssign(PROMPTS[strategy], promptOptions));
+    const prompt = promptRole(
+      promptAssign(
+        strategy !== undefined ? PROMPTS[strategy] ?? "" : "",
+        promptOptions
+      )
+    );
     const body = {
         instances: [{ content: prompt }]
     };
@@ -269,7 +276,7 @@ To use Google Gemini (formerly Bard), you must configure a valid API key.
         },
         body: body
     })
-        .then(response => apiLog(TYPE_GEMINI, strategy, response))
+        .then(response => apiLog(TYPE_GEMINI, response, strategy))
         .then(response => {
             if (response?.predictions) {
                 return;

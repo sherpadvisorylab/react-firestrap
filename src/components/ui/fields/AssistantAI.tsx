@@ -22,7 +22,7 @@ type ResponseItem =
 
 interface AssistantAIProps {
     name: string;
-    promptTopic: PromptKey;
+    promptTopic: { prompt: string; label: string };
     configVariables: { lang: string; voice: string; style: string; limit: string };
     initialValue?: string;
     onChange: (e: any) => void;
@@ -44,9 +44,10 @@ const cleanSelectedText = (selectedText: string): string => {
 const getResponseContent = (response: ResponseItem, viewMode: 'list' | 'carousel'): React.ReactNode => {
     if (viewMode === 'carousel') {
         if ('outline' in response && Array.isArray(response.outline)) {
+            console.log(response)
             const formatted = response.outline.map(section => {
                 const subs = section.subheadings.map(sub => `  - ${sub}`).join('\n');
-                return `• ${section.headline}\n${subs}`;
+                return `Heading: ${section.headline}\n${subs}`;
             }).join('\n\n');
             return formatted.split('\n').map((line, i) => <div key={i}>{line}</div>);
         } else if ('Title' in response) {
@@ -72,7 +73,7 @@ const AssistantAI = ({
     autoStart = false,
     onReset,
 }: AssistantAIProps) => {
-    const { prompt, label } = getPrompt(promptTopic);
+    /* const { prompt, label } = getPrompt(promptTopic); */
     const [userInput, setUserInput] = useState<string>(initialValue ?? '');
     const [responsesAI, setResponsesAI] = useState<ResponseItem[]>([]);
     const [selectedResponse, setSelectedResponse] = useState<string>('');
@@ -95,10 +96,10 @@ const AssistantAI = ({
         onReset?.();
 
         try {
-            const finalPrompt = setPrompt(prompt, configVariables, userInput);
-            const response = await fetch(finalPrompt, promptTopic, {
+            const finalPrompt = setPrompt(promptTopic.prompt, configVariables, userInput);
+            const response = await fetch(finalPrompt, {
                 model: 'gpt-4',
-                temperature: promptTopic === 'GENERATE_BLOG_POST_OUTLINE' ? 0.5 : 0.7
+                temperature: 0.7
             });
 
             if (!response) {
@@ -106,7 +107,7 @@ const AssistantAI = ({
             }
 
             handleResponsesAI(response);
-            
+
         } catch (err) {
             setError('Failed to generate content. Please try again.');
             console.error('AI Error:', err);
@@ -165,7 +166,7 @@ const AssistantAI = ({
 
             {(!autoStart || !initialValue) && !selectedResponse && !error && <TextArea
                 name='inputUser'
-                label={label}
+                label={promptTopic.label}
                 value={initialValue ?? userInput}
                 onChange={(e) => setUserInput(e.target.value)}
                 post={<LoadingButton
@@ -179,17 +180,26 @@ const AssistantAI = ({
             {responsesAI?.length > 0 && !selectedResponse && !error && (
                 viewMode === 'carousel' ? (
                     <Carousel>
-                        {responsesAI.map((response, index) => (
-                            <div
-                                key={index}
-                                data-index={index}
-                                className="carousel-item-content"
-                                style={{ whiteSpace: 'pre-line', textAlign: 'left', cursor: 'pointer' }}
-                                onClick={(event) => handleSelectedResponse(event, index)}
-                            >
-                                {getResponseContent(response, viewMode)}
-                            </div>
-                        ))}
+                        {responsesAI.map((response, index) => {
+                            const lines = getResponseContent(response, viewMode);
+                            // lines deve essere un array di stringhe
+                            return (
+                                <>
+                                Outline {index + 1}
+                                <ListGroup
+                                    key={index}
+                                    data-index={index}
+                                    className="carousel-item-content"
+                                    onClick={(event) => handleSelectedResponse(event, index)}
+                                >
+                                    {Array.isArray(lines)
+                                        ? lines.map((line, i) => (line))
+                                        : [{lines}]
+                                    }
+                                </ListGroup>
+                                </>
+                            );
+                        })}
                     </Carousel>
                 ) : (
                     <ListGroup onClick={handleSelectedResponse}>
