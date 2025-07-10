@@ -11,7 +11,7 @@ type Primitive = string | number | boolean | undefined;
 
 interface FieldAdapter<TProps = any> {
     getDefaults: (key: string) => Record<string, Primitive | any[]>;
-    render: (key: string, value?: any, onChange?: (e: ChangeHandler) => void) => React.ReactNode;
+    render: (key: string, value?: any, onChange?: (event: ChangeHandler) => void) => React.ReactNode;
     __props: TProps;
 }
 

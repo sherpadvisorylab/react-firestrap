@@ -1,84 +1,80 @@
 import React, { useMemo, useState } from 'react';
 import { ActionButton } from './Buttons';
 import FormEnhancer, { asForm } from '../FormEnhancer';
+import { ChangeHandler } from 'index';
 
 interface RepeatProps {
     name: string;
-    children: React.ReactNode;
+    children: React.ReactNode | ((record: any) => React.ReactNode);
     value?: any[];
-    onChange?: (event: { target: { name: string; value?: any } }) => void;
+    onChange?: (event: ChangeHandler) => void;
     onAdd?: (value: any[]) => void;
     onRemove?: (index: number) => void;
     className?: string;
     min?: number;
     max?: number;
-    title?: string;
+    label?: string;
     readOnly?: boolean;
 }
-
-const getInitialRecords = (value: any, min: number) => {
-    if (Array.isArray(value)) return value;
-    return Array.from({ length: min }, () => ({}));
-};
 
 const Repeat = ({
     name,
     children,
-    value = [],
+    value = undefined,
     onChange,
     onAdd,
     onRemove,
     className,
     min = 1,
     max = undefined,
-    title,
+    label,
     readOnly = false,
 }: RepeatProps) => {
-    const [records, setRecords] = useState<any[]>(() => getInitialRecords(value, min));
     const [release, setRelease] = useState(0);
 
-    const components = useMemo(
-        () =>
-            Array.from({ length: Math.max(min, value.length) }, (_, i) => (
-                <div key={`${name}-${i}`} className="p-4 border position-relative mb-2">
-                    {!readOnly && value.length > min && (
-                        <div className="d-flex justify-content-end mb-2">
-                            <ActionButton icon="x" onClick={() => handleRemove(i)} />
-                        </div>
-                    )}
-                    <FormEnhancer
-                        parentName={`${name}.${i}`}
-                        components={children}
-                        handleChange={onChange}
-                        record={value[i]}
-                    />
-                </div>
-            )),
+    const components = useMemo(() =>
+        (Array.isArray(value) ? value : Array.from({ length: min }, () => ({})))?.map((_, index) =>
+            <div key={`${name}-${index}-${release}`} className="p-2 border position-relative mb-2">
+                {!readOnly && index >= min && <ActionButton 
+                    wrapClass='position-absolute top-0 end-0' 
+                    className='btn-link' 
+                    icon="x" 
+                    onClick={() => handleRemove(index)} 
+                />}
+                <FormEnhancer
+                    parentName={`${name}.${index}`}
+                    components={typeof children === 'function'
+                        ? children({record: value?.[index], records: value, index: index})
+                        : children}
+                    handleChange={onChange}
+                    record={value?.[index]}
+                />
+            </div>
+        ),
         [value, children, name, onChange, min, release, readOnly]
     );
 
     const handleAdd = () => {
-        const updated = [...records, {}];
-        onAdd?.(updated);
-        onChange?.({ target: { name: `${name}.${value.length}`, value: {} } });
-        setRecords(updated);
+        const next = Array.isArray(value) 
+            ? [...value, {}] 
+            : Array.from({ length: components.length + 1 }, () => ({}));
+        onAdd?.(next);
+        onChange?.({ target: { name: `${name}.${next.length - 1}`, value: {} } });
         setRelease(prev => prev + 1);
     };
     
     const handleRemove = (index: number) => {
-        const updated = records.filter((_, i) => i !== index);
         onRemove?.(index);
         onChange?.({ target: { name: `${name}.${index}` } });
-        setRecords(updated)
         setRelease(prev => prev + 1);
     };
 
     return (
         <div className={className}>
-            {title && <h3>{title}</h3>}
+            {label && <h3>{label}</h3>}
             {components}
-            {!readOnly && (!max || value.length < max) && (
-                <ActionButton icon="plus" onClick={handleAdd} />
+            {!readOnly && (!max || components.length < max) && (
+                <ActionButton wrapClass='text-end' icon='plus' label='Add' onClick={handleAdd} />
             )}
         </div>
     );

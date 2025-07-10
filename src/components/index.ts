@@ -15,7 +15,7 @@ export interface FormFieldProps extends UIProps {
     label?: string;
     value?: any;
     required?: boolean;
-    onChange?: (e: ChangeHandler) => void;
+    onChange?: (event: ChangeHandler) => void;
 }
 
 export { default as Brand } from './blocks/Brand';

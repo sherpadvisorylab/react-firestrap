@@ -619,7 +619,7 @@ function Helper() {
                 <Col xs={12} className='mb-5'>
                   <h2 id='brand'>Brand</h2>
                   <Card className='mb-3' title=''>
-                    <Brand url='https://it.wikipedia.org/wiki/Sicurezza_informatica' src={PLACEHOLDER_BRAND} label='Cyber' />
+                    <Brand url='https://it.wikipedia.org/wiki/Sicurezza_informatica' logo={PLACEHOLDER_BRAND} label='Cyber' />
                   </Card>
                 </Col>
 
