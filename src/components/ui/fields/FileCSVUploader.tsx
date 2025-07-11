@@ -18,12 +18,12 @@ interface CsvParserProps extends UIProps {
 export const FileCSVUploader: React.FC<CsvParserProps> = ({
   name,
   onDataLoaded,
-  label,
-  icon = "upload",
-  pre,
-  post,
-  wrapClass,
-  className,
+  label         = undefined,
+  icon          = "upload",
+  pre           = undefined,
+  post          = undefined,
+  wrapClass     = undefined,
+  className     = undefined,
   ...rest
 }) => {
   const theme = useTheme("button");

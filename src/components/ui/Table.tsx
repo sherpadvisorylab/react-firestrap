@@ -1,8 +1,9 @@
 import React from 'react';
-import {useTheme} from "../../Theme";
-import {Wrapper} from "./GridSystem";
-import {RecordArray, RecordProps} from "../../integrations/google/firedatabase";
+import { useTheme } from "../../Theme";
+import { Wrapper } from "./GridSystem";
+import { RecordArray, RecordProps } from "../../integrations/google/firedatabase";
 import { UIProps } from 'components';
+import Pagination from './Pagination';
 
 export type TableHeaderProp = {
     key: string,
@@ -16,6 +17,7 @@ interface TableProps extends UIProps {
     body?: RecordArray,
     Footer?: string | React.ReactNode,
     onClick?: (index: number) => void;
+    pagination?: {page: number; limit: number};
     headerClass?: string,
     bodyClass?: string,
     footerClass?: string,
@@ -24,20 +26,21 @@ interface TableProps extends UIProps {
 };
 
 function Table({
-                   header,
-                   body             = undefined,
-                   Footer           = undefined,
-                   onClick          = undefined,
-                   pre              = undefined,
-                   post             = undefined,
-                   wrapClass        = undefined,
-                   className        = undefined,
-                   headerClass      = undefined,
-                   bodyClass        = undefined,
-                   footerClass      = undefined,
-                   scrollClass      = undefined,
-                   selectedClass    = undefined
-} : TableProps) {
+    header,
+    body = undefined,
+    Footer = undefined,
+    onClick = undefined,
+    pagination = undefined,
+    pre = undefined,
+    post = undefined,
+    wrapClass = undefined,
+    className = undefined,
+    headerClass = undefined,
+    bodyClass = undefined,
+    footerClass = undefined,
+    scrollClass = undefined,
+    selectedClass = undefined
+}: TableProps) {
     const theme = useTheme("table");
     const activeClass = selectedClass || theme.Table.selectedClass;
 
@@ -45,7 +48,7 @@ function Table({
         let currentElement = e.target as HTMLElement;
 
         while (currentElement && currentElement.tagName !== 'TR') {
-            if (currentElement.tagName === 'A' || currentElement.tagName === 'BUTTON' ) {
+            if (currentElement.tagName === 'A' || currentElement.tagName === 'BUTTON') {
                 return;
             }
             currentElement = currentElement.parentNode as HTMLElement;
@@ -66,13 +69,13 @@ function Table({
         const v = item[key];
         if (React.isValidElement(v) || v == null || typeof v !== 'object') return v;
         return Array.isArray(v) && !v.some(e => typeof e === 'object' && e)
-          ? v.join(", ")
-          : "";
+            ? v.join(", ")
+            : "";
     };
-      
+
     if (!Array.isArray(body)) {
         return <p className={"p-4"}><i className={"spinner-border spinner-border-sm"}></i> Caricamento in corso...</p>;
-    } else if(body.length === 0) {
+    } else if (body.length === 0) {
         return <p className={"p-4"}>Nessun dato trovato</p>;
     }
 
@@ -86,36 +89,44 @@ function Table({
                     {pre}
                     <table className={"table " + (className || theme.Table.className)}>
                         <thead className={headerClass || theme.Table.headerClass}>
-                        <tr>
-                            {headers.map((hdr) => (
-                                hdr.label ? (
-                                    <th key={hdr.key} className={hdr.className}>
-                                        <div
-                                            className={
-                                                "th-inner" + (hdr.sort ? "pe-5 sortable both" : "")
-                                            }
-                                        >{hdr.label}</div>
-                                    </th>
-                                ) : (
-                                    <th key={hdr.key} style={{ width: '1%', whiteSpace: 'nowrap' }}></th>
-                                )
-                            ))}
-                        </tr>
+                            <tr>
+                                {headers.map((hdr) => (
+                                    hdr.label ? (
+                                        <th key={hdr.key} className={hdr.className}>
+                                            <div
+                                                className={
+                                                    "th-inner" + (hdr.sort ? "pe-5 sortable both" : "")
+                                                }
+                                            >{hdr.label}</div>
+                                        </th>
+                                    ) : (
+                                        <th key={hdr.key} style={{ width: '1%', whiteSpace: 'nowrap' }}></th>
+                                    )
+                                ))}
+                            </tr>
                         </thead>
                         <tbody className={bodyClass || theme.Table.bodyClass}>
-                            {body.map((record, index) => (
-                                <tr
-                                    key={index}
-                                    style={{ cursor: onClick ? "pointer": "cursor" }}
-                                    onClick={(e) => {
-                                        onClick && handleClick(e, index);
-                                    }}
-                                >
-                                    {headers.map((hdr) => (
-                                        <td key={hdr.key}>{getField(record, hdr.key)}</td>
-                                    ))}
-                                </tr>
-                            ))}
+                            <Pagination 
+                                recordSet={body} 
+                                page={pagination?.page}
+                                limit={pagination?.limit}
+                            >
+                                {(pageRecords: RecordArray) =>
+                                    pageRecords.map((record, index) => (
+                                        <tr
+                                            key={index}
+                                            style={{ cursor: onClick ? "pointer" : "cursor" }}
+                                            onClick={(e) => {
+                                                onClick && handleClick(e, index);
+                                            }}
+                                        >
+                                            {headers.map((hdr) => (
+                                                <td key={hdr.key}>{getField(record, hdr.key)}</td>
+                                            ))}
+                                        </tr>
+                                    ))
+                                }
+                            </Pagination>
                         </tbody>
                         {Footer && <tfoot className={footerClass || theme.Table.footerClass}>{Footer}</tfoot>}
                     </table>

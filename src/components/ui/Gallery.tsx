@@ -5,6 +5,7 @@ import {Wrapper} from "../ui/GridSystem";
 import {converter} from "../../libs/converter";
 import {RecordProps} from "../../integrations/google/firedatabase";
 import { UIProps } from '../..';
+import Pagination from './Pagination';
 
 type ImageProps = React.ReactElement<HTMLImageElement>;
 type GalleryRecord = RecordProps & {
@@ -31,6 +32,10 @@ interface GalleryProps extends UIProps {
     itemMiddleLeft?: string | React.ReactNode;
     itemMiddleRight?: string | React.ReactNode;
     onClick?: (index: number) => void;
+    pagination?: {
+        page: number;
+        limit: number;
+    };
     gutterSize?: 0 | 1 | 2 | 3 | 4 | 5;
     rowCols?: 1 | 2 | 3 | 4 | 6;
     groupBy?: string | string[];
@@ -52,6 +57,7 @@ const Gallery = ({
                    itemMiddleLeft   = undefined,
                    itemMiddleRight  = undefined,
                    onClick          = undefined,
+                   pagination       = undefined,
                    gutterSize       = undefined,
                    rowCols          = undefined,
                    groupBy          = undefined,
@@ -176,31 +182,37 @@ const Gallery = ({
             <Wrapper className={className || theme.Gallery.className}>
                 {Header && <div className={headerClass || theme.Gallery.headerClass}>{Header}</div>}
                 <Wrapper className={scrollClass || theme.Gallery.scrollClass}>
-                    <div className={"d-flex flex-wrap text-center align-items-center g-2 row-cols-" + numCols + " " + (bodyClass || theme.Gallery.bodyClass)}>
-                        {renderedBody.map((Component, index) => (
-                            <div key={index} className={"item position-relative p-" + paddingSize}>
-                                {Component}
-                                {itemTopLeft && <div className={"position-absolute start-0 top-0 p-" + paddingSize}>
-                                    {itemTopLeft}
-                                </div>}
-                                {itemTopRight && <div className={"position-absolute end-0 top-0 p-" + paddingSize}>
-                                    {itemTopRight}
-                                </div>}
-                                {itemBottomLeft && <div className={"position-absolute start-0 bottom-0 p-" + paddingSize}>
-                                    {itemBottomLeft}
-                                </div>}
-                                {itemBottomRight && <div className={"position-absolute end-0 bottom-0 p-" + paddingSize}>
-                                    {itemBottomRight}
-                                </div>}
-                                {itemMiddleLeft && <div className={"position-absolute top-50 start-0 translate-middle-y p-" + paddingSize}>
-                                    {itemMiddleLeft}
-                                </div>}
-                                {itemMiddleRight && <div className={"position-absolute top-50 end-0 translate-middle-y p-" + paddingSize}>
-                                    {itemMiddleRight}
-                                </div>}
+                    <div className={"d-flex flex-wrap text-center align-items-center g-2 row-cols-" + numCols + " " + (bodyClass || theme.Gallery.bodyClass)}>  
+                        <Pagination 
+                            recordSet={renderedBody} 
+                            page={pagination?.page} 
+                            limit={pagination?.limit}
+                        >
+                            {(pageRecords: [])=>pageRecords.map((Component, index) => (
+                                <div key={index} className={"item position-relative p-" + paddingSize}>
+                                    {Component}
+                                    {itemTopLeft && <div className={"position-absolute start-0 top-0 p-" + paddingSize}>
+                                        {itemTopLeft}
+                                    </div>}
+                                    {itemTopRight && <div className={"position-absolute end-0 top-0 p-" + paddingSize}>
+                                        {itemTopRight}
+                                    </div>}
+                                    {itemBottomLeft && <div className={"position-absolute start-0 bottom-0 p-" + paddingSize}>
+                                        {itemBottomLeft}
+                                    </div>}
+                                    {itemBottomRight && <div className={"position-absolute end-0 bottom-0 p-" + paddingSize}>
+                                        {itemBottomRight}
+                                    </div>}
+                                    {itemMiddleLeft && <div className={"position-absolute top-50 start-0 translate-middle-y p-" + paddingSize}>
+                                        {itemMiddleLeft}
+                                    </div>}
+                                    {itemMiddleRight && <div className={"position-absolute top-50 end-0 translate-middle-y p-" + paddingSize}>
+                                        {itemMiddleRight}
+                                    </div>}
 
-                            </div>
-                        ))}
+                                </div>
+                            ))}
+                        </Pagination>
                     </div>
                 </Wrapper>
                 {Footer && <div className={footerClass || theme.Gallery.footerClass}>{Footer}</div>}

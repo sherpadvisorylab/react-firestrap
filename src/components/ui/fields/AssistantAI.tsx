@@ -7,6 +7,7 @@ import FormEnhancer from '../../FormEnhancer';
 import Loader from '../Loader';
 import Carousel from '../../blocks/Carousel';
 import Card from '../Card';
+import { UIProps, Wrapper } from '../../index';
 
 type PromptKey = keyof typeof PROMPTS;
 
@@ -20,13 +21,13 @@ type ResponseItem =
     | { Description: string }
     | { outline: OutlineItem[] };
 
-interface AssistantAIProps {
+interface AssistantAIProps extends UIProps {
     name: string;
     promptTopic: { prompt: string; label: string };
     configVariables: { lang: string; voice: string; style: string; limit: string };
     initialValue?: string;
-    onChange: (e: any) => void;
     children?: React.ReactNode;
+    onChange: (e: any) => void;
     viewMode?: 'list' | 'carousel';
     autoStart?: boolean;
     onReset?: () => void;
@@ -67,11 +68,15 @@ const AssistantAI = ({
     promptTopic,
     configVariables,
     initialValue,
-    onChange,
     children,
-    viewMode = 'list',
-    autoStart = false,
-    onReset,
+    onChange            = () => { },
+    viewMode            = 'list',
+    autoStart           = false,
+    onReset             = undefined,
+    pre                 = undefined,
+    post                = undefined,
+    wrapClass           = undefined,
+    className           = undefined
 }: AssistantAIProps) => {
     /* const { prompt, label } = getPrompt(promptTopic); */
     const [userInput, setUserInput] = useState<string>(initialValue ?? '');
@@ -152,68 +157,72 @@ const AssistantAI = ({
     }
 
     return (
-        <Card
-            title={name}
-            className='my-3'
-            header={
-                <div className='d-flex justify-content-end align-items-center gap-2'>
-                    {isLoading && <Loader>Thinking...</Loader>}
-                    {error && <span className='text-danger'>{error}</span>}
-                    {(selectedResponse || responsesAI.length > 0 || error) && <ActionButton icon='arrow-clockwise' onClick={handleInput} />}
-                </div>
-            }
-        >
+        <Wrapper className={wrapClass}>
+            {pre}
+            <Card
+                title={name}
+                className={`my-3 ${className}`}
+                header={
+                    <div className='d-flex justify-content-end align-items-center gap-2'>
+                        {isLoading && <Loader>Thinking...</Loader>}
+                        {error && <span className='text-danger'>{error}</span>}
+                        {(selectedResponse || responsesAI.length > 0 || error) && <ActionButton icon='arrow-clockwise' onClick={handleInput} />}
+                    </div>
+                }
+            >
 
-            {(!autoStart || !initialValue) && !selectedResponse && !error && <TextArea
-                name='inputUser'
-                label={promptTopic.label}
-                value={initialValue ?? userInput}
-                onChange={(e) => setUserInput(e.target.value)}
-                post={<LoadingButton
-                    icon='robot'
-                    onClick={handleInput}
-                    disabled={userInput ? false : true}
+                {(!autoStart || !initialValue) && !selectedResponse && !error && <TextArea
+                    name='inputUser'
+                    label={promptTopic.label}
+                    value={initialValue ?? userInput}
+                    onChange={(e) => setUserInput(e.target.value)}
+                    post={<LoadingButton
+                        icon='robot'
+                        onClick={handleInput}
+                        disabled={userInput ? false : true}
+                    />}
+                    wrapClass='my-3'
                 />}
-                wrapClass='my-3'
-            />}
 
-            {responsesAI?.length > 0 && !selectedResponse && !error && (
-                viewMode === 'carousel' ? (
-                    <Carousel>
-                        {responsesAI.map((response, index) => {
-                            const lines = getResponseContent(response, viewMode);
-                            // lines deve essere un array di stringhe
-                            return (
-                                <>
-                                Outline {index + 1}
-                                <ListGroup
-                                    key={index}
-                                    data-index={index}
-                                    className="carousel-item-content"
-                                    onClick={(event) => handleSelectedResponse(event, index)}
-                                >
-                                    {Array.isArray(lines)
-                                        ? lines.map((line, i) => (line))
-                                        : [{lines}]
-                                    }
-                                </ListGroup>
-                                </>
-                            );
-                        })}
-                    </Carousel>
-                ) : (
-                    <ListGroup onClick={handleSelectedResponse}>
-                        {responsesAI.map((response, index) => getResponseContent(response, viewMode))}
-                    </ListGroup>
-                )
-            )}
-            {selectedResponse && !error &&
-                <FormEnhancer
-                    components={children}
-                    record={{ [name]: selectedResponse }}
-                />
-            }
-        </Card>
+                {responsesAI?.length > 0 && !selectedResponse && !error && (
+                    viewMode === 'carousel' ? (
+                        <Carousel>
+                            {responsesAI.map((response, index) => {
+                                const lines = getResponseContent(response, viewMode);
+                                // lines deve essere un array di stringhe
+                                return (
+                                    <>
+                                        Outline {index + 1}
+                                        <ListGroup
+                                            key={index}
+                                            data-index={index}
+                                            className="carousel-item-content"
+                                            onClick={(event) => handleSelectedResponse(event, index)}
+                                        >
+                                            {Array.isArray(lines)
+                                                ? lines.map((line, i) => (line))
+                                                : [{ lines }]
+                                            }
+                                        </ListGroup>
+                                    </>
+                                );
+                            })}
+                        </Carousel>
+                    ) : (
+                        <ListGroup onClick={handleSelectedResponse}>
+                            {responsesAI.map((response, index) => getResponseContent(response, viewMode))}
+                        </ListGroup>
+                    )
+                )}
+                {selectedResponse && !error &&
+                    <FormEnhancer
+                        components={children}
+                        record={{ [name]: selectedResponse }}
+                    />
+                }
+            </Card>
+            {post}
+        </Wrapper>
     )
 }
 
