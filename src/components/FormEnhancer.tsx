@@ -2,17 +2,18 @@ import React from 'react';
 import {RecordProps} from "../integrations/google/firedatabase";
 import { FormRef } from './widgets/Form';
 import { getRecordValue } from '../libs/utils';
+import { ChangeHandler } from 'index';
 
 type FormProps = {
     name?: string;
     value?: any;
-    onChange?: (e: React.ChangeEvent<any>) => void;
+    onChange?: (event: ChangeHandler) => void;
     dataStoragePath?: string;
 };
 
 interface EnhancerProps {
     record?: RecordProps;
-    handleChange?: (event: React.ChangeEvent<any>) => void;
+    handleChange?: (event: ChangeHandler) => void;
     parentName?: string;
     dataStoragePath?: string;
     formRef?: React.Ref<FormRef>;
@@ -65,7 +66,7 @@ const applyOnChangeRecursive = ({
 
         const {type, props} = child;
         const name = props.name;
-        const onChange = handleChange && ((event: React.ChangeEvent<any>) => {
+        const onChange = handleChange && ((event: ChangeHandler) => {
             console.log("ONCHANGE", event, record);
             props.onChange?.(event);
             handleChange?.(event);

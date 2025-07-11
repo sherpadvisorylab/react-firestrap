@@ -12,6 +12,7 @@ import Alert from "../ui/Alert";
 import { RecordProps } from "../../integrations/google/firedatabase";
 import {FormTree, ModelProps, buildFormFields} from "../Component";
 import Breadcrumbs from "../blocks/Breadcrumbs";
+import { ChangeHandler } from 'index';
 
 interface BaseFormProps {
     header?: React.ReactNode;
@@ -130,9 +131,9 @@ const FormData = forwardRef<FormRef, FormDefaultProps>(({
         }
     }, [showNotice]);
 
-    const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-        const path = e.target.name.split(".");
-        const value = e.target.value;
+    const handleChange = useCallback((event: ChangeHandler) => {
+        const path = event.target.name.split(".");
+        const value = event.target.value;
     
         setRecord(prev => {
             const updated = { ...prev };
@@ -155,16 +156,6 @@ const FormData = forwardRef<FormRef, FormDefaultProps>(({
                     target.splice(Number(lastKey), 1);
                 } else {
                     delete (target as Record<string, any>)[lastKey];
-                    //TODO: da ottimizzare. nel tabdynamic se rimuovi un tab intermedio questo pezzo è necessario per ricostruire l'array poiche per qualche motivo non era un array ma un oggetto.
-                    //il problema è a monte quando si crea la struttura dati.
-                    /*const keys = Object.keys(target);
-                    if (keys.every(k => !isNaN(Number(k)))) {
-                        const arr = keys
-                            .sort((a, b) => Number(a) - Number(b))
-                            .map(k => target[k]);
-                        Object.keys(target).forEach(k => delete target[k]);
-                        arr.forEach((item, idx) => target[idx] = item);
-                    }*/
                 }
             } else {
                 target[lastKey] = value;
@@ -207,7 +198,7 @@ const FormData = forwardRef<FormRef, FormDefaultProps>(({
         const emptyRequiredFields = document.querySelectorAll('[required]:not([value]), [required][value=""]');
         if (emptyRequiredFields.length > 0) {
             showNotice && setNotification({ message: "Please fill in all required fields", type: "warning" });
-            return true;
+            //return false;
         }
 
         defaultValues && onInsert && await onInsert(recordRef.current);

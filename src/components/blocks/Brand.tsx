@@ -7,7 +7,7 @@ import {Wrapper} from "../ui/GridSystem";
 type BrandProps = {
     url?: string;
     label?: string;
-    src?: string;
+    logo?: string;
     width?: number;
     height?: number;
     wrapClass ?: string;
@@ -19,7 +19,7 @@ type BrandProps = {
 const Brand = ({
                    url          = undefined,
                    label        = undefined,
-                   src          = undefined,
+                   logo          = undefined,
                    width        = undefined,
                    height       = 36,
                    wrapClass    = undefined,
@@ -29,7 +29,7 @@ const Brand = ({
 }: BrandProps) => {
     const theme = useTheme("brand");
     const Logo = <>
-        <Image src={src || PLACEHOLDER_BRAND}
+        <Image src={logo || PLACEHOLDER_BRAND}
                width={width}
                height={height}
         />

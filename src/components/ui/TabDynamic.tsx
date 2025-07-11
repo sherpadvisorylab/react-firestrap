@@ -3,12 +3,12 @@ import { ActionButton } from "./Buttons";
 import FormEnhancer, { asForm } from "../FormEnhancer";
 import {converter} from "../../libs/converter";
 import { TabLayouts, TabPosition } from './Tab';
-import { path } from 'libs';
+import { ChangeHandler } from 'index';
 
 interface TabDynamicProps {
     children: React.ReactNode | ((record: any) => React.ReactNode);
     name: string;
-    onChange?: (event: { target: { name: string; value?: any } }) => void;
+    onChange?: (event: ChangeHandler) => void;
     onAdd?: (value: any[]) => void;
     onRemove?: (index: number) => void;
     value?: any[];
