@@ -3,7 +3,7 @@ import { useTheme } from "../../Theme";
 import { Wrapper } from "./GridSystem";
 import { RecordArray, RecordProps } from "../../integrations/google/firedatabase";
 import { UIProps } from 'components';
-import Pagination from './Pagination';
+import Pagination, { PaginationParams } from './Pagination';
 
 export type TableHeaderProp = {
     key: string,
@@ -17,7 +17,7 @@ interface TableProps extends UIProps {
     body?: RecordArray,
     Footer?: string | React.ReactNode,
     onClick?: (index: number) => void;
-    pagination?: {page: number; limit: number};
+    pagination?: PaginationParams;
     headerClass?: string,
     bodyClass?: string,
     footerClass?: string,

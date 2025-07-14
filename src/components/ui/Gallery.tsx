@@ -5,7 +5,7 @@ import {Wrapper} from "../ui/GridSystem";
 import {converter} from "../../libs/converter";
 import {RecordProps} from "../../integrations/google/firedatabase";
 import { UIProps } from '../..';
-import Pagination from './Pagination';
+import Pagination, { PaginationParams } from './Pagination';
 
 type ImageProps = React.ReactElement<HTMLImageElement>;
 type GalleryRecord = RecordProps & {
@@ -32,10 +32,7 @@ interface GalleryProps extends UIProps {
     itemMiddleLeft?: string | React.ReactNode;
     itemMiddleRight?: string | React.ReactNode;
     onClick?: (index: number) => void;
-    pagination?: {
-        page: number;
-        limit: number;
-    };
+    pagination?: PaginationParams;
     gutterSize?: 0 | 1 | 2 | 3 | 4 | 5;
     rowCols?: 1 | 2 | 3 | 4 | 6;
     groupBy?: string | string[];

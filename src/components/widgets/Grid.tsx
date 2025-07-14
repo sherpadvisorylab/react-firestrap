@@ -11,6 +11,7 @@ import {converter} from "../../libs/converter";
 import FormEnhancer, {extractComponentProps} from "../FormEnhancer";
 import {RecordArray, RecordProps} from "../../integrations/google/firedatabase";
 import Form, {FormRef} from "./Form";
+import { PaginationParams } from '../ui/Pagination';
 
 type ColumnFormatter = (args: {
     value: any;
@@ -42,10 +43,7 @@ type GridProps = {
         setHeader?: (record?: RecordProps) => string;
         onOpen?: (data?: ModalProps) => React.ReactNode;
     };
-    pagination?: {
-        page?: number;
-        limit?: number;
-    };
+    pagination?: PaginationParams
     setPrimaryKey?: (record: RecordProps) => string;
     onLoadRecord?: (record: RecordProps, index: number) => RecordProps | boolean;
     onDisplayBefore?: (records: RecordArray,
@@ -313,18 +311,13 @@ const GridArray = ({
         );
     }, [children, allowedActions, openModal, modal?.setHeader]);
 
-    const validPagination =
-        pagination && typeof pagination.page === "number" && typeof pagination.limit === "number"
-            ? { page: pagination.page, limit: pagination.limit }
-            : undefined;
-
     const displayComponent = useMemo(() => {
         switch (type) {
             case "gallery":
                 return <Gallery
                     body={body}
                     onClick={(onClick || canEdit) ? handleClick : undefined}
-                    pagination={validPagination}
+                    pagination={pagination}
                     wrapClass={theme.Grid.Gallery.wrapperClass}
                     scrollClass={theme.Grid.Gallery.scrollClass}
                     headerClass={theme.Grid.Gallery.headerClass}
@@ -341,7 +334,7 @@ const GridArray = ({
                     header={tableHeaders}
                     body={body}
                     onClick={(onClick || canEdit) ? handleClick : undefined}
-                    pagination={validPagination}
+                    pagination={pagination}
                     wrapClass={theme.Grid.Table.wrapperClass}
                     className={theme.Grid.Table.className}
                     headerClass={theme.Grid.Table.headerClass}

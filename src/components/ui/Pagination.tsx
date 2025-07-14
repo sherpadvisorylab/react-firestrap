@@ -1,30 +1,33 @@
-import React, { Children, useState } from 'react';
+import React, { useState } from 'react';
 import { UIProps, Wrapper } from "../index";
 import { RecordArray } from 'integrations/google/firedatabase';
 
-interface PaginationProps extends UIProps {
+export type PaginationParams = {
+    page?: number;
+    limit?: number;
+}
+
+interface PaginationProps extends UIProps, PaginationParams {
     recordSet: RecordArray | any[];
     children: any;
-    limit?: number;
-    page?: number;
 }
 
 const Pagination = ({
     recordSet,
     children,
-    limit = 100,
-    page = 1,
-    pre = undefined,
-    post = undefined,
-    className = undefined,
-    wrapClass = undefined,
+    limit           = undefined,
+    page            = undefined,
+    pre             = undefined,
+    post            = undefined,
+    className       = undefined,
+    wrapClass       = undefined
 }: PaginationProps) => {
+    const pageSize = limit || recordSet.length;
+    const totalPages = Math.ceil(recordSet.length / pageSize);
 
-    const totalPages = Math.ceil(recordSet.length / limit);
-
-    const [currentPage, setCurrentPage] = useState(page);
-    const start = (currentPage - 1) * limit;
-    const end = start + limit;
+    const [currentPage, setCurrentPage] = useState(page || 1);
+    const start = (currentPage - 1) * pageSize;
+    const end = start + pageSize;
 
     const pageRecords = recordSet.slice(start, end)
 
@@ -41,7 +44,7 @@ const Pagination = ({
         <Wrapper className={wrapClass}>
             {children(pageRecords)}
             {pre}
-            <nav aria-label="Page navigation example" className={className}>
+            {recordSet.length > pageSize && <nav aria-label="Page navigation example" className={className}>
                 <ul className="pagination justify-content-center">
                     <li className={`page-item ${disabledPrev}`}>
                         <button onClick={() => handlePage(1)} className="page-link">
@@ -79,7 +82,7 @@ const Pagination = ({
                         </button>
                     </li>
                 </ul>
-            </nav>
+            </nav>}
             {post}
         </Wrapper>
     )
