@@ -169,7 +169,7 @@ export const Select = ({
                     {optionEmpty && <option value={optionEmpty.value}>{optionEmpty.label}</option>}
                     {opts.map((op, index) => <option value={op.value} key={`${id}-${index}`}>{op.label}</option>)}
                 </select>
-                {post && <span className="input-group-text p-0">{post}</span>}
+                {post && <span className="input-group-text">{post}</span>}
             </Wrapper>
             {feedback && <div className="feedback">{feedback}</div>}
         </Wrapper>

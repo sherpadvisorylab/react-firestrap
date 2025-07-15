@@ -120,6 +120,10 @@ interface Converter extends ConverterCore {
     [key: string]: ConverterCore[keyof ConverterCore] | any;
 }
 
+const getPathValue = (obj: Record<string, any>, path: string) => {
+    return path.split('.').reduce((acc, part) => acc?.[part], obj);
+}
+
 export const converter: Converter = {
     parse: (values, pattern) => {
         if (typeof pattern !== 'string') return pattern;
@@ -127,12 +131,13 @@ export const converter: Converter = {
             const [pre, key] = ((Key || '').indexOf('(') === -1 ? ['', Key] : Key.split('(', 2));
             const [func, post] = ((Func || '').indexOf(')') === -1 ? [Func, ''] : Func.split(')', 2));
 
-            if (!converter?.[func] || !values?.[key]) {
+            const value = getPathValue(values, key);
+            if (!converter?.[func] || !value) {
                 //console.error(`Conversion failed`, values, key, func)
-                return values[key] || '';
+                return value || '';
             }
 
-            return pre + converter[func](values[key], format) + post;
+            return pre + converter[func](value, format) + post;
         });
 
         return splitter(replacer(parse));

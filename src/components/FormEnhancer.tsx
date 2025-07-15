@@ -67,16 +67,17 @@ const applyOnChangeRecursive = ({
         const {type, props} = child;
         const name = props.name;
         const onChange = handleChange && ((event: ChangeHandler) => {
-            console.log("ONCHANGE", event, record);
+            console.log("ONCHANGE", parentName, name, event, record);
             props.onChange?.(event);
             handleChange?.(event);
         });
         
         if ((type as any)?.__form) {
-            console.log("ENHANCE", child, record, (name ? record?.[name] : record) ?? props.value ?? undefined);
+            console.log("ENHANCE", child, record, parentName, name, (name ? record?.[name] : record) ?? props.value ?? undefined);
 
             return React.cloneElement(child as any, {
                 wrapClass: `mb-3${props.wrapClass ? ' ' + props.wrapClass : ''}`,
+                name: parentName ? `${parentName}.${name}` : name,
                 value: record?.[name] ?? record ?? props.value ?? undefined,
                 dataStoragePath: props.dataStoragePath ?? dataStoragePath ?? undefined,
                 onChange,

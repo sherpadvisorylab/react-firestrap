@@ -25,17 +25,17 @@ const Repeat = ({
     onAdd,
     onRemove,
     className,
-    min = 1,
+    min = undefined,
     max = undefined,
-    label,
+    label = undefined,
     readOnly = false,
 }: RepeatProps) => {
     const [release, setRelease] = useState(0);
 
     const components = useMemo(() =>
-        (Array.isArray(value) ? value : Array.from({ length: min }, () => ({})))?.map((_, index) =>
+        (Array.isArray(value) ? value : Array.from({ length: min || 0 }, () => ({})))?.map((_, index) =>
             <div key={`${name}-${index}-${release}`} className="p-2 border position-relative mb-2">
-                {!readOnly && index >= min && <ActionButton 
+                {!readOnly && index >= (min || 0) && <ActionButton 
                     wrapClass='position-absolute top-0 end-0' 
                     className='btn-link' 
                     icon="x" 
@@ -69,13 +69,19 @@ const Repeat = ({
         setRelease(prev => prev + 1);
     };
 
+    const addButton = useMemo(() => {
+        if (readOnly) return null;
+        if (!max || components.length < max) {
+            return <ActionButton wrapClass='text-end' icon='plus' label='Add' onClick={handleAdd} />
+        }
+        return null;
+    }, [readOnly, max, components.length]);
+
     return (
         <div className={className}>
-            {label && <h3>{label}</h3>}
+            {label && <h4 className='d-flex justify-content-between'>{label}{addButton}</h4>}
             {components}
-            {!readOnly && (!max || components.length < max) && (
-                <ActionButton wrapClass='text-end' icon='plus' label='Add' onClick={handleAdd} />
-            )}
+            {!label && addButton}
         </div>
     );
 };
