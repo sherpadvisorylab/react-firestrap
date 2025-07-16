@@ -31,6 +31,7 @@ import { PLACEHOLDER_BRAND, PLACEHOLDER_IMAGE } from '../Theme';
 import Menu from '../components/blocks/Menu';
 import Code from '../components/ui/Code';
 import Pagination from '../components/ui/Pagination';
+import { useLocation } from 'react-router-dom';
 
 
 declare global {
@@ -42,6 +43,8 @@ declare global {
 function Helper() {
 
   const [showModal, setShowModal] = useState(false);
+  const [showAlert, setShowAlert] = useState(false)
+  
   const scrollRef = useRef(null);
 
   useEffect(() => {
@@ -51,6 +54,13 @@ function Helper() {
         smoothScroll: true
       });
     }
+  }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
   }, []);
 
   const recordSet = []
@@ -70,9 +80,9 @@ function Helper() {
                 data-bs-spy="scroll"
                 data-bs-target="#sidebar-bootstrap"
                 data-bs-smooth-scroll="true"
-                className="scrollspy-example-2"
+                className="p-2"
                 tabIndex={0}
-                style={{ position: "relative", height: "90vh", overflow: "auto" }}
+                style={{ height: "80vh", overflowY: "auto" }}
               >
                 <h1>Helper</h1>
                 <p>Helper is a component that helps you to create a form.</p>
@@ -239,6 +249,9 @@ function Helper() {
                       <Alert type="secondary" children="Secondary" />
                       <Alert type="light" children="Light" />
                       <Alert type="dark" children="Dark" />
+
+                      <ActionButton onClick={()=>setShowAlert(true)} label='click alert fixed'/>
+                      {showAlert && <Alert isFixed='top' onClose={()=>setShowAlert(false)}>Prova Alert fixedTop con timeout 5s</Alert>}
                     </Card>
                   </Col>
 
@@ -877,39 +890,89 @@ function Helper() {
             <Col xl={3}>
 
               {/* Sidebar menu with correct id for ScrollSpy */}
-              <nav id='sidebar-bootstrap' className='navbar navbar-sticky d-none d-xl-block'>
-                <nav className='nav nav-pills flex-column'>
-                  <a href='#input' className='nav-link' data-toggle='scroll-to'>Input</a>
-                  <a href='#selectors' className='nav-link' data-toggle='scroll-to'>Selectors</a>
-                  <a href='#upload' className='nav-link' data-toggle='scroll-to'>Upload</a>
-                  <a href='#alert' className='nav-link' data-toggle='scroll-to'>Alert</a>
-                  <a href='#badge' className='nav-link' data-toggle='scroll-to'>Badge</a>
-                  <a href='#buttons' className='nav-link' data-toggle='scroll-to'>Buttons</a>
-                  <a href='#card' className='nav-link' data-toggle='scroll-to'>Card</a>
-                  <a href='#gallery' className='nav-link' data-toggle='scroll-to'>Gallery</a>
-                  <a href='#gridSystem' className='nav-link' data-toggle='scroll-to'>Grid System</a>
-                  <a href='#images' className='nav-link' data-toggle='scroll-to'>Images</a>
-                  <a href='#loader' className='nav-link' data-toggle='scroll-to'>Loader</a>
-                  <a href='#modal' className='nav-link' data-toggle='scroll-to'>Modal</a>
-                  <a href='#percentage' className='nav-link' data-toggle='scroll-to'>Percentage</a>
-                  <a href='#repeat' className='nav-link' data-toggle='scroll-to'>Repeat</a>
-                  <a href='#tab' className='nav-link' data-toggle='scroll-to'>Tab</a>
-                  <a href='#table' className='nav-link' data-toggle='scroll-to'>Table</a>
-                  <a href='#brand' className='nav-link' data-toggle='scroll-to'>Brand</a>
-                  <a href='#breadcrumb' className='nav-link' data-toggle='scroll-to'>Breadcrumb</a>
-                  <a href='#carousel' className='nav-link' data-toggle='scroll-to'>Carousel</a>
-                  <a href='#dropdown' className='nav-link' data-toggle='scroll-to'>Dropdown</a>
-                  <a href='#notification' className='nav-link' data-toggle='scroll-to'>Notifications</a>
-                  <a href='#search' className='nav-link' data-toggle='scroll-to'>Search</a>
-                  <a href='#form' className='nav-link' data-toggle='scroll-to'>Form</a>
-                  <a href='#grid' className='nav-link' data-toggle='scroll-to'>Grid</a>
-                  <a href='#pagination' className='nav-link' data-toggle='scroll-to'>Pagination</a>
-                </nav>
+              <nav id='sidebar-bootstrap' className='navbar d-none d-xl-block' style={{ height: "80vh", overflowY: "auto" }}>
+                <ul className='nav nav-pills flex-column'>
+                  <li className='nav-item'>
+                    <a href='#input' className='nav-link' data-toggle='scroll-to'>Input</a>
+                  </li>
+                  <li className='nav-item'>
+                    <a href='#selectors' className='nav-link' data-toggle='scroll-to'>Selectors</a>
+                  </li>
+                  <li className='nav-item'>
+                    <a href='#upload' className='nav-link' data-toggle='scroll-to'>Upload</a>
+                  </li>
+                  <li className='nav-item'>
+                    <a href='#alert' className='nav-link' data-toggle='scroll-to'>Alert</a>
+                  </li>
+                  <li className='nav-item'>
+                    <a href='#badge' className='nav-link' data-toggle='scroll-to'>Badge</a>
+                  </li>
+                  <li className='nav-item'>
+                    <a href='#buttons' className='nav-link' data-toggle='scroll-to'>Buttons</a>
+                  </li>
+                  <li className='nav-item'>
+                    <a href='#card' className='nav-link' data-toggle='scroll-to'>Card</a>
+                  </li>
+                  <li className='nav-item'>
+                    <a href='#gallery' className='nav-link' data-toggle='scroll-to'>Gallery</a>
+                  </li>
+                  <li className='nav-item'>
+                    <a href='#gridSystem' className='nav-link' data-toggle='scroll-to'>Grid System</a>
+                  </li>
+                  <li className='nav-item'>
+                    <a href='#images' className='nav-link' data-toggle='scroll-to'>Images</a>
+                  </li>
+                  <li className='nav-item'>
+                    <a href='#loader' className='nav-link' data-toggle='scroll-to'>Loader</a>
+                  </li>
+                  <li className='nav-item'>
+                    <a href='#modal' className='nav-link' data-toggle='scroll-to'>Modal</a>
+                  </li>
+                  <li className='nav-item'>
+                    <a href='#percentage' className='nav-link' data-toggle='scroll-to'>Percentage</a>
+                  </li>
+                  <li className='nav-item'>
+                    <a href='#repeat' className='nav-link' data-toggle='scroll-to'>Repeat</a>
+                  </li>
+                  <li className='nav-item'>
+                    <a href='#tab' className='nav-link' data-toggle='scroll-to'>Tab</a>
+                  </li>
+                  <li className='nav-item'>
+                    <a href='#table' className='nav-link' data-toggle='scroll-to'>Table</a>
+                  </li>
+                  <li className='nav-item'>
+                    <a href='#brand' className='nav-link' data-toggle='scroll-to'>Brand</a>
+                  </li>
+                  <li className='nav-item'>
+                    <a href='#breadcrumb' className='nav-link' data-toggle='scroll-to'>Breadcrumb</a>
+                  </li>
+                  <li className='nav-item'>
+                    <a href='#carousel' className='nav-link' data-toggle='scroll-to'>Carousel</a>
+                  </li>
+                  <li className='nav-item'>
+                    <a href='#dropdown' className='nav-link' data-toggle='scroll-to'>Dropdown</a>
+                  </li>
+                  <li className='nav-item'>
+                    <a href='#notification' className='nav-link' data-toggle='scroll-to'>Notifications</a>
+                  </li>
+                  <li className='nav-item'>
+                    <a href='#search' className='nav-link' data-toggle='scroll-to'>Search</a>
+                  </li>
+                  <li className='nav-item'>
+                    <a href='#form' className='nav-link' data-toggle='scroll-to'>Form</a>
+                  </li>
+                  <li className='nav-item'>
+                    <a href='#grid' className='nav-link' data-toggle='scroll-to'>Grid</a>
+                  </li>
+                  <li className='nav-item'>
+                    <a href='#pagination' className='nav-link' data-toggle='scroll-to'>Pagination</a>
+                  </li>
+                </ul>
               </nav>
             </Col>
           </Row>
         </Col>
-        
+
       </Row >
 
     </Container >

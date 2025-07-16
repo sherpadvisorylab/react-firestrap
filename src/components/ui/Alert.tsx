@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useTheme } from '../../Theme';
 import { UIProps } from '../..';
 import { Wrapper } from "./GridSystem";
@@ -7,7 +7,9 @@ import { createPortal } from 'react-dom';
 type AlertProps = {
     children: string | React.ReactNode;
     type?: "info" | "success" | "warning" | "danger" | "primary" | "secondary" | "light" | "dark";
-    fixedTop?: boolean;
+    isFixed?: "top" | "bottom";
+    timeout?: number;
+    onClose?: () => void;
     icon?: string | boolean;
     className?: string;
 } & UIProps;
@@ -15,7 +17,9 @@ type AlertProps = {
 const Alert = ({
     children,
     type = "info",
-    fixedTop = false,
+    isFixed = undefined,
+    timeout = undefined,
+    onClose = undefined,
     icon = true,
     pre = undefined,
     post = undefined,
@@ -38,7 +42,16 @@ const Alert = ({
         icon = ICONS[type];
     }
 
-    console.log(fixedTop)
+    useEffect(() => {
+        if (typeof onClose === 'function') {
+            const duration = timeout || 5000;
+            const timer = setTimeout(() => {
+                onClose();
+            }, duration);
+
+            return () => clearTimeout(timer);
+        }
+    }, [onClose, timeout]);
 
     // @todo ristemare stile alert
     const renderAlert = () => {
@@ -46,8 +59,8 @@ const Alert = ({
             <Wrapper className={wrapClass}>
                 {pre}
                 <div
-                    className={`d-flex align-items-center alert alert-${type} ${className || theme.Alert.className} ${fixedTop && 'position-fixed w-50'}`}
-                    style={fixedTop ? { zIndex: 1100, top: 50, left: "50%", transform: "translateX(-50%)" } : undefined}
+                    className={`d-flex align-items-center alert alert-${type} ${className || theme.Alert.className} ${isFixed && 'position-fixed w-100'}`}
+                    style={isFixed ? { zIndex: 1100, [isFixed]: 50, left: "50%", transform: "translateX(-50%)" } : undefined}
                 >
                     {icon && <i className={theme.getIcon(icon) + " me-1"}></i>}
                     {children}
@@ -57,7 +70,7 @@ const Alert = ({
         )
     }
 
-    return fixedTop === true ? createPortal(renderAlert(), document.body) : renderAlert();
+    return isFixed ? createPortal(renderAlert(), document.body) : renderAlert();
 }
 
 export default Alert;

@@ -127,7 +127,6 @@ const FormData = forwardRef<FormRef, FormDefaultProps>(({
     const notice = useCallback(({ message, type = "danger" }: NoticeProps) => {
         if (showNotice) {
             setNotification({ type, message });
-            setTimeout(() => setNotification(undefined), 5000);
         }
     }, [showNotice]);
 
@@ -243,7 +242,7 @@ const FormData = forwardRef<FormRef, FormDefaultProps>(({
     return (
         <Wrapper className={wrapClass || theme.Form.wrapClass}>
             {notification && (
-                <Alert type={notification.type}>
+                <Alert type={notification.type} onClose={()=>setNotification(undefined)}>
                     {notification.message}
                 </Alert>
             )}
