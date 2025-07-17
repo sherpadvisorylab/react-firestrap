@@ -51,7 +51,7 @@ export * from './ui/fields/Upload';
 export * from './ui/fields/Crop';
 export * from './ui/fields/FileCSVUploader';
 
-export * from './ui/fields/AssistantAI';
+export { default as AssistantAI } from './ui/fields/AssistantAI';
 export { default as Menu } from './blocks/Menu';
 
 export { default as Form } from './widgets/Form';

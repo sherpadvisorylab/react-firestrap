@@ -18,7 +18,7 @@ interface BaseFormProps {
     header?: React.ReactNode;
     footer?: React.ReactNode;
     dataStoragePath?: string;
-    onLoad?: () => void;
+    onLoad?: (record: any) => void;
     onInsert?: (record: any) => Promise<void>;
     onUpdate?: (record: any) => Promise<void>;
     onDelete?: (record: any) => Promise<void>;
@@ -117,11 +117,16 @@ const FormData = forwardRef<FormRef, FormDefaultProps>(({
 
     const [record, setRecord] = useState<RecordProps | undefined>(defaultValues);
     
+    useEffect(()=>{
+        onLoad?.({...defaultValues});
+    }, [])
+    
     console.log("FormData", defaultValues, children, record, dataStoragePath);
     const recordRef = useRef(record);
     useEffect(() => { 
         recordRef.current = record;
      }, [record]);
+     
 
     const [notification, setNotification] = useState<NoticeProps | undefined>(undefined);
     const notice = useCallback(({ message, type = "danger" }: NoticeProps) => {
