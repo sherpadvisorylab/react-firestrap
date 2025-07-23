@@ -264,12 +264,12 @@ const FormData = forwardRef<FormRef, FormDefaultProps>(({
                     {(onInsert || dataStoragePath) && !defaultValues && <LoadingButton
                         className={theme.Form.buttonSaveClass}
                         label={"Insert"}
-                        onClick={e => handleSave(e, dataStoragePath)}
+                        onClick={e => handleSave(e)}
                     />}
                     {(onUpdate || dataStoragePath) && defaultValues && <LoadingButton
                         className={theme.Form.buttonSaveClass}
                         label={"Update"}
-                        onClick={handleSave}
+                        onClick={e => handleSave(e)}
                     />}
                     {(onDelete || dataStoragePath) && defaultValues && <LoadingButton
                         className={theme.Form.buttonDeleteClass}

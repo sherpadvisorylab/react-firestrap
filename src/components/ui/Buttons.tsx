@@ -19,6 +19,10 @@ export interface IButton extends UIProps {
     style?: React.CSSProperties;
 }
 
+export interface LoadingButtonProps extends Omit<IButton, "onClick"> {
+    onClick?: (e: any, setMessage?: (msg: string) => void) => void;
+}
+  
 export const LoadingButton = ({
     onClick,
     icon            = undefined,
@@ -34,9 +38,11 @@ export const LoadingButton = ({
     badgeClass      = undefined,
     iconClass       = undefined,
     style           = undefined
-}: IButton = {}) => {
+}: LoadingButtonProps = {}) => {
     const [loader, setLoader] = useState(showLoader);
     const [disable, setDisable] = useState(disabled);
+    const [message, setMessage] = useState("");
+
     const theme = useTheme("button");
 
     useEffect(() => {
@@ -56,12 +62,12 @@ export const LoadingButton = ({
                     e.stopPropagation();
                     setDisable(true);
                     setLoader(true);
-                    await onClick?.(e);
+                    await onClick?.(e, setMessage);
                     setLoader(false);
                     setDisable(false);
                 }}
             >
-                {loader && <i className={(label ? "me-1 " : "") + theme.LoadingButton.spinnerClass}></i>}
+                {loader && <><i className={(label ? "me-1 " : "") + theme.LoadingButton.spinnerClass}></i>{message && <span className='ms-1'>{message}</span>}</>}
                 {(icon && !loader) && <i className={(label ? "me-1 " : "") + (iconClass ? iconClass + " " : "") + theme.getIcon(icon)}></i>}
                 {label}
                 {badge && !loader && <span className={"position-absolute end-0 top-0 badge " + (badgeClass || theme.LoadingButton.badgeClass)}>{badge}</span>}
