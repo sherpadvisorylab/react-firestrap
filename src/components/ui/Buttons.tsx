@@ -55,7 +55,7 @@ export const LoadingButton = ({
             {pre}
             <button
                 title={title}
-                className={"btn " + (className || theme.LoadingButton.className) + (badge ? " position-relative" : "")}
+                className={"btn " + (className || theme.LoadingButton.className) + (badge ? " position-relative" : "") + (loader && message ? " text-nowrap" : "")}
                 style={style}
                 disabled={disable || loader}
                 onClick={async (e) => {
