@@ -154,7 +154,7 @@ export const Select = ({
     return (
         <Wrapper className={wrapClass || theme.Select.wrapClass}>
             {label && <Label label={label} required={required} htmlFor={id}/>}
-            <Wrapper className={pre || post ? "input-group": ""}>
+            <Wrapper className={pre || post ? "input-group flex-nowrap": ""}>
                 {pre && <span className="input-group-text">{pre}</span>}
                 <select
                     id={id}
@@ -254,12 +254,12 @@ export const Autocomplete = ({
     return (
         <Wrapper className={wrapClass || theme.Autocomplete.wrapClass}>
             {label && <Label label={label} required={required} htmlFor={id}/>}
-            <Wrapper className={pre || post ? "input-group" : ""}>
+            <Wrapper className={pre || post ? "input-group flex-nowrap" : ""}>
                 {pre && <span className="input-group-text">{pre}</span>}
-                <Row className={`align-items-center border rounded mx-1`}>
+                <div className={`d-flex flex-wrap gap-1 form-control`}>
                     {selectedItems.map(item => (
-                        <Col xs="auto" className="ms-1 bg-secondary" key={item}>
-                            {item}<button className={"btn p-0"} onClick={() => removeItem(item)}>x</button>
+                        <Col xs="auto" className="p-1 bg-secondary rounded" key={item}>
+                            {item}<button className={"btn-close"} onClick={() => removeItem(item)}></button>
                         </Col>
                     ))}
                     {(!max || selectedItems.length < max) && <Col><input
@@ -272,7 +272,7 @@ export const Autocomplete = ({
                         list={name}
                         onChange={handleChange}
                     /></Col>}
-                </Row>
+                </div>
                 <datalist id={name}>
                     {opts.map((op, index) => <option value={op.value} key={`${id}-${index}`}>{op.label}</option>)}
                 </datalist>
