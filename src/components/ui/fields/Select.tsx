@@ -62,12 +62,12 @@ const normalizeOption = (
     }
 
     if (typeof fieldMap !== 'object') {
-        return { label: fieldMap.toString(), value: fieldMap.toString() };
+        return { label: fieldMap?.toString() || '', value: fieldMap?.toString() || '' };
     }
 
     return {
-        label: fieldMap?.label.toString() || '',
-        value: fieldMap?.value.toString() || ''
+        label: fieldMap?.label?.toString() || '',
+        value: fieldMap?.value?.toString() || ''
     };
 };
 

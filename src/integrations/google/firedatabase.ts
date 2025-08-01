@@ -90,18 +90,40 @@ const query = (
     }
 };
 
+const buildShallowURL = (path: string, auth?: string): string => {
+    const u = new URL(`${path}.json`, getDatabase().ref().toString());
+    u.searchParams.set("shallow", "true");
+    if (auth) u.searchParams.set("auth", auth);
+    return u.toString();
+};
+
 const db = {
+    readShallow: async (path: string, exception: boolean = false): Promise<string[]> => {
+        try {
+            const auth = getAuth();
+            const token = await auth.currentUser?.getIdToken().catch(() => undefined);
+            const url = buildShallowURL(path, token);
+
+            const res = await fetch(url);
+            if (!res.ok) {
+                throw new Error(`${res.status} ${res.statusText}`);
+            }
+            const json = await res.json();
+            return json ? Object.keys(json) : [];
+        } catch (error) {
+            handleError(`reading SHALLOW data in Firebase for ${path}`, error, exception);
+            return [];
+        }
+    },
     read: async <T = any>(
         path: string,
         {
             where       = undefined,
             toArray     = false,
-            shallow     = false,
             exception   = false
         }: {
             where?: WhereClause;
             toArray?: boolean;
-            shallow?: boolean;
             exception?: boolean;
         } = {}
     ): Promise<FirebaseValue<T>> => {
@@ -110,10 +132,6 @@ const db = {
             const snapshot = await dbRef.get();
             if (snapshot.exists()) {
                 consoleLog(`Info: Data found in Firebase for path ${path}`);
-
-                if (shallow) {
-                    return Object.keys(snapshot.val());
-                }
 
                 return (toArray
                         ? Object.values(snapshot.val())
