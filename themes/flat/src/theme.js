@@ -215,5 +215,9 @@ export const theme = {
     Code: {
         wrapClass: "",
         className: "",
+    },
+    Prompt: {
+        wrapClass: "",
+        className: "",
     }
 }

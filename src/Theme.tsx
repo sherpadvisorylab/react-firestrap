@@ -234,6 +234,10 @@ const defaultTheme = {
     Code: {
         wrapClass: "",
         className: "",
+    },
+    Prompt: {
+        wrapClass: "",
+        className: "",
     }
 }
 

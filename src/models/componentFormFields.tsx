@@ -20,6 +20,7 @@ import {Autocomplete, Checklist, Select, SelectProps} from "../components/ui/fie
 import { getContextMenu } from "../App";
 import {Col, Row} from "../components";
 import {UploadDocument, UploadDocumentProps, UploadImage, UploadImageProps} from "../components/ui/fields/Upload";
+import { Prompt, PromptProps } from "../components/ui/fields/Prompt";
 
 export interface ComponentFormFieldsMap {
 //    label: FieldFactory<Omit<LabelProps, 'name' | 'onChange'>>;
@@ -42,7 +43,7 @@ export interface ComponentFormFieldsMap {
     checklist: FieldFactory<Omit<SelectProps, 'name' | 'onChange'>>;
     uploadImage: FieldFactory<Omit<UploadImageProps, 'name' | 'onChange'>>;
     uploadDocument: FieldFactory<Omit<UploadDocumentProps, 'name' | 'onChange'>>;
-
+    prompt: FieldFactory<Omit<PromptProps, 'name' | 'onChange'>>;
     image: FieldFactory<{
         src?: string;
         alt?: string;
@@ -195,6 +196,14 @@ const componentFormFields: ComponentFormFieldsMap = {
             __props: props,
             getDefaults: (key) => ({[key]: value}),
             render: (key, value, onChange) => <UploadDocument name={key} label={label ?? key} {...rest} value={value} onChange={onChange} />
+        }
+    },
+    prompt: (props = {}) => {
+        const { value, label, ...rest } = props;
+        return {
+            __props: props,
+            getDefaults: (key) => ({[key]: value}),
+            render: (key, value, onChange) => <Prompt name={key} label={label ?? key} {...rest} value={value} onChange={onChange} />
         }
     },
     image: (props = {}) => {
