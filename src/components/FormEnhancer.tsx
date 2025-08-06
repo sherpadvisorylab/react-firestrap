@@ -17,6 +17,7 @@ interface EnhancerProps {
     parentName?: string;
     dataStoragePath?: string;
     formRef?: React.Ref<FormRef>;
+    wrapClass?: string;
 }
 interface FormEnhancerProps extends EnhancerProps {
     components: React.ReactNode;
@@ -57,7 +58,8 @@ const applyOnChangeRecursive = ({
                                     handleChange,
                                     parentName = undefined,
                                     dataStoragePath = undefined,
-                                    formRef = undefined
+                                    formRef = undefined,
+                                    wrapClass = undefined
                                 }: ApplyOnChangeProps): React.ReactNode => {
     return React.Children.map(children, (child) => {    
         console.log("SIAMO TUTTI", child);
@@ -76,7 +78,7 @@ const applyOnChangeRecursive = ({
             console.log("ENHANCE", child, record, parentName, name, (name ? record?.[name] : record) ?? props.value ?? undefined);
 
             return React.cloneElement(child as any, {
-                wrapClass: `mb-3${props.wrapClass ? ' ' + props.wrapClass : ''}`,
+                wrapClass: `${wrapClass}${props.wrapClass ? ' ' + props.wrapClass : ''}`,
                 name: parentName ? `${parentName}.${name}` : name,
                 value: record?.[name] ?? record ?? props.value ?? undefined,
                 dataStoragePath: props.dataStoragePath ?? dataStoragePath ?? undefined,
@@ -93,7 +95,8 @@ const applyOnChangeRecursive = ({
                     handleChange,
                     parentName,
                     dataStoragePath,
-                    formRef
+                    formRef,
+                    wrapClass
                 }),
             });
         }
@@ -107,13 +110,13 @@ const applyOnChangeRecursive = ({
         }
         return React.cloneElement(child as any, props.onChange || name
             ? {
-                wrapClass: `mb-3${props.wrapClass ? ' ' + props.wrapClass : ''}`,
+                wrapClass: `${wrapClass}${props.wrapClass ? ' ' + props.wrapClass : ''}`,
                 name: parentName ? `${parentName}.${name}` : name,
                 value: value ?? props.value ?? undefined,
                 onChange
             }
             : {
-                className: `mb-3${props.className ? ' ' + props.className : ''}`,
+                className: `${wrapClass}${props.className ? ' ' + props.className : ''}`,
             });
     });
 };
@@ -124,13 +127,14 @@ const FormEnhancer = ({
                                handleChange,
                                parentName = undefined,
                                dataStoragePath = undefined,
-                               formRef = undefined
+                               formRef = undefined,
+                               wrapClass = 'mb-3'
 }: FormEnhancerProps ) => {
     const children = Array.isArray(components) ? components : [components];
 
     return (
         <>
-            {applyOnChangeRecursive({children, record, handleChange, parentName, dataStoragePath, formRef})}
+            {applyOnChangeRecursive({children, record, handleChange, parentName, dataStoragePath, formRef, wrapClass})}
         </>
     );
 }

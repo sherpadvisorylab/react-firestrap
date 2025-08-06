@@ -16,6 +16,7 @@ export interface FormFieldProps extends UIProps {
     value?: any;
     required?: boolean;
     onChange?: (event: ChangeHandler) => void;
+    defaultValue?: any; //todo: da propagare per le select, checkbox e vrificare la copertura ovunque
 }
 
 export { default as Brand } from './blocks/Brand';

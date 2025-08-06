@@ -51,6 +51,7 @@ export const Input = ({
     name,
     value = undefined,
     onChange = undefined,
+    defaultValue = undefined,
     placeholder = undefined,
     label = undefined,
     type = "text",
@@ -79,7 +80,8 @@ export const Input = ({
                     placeholder={placeholder}
                     required={required}
                     disabled={disabled || (!updatable && !isEmpty(value))}
-                    defaultValue={value}
+                    value={value}
+                    defaultValue={defaultValue}
                     onChange={onChange}
                     min={min}
                     max={max}
@@ -142,6 +144,7 @@ export const Checkbox = ({
     name,
     value = false,
     onChange = undefined,
+    defaultValue = undefined,   //todo: da capire come gestirlo
     label = undefined,
     title = undefined,
     required = false,
@@ -204,6 +207,7 @@ export const TextArea = ({
     name,
     value = undefined,
     onChange = undefined,
+    defaultValue = undefined,   
     placeholder = undefined,
     label = undefined,
     required = false,
@@ -268,6 +272,7 @@ console.log("TEXT AREA", name, value, onChange);
                     required={required}
                     disabled={disabled || (!updatable && !isEmpty(value))}
                     value={value}
+                    defaultValue={defaultValue}
                     onChange={onChange}
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={handleDrop}

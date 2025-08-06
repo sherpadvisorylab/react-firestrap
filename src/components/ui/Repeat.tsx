@@ -34,11 +34,11 @@ const Repeat = ({
 
     const components = useMemo(() =>
         (Array.isArray(value) ? value : Array.from({ length: min || 0 }, () => ({})))?.map((_, index) =>
-            <div key={`${name}-${index}-${release}`} className="p-2 border position-relative mb-2">
+            <div key={`${name}-${index}-${release}`} className="position-relative pt-3">
                 {!readOnly && index >= (min || 0) && <ActionButton 
                     wrapClass='position-absolute top-0 end-0' 
-                    className='btn-link' 
-                    icon="x" 
+                    className='btn-close' 
+                    
                     onClick={() => handleRemove(index)} 
                 />}
                 <FormEnhancer
