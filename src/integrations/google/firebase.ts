@@ -11,6 +11,15 @@ interface TokenInfo {
     isExpired: boolean;
 }
 
+export const getSafeAuth = (): Auth | null => {
+    try {
+        return getAuth();
+    } catch (error: any) {
+        console.error('FirebaseAuthorization', error?.message || 'Error: check Configuration');
+        return null;
+    }
+}
+
 const getUser = (auth: Auth): Promise<User | null> => {
     return new Promise((resolve, reject) => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -62,12 +71,12 @@ function getTokenInfo(user: User): TokenInfo {
 }
 
 const getFirebaseAuthorization = async (): Promise<boolean> => {
-    const auth = getAuth();
+    const auth = getSafeAuth();
+    if (!auth) return false;
+
     const user = await getUser(auth);
-    if(!user) {
-        console.error("Firebase user not found");
-        return requestLogin();
-    }
+    if(!user) return requestLogin();
+    
     const tokenInfo = getTokenInfo(user);
 
     if (!tokenInfo.accessToken) {

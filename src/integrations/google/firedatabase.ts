@@ -1,11 +1,12 @@
 import {useEffect, useMemo} from "react";
 import firebase from "firebase/compat/app";
 import 'firebase/compat/database';
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import {onAuthStateChanged } from "firebase/auth";
 import { converter } from "../../libs/converter";
 import {consoleLog} from "../../constant";
 import {Config, onConfigChange} from "../../Config";
 import init from "./firebase";
+import { getSafeAuth } from "./firebase";
 
 type FirebasePrimitive = string | number | boolean | null;
 type FirebaseAny = FirebasePrimitive | object | any[];
@@ -100,7 +101,8 @@ const buildShallowURL = (path: string, auth?: string): string => {
 const db = {
     readShallow: async (path: string, exception: boolean = false): Promise<string[]> => {
         try {
-            const auth = getAuth();
+            const auth = getSafeAuth();
+            if (!auth) return [];
             const token = await auth.currentUser?.getIdToken().catch(() => undefined);
             const url = buildShallowURL(path, token);
 
@@ -180,7 +182,8 @@ const db = {
             onLoad      = undefined
         }: DatabaseOptions<T> = {}
     ) => {
-        const auth = useMemo(() => getAuth(), []); // Get auth object once
+        const auth = useMemo(() => getSafeAuth(), []);
+        if (!auth) return;
 
         useEffect(() => {
             if (!path) return;
