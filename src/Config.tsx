@@ -46,12 +46,17 @@ export type AIConfig = {
     deepSeekApiKey?: string;
 };
 
+export type ScrapeConfig = {
+    serpApiKey?: string;
+};
+
 export type Config = {
     title: string;
     firebase: FirebaseConfig;
     google: GoogleConfig;
     dropbox?: DropboxConfig;
     ai?: AIConfig;
+    scrape?: ScrapeConfig;
     proxyURI?: string;
 };
 

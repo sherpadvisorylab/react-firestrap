@@ -33,6 +33,9 @@ root.render(
             chatGptApiKey: process.env.REACT_APP_CHATGPT_API_KEY,
             deepSeekApiKey: process.env.REACT_APP_DEEPSEEK_API_KEY,
         }}
+        scrapeConfig={{
+            serpApiKey: process.env.REACT_APP_SERPAPI_API_KEY,
+        }}
         menuConfig={menu}
     />
 );

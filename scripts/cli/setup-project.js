@@ -190,7 +190,7 @@ REACT_APP_GEMINI_API_KEY=
 REACT_APP_CHATGPT_API_KEY=
 REACT_APP_DEEPSEEK_API_KEY=
 
-# 🧩 SerpAPI (optional)
+# 🧩 Scrape (optional)
 REACT_APP_SERPAPI_API_KEY=
 
   `);

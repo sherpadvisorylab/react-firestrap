@@ -19,7 +19,8 @@ import {
     DropboxConfig,
     FirebaseConfig,
     GoogleOAuth2,
-    GoogleServiceAccount
+    GoogleServiceAccount,
+    ScrapeConfig
 } from "./Config";
 
 
@@ -50,6 +51,7 @@ type AppProps = {
     serviceAccount?: GoogleServiceAccount;
     dropBoxConfig?: DropboxConfig;
     aiConfig?: AIConfig;
+    scrapeConfig?: ScrapeConfig;
     tenantsURI?: string;
     proxyURI?: string;
     importPage: (pagesPath: string) => Promise<{ default: React.ComponentType }>;
@@ -78,6 +80,7 @@ function App({
                  serviceAccount     = undefined,
                  dropBoxConfig      = undefined,
                  aiConfig           = undefined,
+                 scrapeConfig       = undefined,
                  tenantsURI         = undefined,
                  proxyURI           = undefined,
                  menuConfig         = {},
@@ -147,6 +150,7 @@ function App({
                 google: { oAuth2, serviceAccount },
                 dropbox: dropBoxConfig,
                 ai: aiConfig,
+                scrape: scrapeConfig,
                 proxyURI: proxyURI
             }} tenantsURI={tenantsURI}>
                 <GlobalProvider>

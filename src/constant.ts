@@ -3,8 +3,8 @@ export const FIREBASE_BUCKET_METAOBJECT = 'metaobject';
 export const FIREBASE_BUCKET_DICTIONARY = 'dictionary';
 export const FIREBASE_BUCKET_SITEMAP    = 'sitemap';
 export const FIREBASE_BUCKET_SITETREE   = 'sitetree';
-export const FIREBASE_BUCKET_SERP       = 'serp';
 export const FIREBASE_BUCKET_AICHAT     = 'aichat';
+export const FIREBASE_BUCKET_SCRAPE     = 'scrape';
 export const SEP = '/';
 export const DOT = '.';
 
