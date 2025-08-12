@@ -294,3 +294,25 @@ export default function fetchAI(type = TYPE_CHATGPT) {
             return fetchChatGPTApi;
     }
 }
+
+//todo: da espandere con i ruoli e eliminare fetchAI
+export class AI {
+    type: string;
+    role?: string;
+    constructor(type: string = TYPE_CHATGPT) {
+        this.type = type;
+    }
+
+    setRole(role: string) {
+        this.role = role;
+    }
+
+    fetch(prompt: string, options: FetchAIOptions = {}) {
+        switch (this.type) {
+            case TYPE_GEMINI:
+                return fetchGeminiApi(prompt, options);
+            case TYPE_CHATGPT:
+                return fetchChatGPTApi(prompt, options);
+        }
+    }
+}
