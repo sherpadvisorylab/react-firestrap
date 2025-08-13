@@ -11,6 +11,7 @@ interface BaseInputProps extends FormFieldProps{
     feedback?: string;
     min?: number;
     max?: number;
+    step?: number;
 }
 
 interface LabelProps {
@@ -63,6 +64,7 @@ export const Input = ({
     feedback = undefined,
     min = undefined,
     max = undefined,
+    step = undefined,
     wrapClass = undefined,
     className = undefined
 }: BaseInputProps) => {
@@ -85,6 +87,7 @@ export const Input = ({
                     onChange={onChange}
                     min={min}
                     max={max}
+                    step={step}
                 />
                 {post && <span className="input-group-text">{post}</span>}
             </Wrapper>
@@ -138,6 +141,10 @@ export const Week = (props: InputProps) => (
 
 export const Month = (props: InputProps) => (
     <Input {...props} type="month" />
+);
+
+export const Range = (props: InputProps) => (
+    <Input {...props} type="range" />
 );
 
 export const Checkbox = ({

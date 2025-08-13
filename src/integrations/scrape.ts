@@ -1,9 +1,9 @@
 import {FIREBASE_BUCKET_SCRAPE} from "../constant";
-import {normalizeKey, proxy} from "../libs/utils";
+import {currentCountry, currentLang} from "../libs/locale";
 import {fetchJson} from "../libs/fetch";
-import {getPromptCountry, getPromptLang} from "../conf/Prompt";
 import {cache} from "../libs/cache";
 import { Config, onConfigChange, ScrapeConfig } from "../Config";
+import { normalizeKey, proxy } from "../libs/utils";
 
 const SERPAPI_ENDPOINT = "https://api.serpapi.com/search";
 
@@ -17,9 +17,9 @@ const SEARCH_QUERY = {
     q: null,                        //required
 }
 
-const nameCountry   = getPromptCountry();
-const codeCountry   = getPromptCountry(true);
-const codeLang      = getPromptLang(true);
+const nameCountry   = currentCountry();
+const codeCountry   = currentCountry(true);
+const codeLang      = currentLang(true);
 
 const SERPAPI_PARAMS = {
     engine: null,                   //required:

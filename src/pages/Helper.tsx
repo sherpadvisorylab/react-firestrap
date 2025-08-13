@@ -3,7 +3,7 @@ import Grid from "../components/widgets/Grid";
 import { Select } from "../components/ui/fields/Select";
 import { Wrapper, Container, Row, Col } from "../components/ui/GridSystem";
 import Card from "../components/ui/Card";
-import { String, Number, Email, Password, Color, Date, Time, DateTime, Week, Month, TextArea, Checkbox, ListGroup, Switch, Label } from "../components/ui/fields/Input";
+import { String, Number, Email, Password, Color, Date, Time, DateTime, Week, Month, TextArea, Checkbox, ListGroup, Switch, Label, Range } from "../components/ui/fields/Input";
 import { Autocomplete, Checklist } from "../components/ui/fields/Select";
 import { UploadDocument, UploadImage } from "../components/ui/fields/Upload";
 import { ActionButton, LoadingButton, GoSite, ReferSite } from "../components/ui/Buttons";
@@ -146,6 +146,8 @@ function Helper() {
                       <Week name='week' label='Week' />
                       {/* Month */}
                       <Month name='month' label='Month' />
+                      {/* Range */}
+                      <Range name='range' label='Range' min={0} max={100} step={1} />
                     </Form>
                   </Col>
                   <Col lg={7}>
@@ -166,6 +168,9 @@ function Helper() {
                         
                         {/* Month */}
                         <Month name='month' label='Month'  />
+
+                        {/* Range */}
+                        <Range name='range' label='Range' min={0} max={100} step={1} />
 
                       </Form>`}
                     </Code>

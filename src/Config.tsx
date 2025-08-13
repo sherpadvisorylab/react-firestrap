@@ -42,8 +42,10 @@ export type DropboxConfig = {
 
 export type AIConfig = {
     geminiApiKey?: string;
-    chatGptApiKey?: string;
+    openaiApiKey?: string;
     deepSeekApiKey?: string;
+    anthropicApiKey?: string;
+    mistralApiKey?: string;
 };
 
 export type ScrapeConfig = {

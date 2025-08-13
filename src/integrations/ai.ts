@@ -1,10 +1,9 @@
-import { getPromptLang, getPromptStyle, getPromptVoice, PROMPTS, PROMPTS_ROLE } from "../conf/Prompt";
+import { getPromptStyle, getPromptVoice, Prompt, PROMPTS, PROMPTS_ROLE } from "../conf/Prompt";
 import { fetchRest } from "../libs/fetch";
 import { consoleLog } from "../constant";
 import { AIConfig, Config, onConfigChange } from "../Config";
-
-const TYPE_CHATGPT = "chatgpt";
-const TYPE_GEMINI = "gemini";
+import { currentLang } from "../libs/locale";
+import { PromptVariables } from "../conf/Prompt";
 
 const OUTPUT = "valid JSON array of objects. Make sure the array is always formatted as a JSON array, even if it contains only one element";
 const OUTPUT_ARRAY = "valid JSON array simple. Make sure the array is always formatted as a JSON array and dont have object inside";
@@ -56,7 +55,7 @@ const promptAssign = (prompt: string, options: PromptPlaceholders): string => {
     return prompt
         .replaceAll('{output}', OUTPUT)
         .replaceAll('{output_array}', OUTPUT_ARRAY)
-        .replaceAll('{language}', getPromptLang())
+        .replaceAll('{language}', currentLang())
         .replaceAll('{voice}', getPromptVoice())
         .replaceAll('{style}', getPromptStyle())
         .replace(/{[^{}]+}/g, '');
@@ -79,12 +78,12 @@ const apiLog = (aiType: string, response: any, strategy?: string) => {
     return response;
 }
 
-const chatGPTApiContinue = async (
+const chatChatGPTContinue = async (
     content: string,
     prevMessages: any[],
     countRetry = 0
 ): Promise<any> => {
-    if (!config?.chatGptApiKey) {
+    if (!config?.openaiApiKey) {
         console.error(`
 ❌ OpenAI API Key not configured.
 
@@ -121,7 +120,7 @@ To use ChatGPT, you must configure a valid OpenAI API key.
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + config.chatGptApiKey
+            'Authorization': 'Bearer ' + config.openaiApiKey
         },
         body: {
             engine: CHATGPT_MODEL,
@@ -137,12 +136,12 @@ To use ChatGPT, you must configure a valid OpenAI API key.
 
             const continueContent = content + response.choices[0].message.content;
 
-            return parseContent(continueContent) || chatGPTApiContinue(continueContent, prevMessages, countRetry);
+            return parseContent(continueContent) || chatChatGPTContinue(continueContent, prevMessages, countRetry);
         });
 }
 
 
-const fetchChatGPTApi = async (
+const fetchOpenaiApi = async (
     prompt: string,
     options: {
         model?: string;
@@ -188,23 +187,23 @@ const fetchChatGPTApi = async (
         temperature: options.temperature || CHATGPT_TEMPERATURE
     };
 
-    consoleLog(TYPE_CHATGPT + "->request::", strategy, body);
+    consoleLog(PROVIDER_OPENAI + "->request::", strategy, body);
     return fetchRest(CHATGPT_URL, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + config?.chatGptApiKey
+            'Authorization': 'Bearer ' + config?.openaiApiKey
         },
         body: body
     })
         .then(response => { 
             console.log('Laaaaaaaaaaaa')
             console.log(response)
-            return apiLog(TYPE_CHATGPT, response, strategy)})
+            return apiLog(PROVIDER_OPENAI, response, strategy)})
         .then(response => {
             if (!response?.choices) return null;
             return parseContent(response.choices[0].message.content)
-                || chatGPTApiContinue(response.choices[0].message.content, roles);
+                || chatChatGPTContinue(response.choices[0].message.content, roles);
         });
 };
 
@@ -267,7 +266,7 @@ To use Google Gemini (formerly Bard), you must configure a valid API key.
         instances: [{ content: prompt }]
     };
 
-    consoleLog(TYPE_GEMINI + "->request::", strategy, body);
+    consoleLog(PROVIDER_GEMINI + "->request::", strategy, body);
     return fetchRest(`${GEMINI_COMPLETION_URL}?model=${model || GEMINI_MODEL}`, {
         method: 'POST',
         headers: {
@@ -276,7 +275,7 @@ To use Google Gemini (formerly Bard), you must configure a valid API key.
         },
         body: body
     })
-        .then(response => apiLog(TYPE_GEMINI, response, strategy))
+        .then(response => apiLog(PROVIDER_GEMINI, response, strategy))
         .then(response => {
             if (response?.predictions) {
                 return;
@@ -285,34 +284,277 @@ To use Google Gemini (formerly Bard), you must configure a valid API key.
         });
 }
 
-export default function fetchAI(type = TYPE_CHATGPT) {
-    switch (type) {
-        case TYPE_GEMINI:
-            return fetchGeminiApi;
-        case TYPE_CHATGPT:
-        default:
-            return fetchChatGPTApi;
-    }
+const fetchAnthropicApi = async (
+    prompt: string,
+    options: FetchAIOptions = {},
+    strategy?: keyof typeof PROMPTS | undefined
+): Promise<any> => {
+    return fetchRest(PROVIDERS[PROVIDER_ANTHROPIC].url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + config?.anthropicApiKey
+        },
+        body: {
+            model: options.model || PROVIDERS[PROVIDER_ANTHROPIC].model,
+            messages: [{ role: 'user', content: prompt }],
+            temperature: options.temperature || PROVIDERS[PROVIDER_ANTHROPIC].temperature
+        }   
+    })
+        .then(response => apiLog(PROVIDER_ANTHROPIC, response, strategy))
+        .then(response => {
+            if (!response?.choices) return null;
+            return parseContent(response.choices[0].message.content)
+        });
 }
 
-//todo: da espandere con i ruoli e eliminare fetchAI
-export class AI {
-    type: string;
-    role?: string;
-    constructor(type: string = TYPE_CHATGPT) {
-        this.type = type;
-    }
-
-    setRole(role: string) {
-        this.role = role;
-    }
-
-    fetch(prompt: string, options: FetchAIOptions = {}) {
-        switch (this.type) {
-            case TYPE_GEMINI:
-                return fetchGeminiApi(prompt, options);
-            case TYPE_CHATGPT:
-                return fetchChatGPTApi(prompt, options);
+const fetchMistralApi = async (
+    prompt: string,
+    options: FetchAIOptions = {},
+    strategy?: keyof typeof PROMPTS | undefined
+): Promise<any> => {
+    return fetchRest(PROVIDERS[PROVIDER_MISTRAL].url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + config?.mistralApiKey
+        },
+        body: {
+            model: options.model || PROVIDERS[PROVIDER_MISTRAL].model,
+            messages: [{ role: 'user', content: prompt }],
+            temperature: options.temperature || PROVIDERS[PROVIDER_MISTRAL].temperature
         }
+    })
+        .then(response => apiLog(PROVIDER_MISTRAL, response, strategy))
+        .then(response => {
+            if (!response?.choices) return null;
+            return parseContent(response.choices[0].message.content)
+        });
+}
+
+export default function fetchAI(provider = PROVIDER_DEFAULT) {
+    return fetchOpenaiApi;
+}
+
+interface AIProvider {
+    name: string;
+    url: string;
+    model: string;
+    models: string[];
+    framework?: string;
+    frameworks?: string[];
+    temperature: number;
+    parseHeaders: () => Record<string, string>;
+    parseBody: (prompt: string, role: string, options: AIOptions) => Record<string, any>;
+    parseResponse: (response: any) => any;
+}
+
+interface AIOptions {
+    language?: string;
+    voice?: string;
+    style?: string;
+    role?: string;
+    model?: string;
+    temperature?: number;
+}
+
+export interface AIFetchConfig extends AIOptions {
+    type?: keyof typeof PROVIDERS;
+    value: string;
+}
+
+
+const PROVIDER_OPENAI = "openai";
+const PROVIDER_GEMINI = "gemini";
+const PROVIDER_ANTHROPIC = "anthropic";
+const PROVIDER_MISTRAL = "mistral";
+const PROVIDER_DEFAULT = PROVIDER_OPENAI;
+
+const PROVIDERS = {
+    [PROVIDER_OPENAI]: {
+        name: PROVIDER_OPENAI,
+        url: 'https://api.openai.com/v1/chat/completions',
+        model: 'gpt-3.5-turbo',
+        models: ['gpt-4.1', 'gpt-4.1-mini', 'gpt-4.1-nano', 'gpt-5', 'gpt-5-mini', 'gpt-5-nano'],
+        framework: 'AIDA (Attention Interest Desire Action)',
+        frameworks: [
+            'AIDA (Attention Interest Desire Action)',
+            'PAS (Problem Agitate Solution)',
+            'BAB (Before After Bridge)',
+            'FAB (Features Advantages Benefits)',
+        ],
+        temperature: 0.7,
+        parseHeaders: () => {
+            return {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + config?.openaiApiKey
+            }
+        },
+        parseBody: (prompt: string, role: string, options: AIOptions) => {
+            return {
+                model: options.model || PROVIDERS[PROVIDER_OPENAI].model,
+                messages: [
+                    ...(role ? [{ role: 'system', content: role }] : []),
+                    { role: 'user', content: prompt }
+                ],
+                temperature: options.temperature || PROVIDERS[PROVIDER_OPENAI].temperature
+            }
+        },
+        parseResponse: (response: any) => {
+            if (!response?.choices) return null;
+            return response.choices[0].message.content
+        }
+    },
+    [PROVIDER_GEMINI]: {
+        name: PROVIDER_GEMINI,
+        url: 'https://api.gemini.com/v1/predict',
+        model: 'gemini-2.5-pro',
+        models: ['gemini-2.5-pro', 'gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.5-deep-think'],
+        temperature: 0.7,
+        parseHeaders: () => {
+            return {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + config?.geminiApiKey
+            }
+        },
+        parseBody: (prompt: string, role: string, options: AIOptions) => {
+            return {
+                model: options.model || PROVIDERS[PROVIDER_GEMINI].model,
+                instances: [{ content: role ? role + "\n\n" + prompt : prompt }],
+                temperature: options.temperature || PROVIDERS[PROVIDER_GEMINI].temperature
+            }
+        },
+        parseResponse: (response: any) => {
+            if (!response?.predictions) return null;
+            return response.predictions[0].text
+        }
+    },
+    [PROVIDER_ANTHROPIC]: {
+        name: PROVIDER_ANTHROPIC,
+        url: 'https://api.anthropic.com/v1/completions',
+        model: 'claude-3.5',
+        models: ['claude-3.5', 'claude-3.7-sonnet', 'claude-4', 'claude-opus-4.1'],
+        temperature: 0.7,
+        parseHeaders: () => {
+            return {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + config?.anthropicApiKey
+            }
+        },
+        parseBody: (prompt: string, role: string, options: AIOptions) => {
+            return {
+                model: options.model || PROVIDERS[PROVIDER_ANTHROPIC].model,
+                messages: [
+                    ...(role ? [{ role: 'system', content: role }] : []),
+                    { role: 'user', content: prompt }
+                ],
+                temperature: options.temperature || PROVIDERS[PROVIDER_ANTHROPIC].temperature
+            }
+        },
+        parseResponse: (response: any) => {
+            if (!response?.choices) return null;
+            return response.choices[0].message.content
+        }
+    },
+    [PROVIDER_MISTRAL]: {
+        name: PROVIDER_MISTRAL,
+        url: 'https://api.mistral.com/v1/completions',
+        model: 'mistral-small-3.1',
+        models: ['mistral-small-3.1', 'mistral-medium-3', 'magistral-small', 'magistral-medium', 'devstral-small', 'codestral-22B', 'mixtral-8x22B', 'mistral-large-2'],
+        temperature: 0.7,
+        parseHeaders: () => {
+            return {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + config?.mistralApiKey
+            }
+        },
+        parseBody: (prompt: string, role: string, options: AIOptions) => {
+            return {
+                model: options.model || PROVIDERS[PROVIDER_MISTRAL].model,
+                messages: [
+                    ...(role ? [{ role: 'system', content: role }] : []),
+                    { role: 'user', content: prompt }
+                ],
+                temperature: options.temperature || PROVIDERS[PROVIDER_MISTRAL].temperature 
+            }
+        },
+        parseResponse: (response: any) => {
+            if (!response?.choices) return null;
+            return response.choices[0].message.content
+        }
+    },
+}
+
+export class AI extends Prompt {
+    config: AIProvider;
+    options: AIOptions;
+    data?: PromptVariables;
+
+    static fetch(config: AIFetchConfig, data?: PromptVariables) {
+        const { type, value: prompt, ...options } = config;
+
+        return (new AI(type))
+            .setOptions(options)
+            .setData(data)
+            .fetchAPI(prompt);
+    }
+
+    static getModels(type?: keyof typeof PROVIDERS) {
+        return PROVIDERS[type ?? PROVIDER_DEFAULT].models;
+    }
+
+    constructor(type: keyof typeof PROVIDERS = PROVIDER_DEFAULT) {
+        super();
+        this.config     = PROVIDERS[type];
+        this.options    = {};
+    }
+
+    setOptions(options: AIOptions) {
+        this.options = options;
+        return this;
+    }
+
+    setData(data?: PromptVariables) {
+        this.data = data;
+        return this;
+    }   
+
+    async fetchAPI(prompt: string): Promise<any> {
+        const body = this.config.parseBody(
+            AI.parsePrompt(prompt, { ...this.options, ...this.data }), 
+            AI.parseRole(this.options.role, this.options), 
+            this.options
+        );
+        console.log(this.config.name + "->request", body);
+
+        return fetchRest(this.config.url, {
+            method: 'POST',
+            headers: this.config.parseHeaders(),
+            body: body
+        })
+        .then(response => {
+            console.log(this.config.name + "->response", response);
+            return this.config.parseResponse(response)
+        })
+        .then(response => {
+            if (response === null) {
+                console.error('fetchAI->warning: Response is null');
+                return null;
+            }
+            try {
+                return (response.startsWith("{") || response.startsWith("[")
+                    ? JSON.parse(response)
+                    : response
+                )
+            } catch (error) {
+                console.error('fetchAI->error: Failed to parse response', error);
+                return null;
+            }
+        })
+        .catch(error => {
+            console.error('fetchAI->error: Failed to fetch', error);
+            return null;
+        });
+
     }
 }

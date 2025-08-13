@@ -1,11 +1,9 @@
+import { converter } from "../libs/converter";
+import { currentCountry, currentLang, COUNTRIES, LANGS } from "../libs/locale";
+
 const PROMPT_CLEANUP = `Please ignore all previous instructions.`;
 const PROMPT_NO_REFERENCE = `Do not repeat yourself. Do not self reference. Do not explain what you are doing.`;
-export const PROMPT_MODELS = [
-  "gpt-3.5-turbo",
-  "gpt-4",
-  "dall-e-3",
-  "gemini"
-]
+
 export const PROMPTS = {
   SEARCH_INTENT_FROM_KEYWORDS: `
         ${PROMPT_CLEANUP}
@@ -292,22 +290,102 @@ export const PROMPTS_ROLE = {
     'You have a {style} writing style.',
   ],
 };
-const PROMPT_COUNTRY_DEFAULT = "Italy";
-const PROMPT_LANG_DEFAULT = "Italiano";
+
+export const LABELS = {
+  SEARCH_INTENT_FROM_KEYWORDS: "Enter the list of keywords to classify by search intent.",
+  RELATED_KEYWORD_GENERATOR: "What is the main keyword you want related suggestions for?",
+  LONG_TAIL_KEYWORD_GENERATOR: "What is the main keyword you want long-tail keywords for?",
+  KEYWORD_STRATEGY: "What is the main keyword to build your SEO strategy around?",
+  GENERATE_BLOG_POST_TITLES: "What is the main topic you want to generate titles about?",
+  GENERATE_BLOG_POST_DESCRIPTIONS: "What is the title of the blog post to generate descriptions for?",
+  GENERATE_BLOG_POST_OUTLINE: "What is the blog post title you want an outline for?",
+  /* GENERATE_BLOG_POST_OUTLINE_OLD: "What is the blog post title you want an outline for?", */
+  GENERATE_COMPLETE_BLOG_POST_FROM_OUTLINE: "What is the outline or blog topic to expand into a full article?",
+  GENERATE_COMPLETE_BLOG_POST_FROM_TOPIC: "What is the topic for the blog article?",
+  GENERATE_INTRODUCTION_USING_FRAMEWORK: "What is the topic of the blog post you want an introduction for?",
+  GENERATE_PARAGRAPH_OF_TEXT: "What is the topic you want to write a paragraph about?",
+  GENERATE_DICTIONARY: "What items do you want to list in a dictionary format?",
+  GENERATE_FREE: "What custom prompt would you like to run?"
+};
+
+
+export const getPromptVoice = () => {
+  return localStorage.getItem("promptVoice") || PROMPT_VOICE_DEFAULT
+}
+export const getPromptStyle = () => {
+  return localStorage.getItem("promptStyle") || PROMPT_STYLE_DEFAULT
+}
+
+export const getPromptCountries = () => {
+  return Object.values(COUNTRIES);
+}
+export const getPromptLangs = () => {
+  return Object.values(LANGS);
+}
+export const getPromptVoices = () => {
+  return PROMPT_VOICES;
+}
+
+export const getPromptStyles = () => {
+  return PROMPT_STYLES;
+}
+
+export const getPrompt = (strategy: keyof typeof PROMPTS): { prompt: string; label: string } => {
+  return {
+    prompt: PROMPTS[strategy] ?? "",
+    label: LABELS[strategy] ?? ""
+  };
+}
+
+export const getPromptOutline = () => {
+  return PROMPTS["GENERATE_BLOG_POST_OUTLINE"] ?? "";
+}
+
+export const getPromptRole = (strategy: keyof typeof PROMPTS_ROLE): string[] => {
+  return PROMPTS_ROLE[strategy] ?? [];
+};
+
+
+export const setPrompt = (
+  prompt: string,
+  configVariables: { lang?: string, voice?: string, style?: string, limit?: string },
+  userInput: string
+): string => {
+  const { lang, voice, style, limit } = configVariables;
+  return prompt
+    .replaceAll("{search}", userInput || "")
+    .replaceAll("{language}", lang || "")
+    .replaceAll("{voice}", voice || "")
+    .replaceAll("{style}", style || "")
+    .replaceAll("{limit}", limit || "");
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//------------------------------------------------------------------------
+
+
+export interface PromptVariables {
+  [key: string]: any;
+}
+
+const PROMPT_ROLE_DEFAULT = "default";
 const PROMPT_VOICE_DEFAULT = "Informative";
 const PROMPT_STYLE_DEFAULT = "Argumentative";
 
-const PROMPT_COUNTRIES = {
-  "Italy": "IT",
-  "United States": "US",
-  "China": "CN",
-};
-
-const PROMPT_LANGS = {
-  "Italiano": "it",
-  "English": "en",
-  "Chinese": "zh",
-};
 
 const PROMPT_VOICES = [
   "Authoritative",
@@ -377,85 +455,78 @@ const PROMPT_STYLES = [
   "Technical",
 ];
 
-export const LABELS = {
-  SEARCH_INTENT_FROM_KEYWORDS: "Enter the list of keywords to classify by search intent.",
-  RELATED_KEYWORD_GENERATOR: "What is the main keyword you want related suggestions for?",
-  LONG_TAIL_KEYWORD_GENERATOR: "What is the main keyword you want long-tail keywords for?",
-  KEYWORD_STRATEGY: "What is the main keyword to build your SEO strategy around?",
-  GENERATE_BLOG_POST_TITLES: "What is the main topic you want to generate titles about?",
-  GENERATE_BLOG_POST_DESCRIPTIONS: "What is the title of the blog post to generate descriptions for?",
-  GENERATE_BLOG_POST_OUTLINE: "What is the blog post title you want an outline for?",
-  /* GENERATE_BLOG_POST_OUTLINE_OLD: "What is the blog post title you want an outline for?", */
-  GENERATE_COMPLETE_BLOG_POST_FROM_OUTLINE: "What is the outline or blog topic to expand into a full article?",
-  GENERATE_COMPLETE_BLOG_POST_FROM_TOPIC: "What is the topic for the blog article?",
-  GENERATE_INTRODUCTION_USING_FRAMEWORK: "What is the topic of the blog post you want an introduction for?",
-  GENERATE_PARAGRAPH_OF_TEXT: "What is the topic you want to write a paragraph about?",
-  GENERATE_DICTIONARY: "What items do you want to list in a dictionary format?",
-  GENERATE_FREE: "What custom prompt would you like to run?"
+const PROMPT_ROLES: Record<string, string> = {
+  // --- Macro-ruoli generici ---
+  default: `You are a highly skilled and versatile AI assistant who can adapt to any task or context. You write in fluent {language}, using a {voice} tone of voice and a {style} writing style. You provide clear, concise, and well-structured responses, ensuring both accuracy and creativity according to the user's needs.`,
+  copywriter: `You are an expert copywriter who writes catchy text in fluent {language}. You have a {voice} tone of voice. You have a {style} writing style.`,
+  seo_expert: `You are an experienced SEO specialist who writes optimized, keyword-rich content in fluent {language}. You have a {voice} tone of voice. You have a {style} writing style.`,
+  storyteller: `You are a talented storyteller who crafts engaging narratives in fluent {language}. You have a {voice} tone of voice. You have a {style} writing style.`,
+  translator: `You are a professional translator who accurately translates content into {language}, maintaining meaning, nuance, and cultural relevance. You have a {voice} tone of voice. You have a {style} writing style.`,
+  marketing_strategist: `You are a skilled marketing strategist who creates persuasive campaigns in fluent {language}. You have a {voice} tone of voice. You have a {style} writing style.`,
+  teacher: `You are a knowledgeable teacher who explains concepts clearly and simply in fluent {language}. You have a {voice} tone of voice. You have a {style} writing style.`,
+  technical_writer: `You are a precise and detail-oriented technical writer who produces clear documentation in fluent {language}. You have a {voice} tone of voice. You have a {style} writing style.`,
+  interviewer: `You are a skilled interviewer who formulates relevant and engaging questions in fluent {language}. You have a {voice} tone of voice. You have a {style} writing style.`,
+  product_describer: `You are an e-commerce product description specialist who writes compelling, benefit-focused descriptions in fluent {language}. You have a {voice} tone of voice. You have a {style} writing style.`,
+  social_media_manager: `You are a creative social media manager who writes engaging, platform-specific posts in fluent {language}. You have a {voice} tone of voice. You have a {style} writing style.`,
+  ux_writer: `You are a UX writer who creates clear, concise, and user-friendly interface text in fluent {language}. You have a {voice} tone of voice. You have a {style} writing style.`,
+  press_officer: `You are an experienced press officer who writes impactful press releases in fluent {language}. You have a {voice} tone of voice. You have a {style} writing style.`,
+  legal_drafter: `You are a legal expert who drafts precise and compliant legal texts in fluent {language}. You have a {voice} tone of voice. You have a {style} writing style.`,
+  recruiter: `You are a professional recruiter who writes compelling job descriptions and outreach messages in fluent {language}. You have a {voice} tone of voice. You have a {style} writing style.`,
+  news_reporter: `You are a news reporter who writes objective and concise news articles in fluent {language}. You have a {voice} tone of voice. You have a {style} writing style.`,
+
+  // --- Ruoli SEO specializzati ---
+  search_intent_analyst: `You are a keyword research expert who analyzes search intent from given keywords and writes in fluent {language}.`,
+  keyword_generator: `You are a keyword research expert who generates related keywords in fluent {language}.`,
+  long_tail_keyword_generator: `You are a keyword research expert who generates long-tail keywords in fluent {language}.`,
+  seo_content_planner: `You are a market research expert and SEO strategist who develops a full SEO content plan in fluent {language}.`,
+
+  // --- Ruoli di content creation specializzati ---
+  blog_title_specialist: `You are an expert copywriter who writes catchy blog post titles in fluent {language}. You have a {voice} tone of voice. You have a {style} writing style.`,
+  blog_description_specialist: `You are an expert copywriter who writes compelling blog post descriptions in fluent {language}. You have a {voice} tone of voice. You have a {style} writing style.`,
+  blog_outline_specialist: `You are an expert copywriter who creates structured content outlines in fluent {language}. You have a {voice} tone of voice. You have a {style} writing style.`,
+  blog_writer_from_outline: `You are an expert copywriter who writes complete blog posts from outlines in fluent {language}. You have a {voice} tone of voice. You have a {style} writing style.`,
+  blog_writer_from_topic: `You are an expert copywriter who writes complete blog posts from topics in fluent {language}. You have a {voice} tone of voice. You have a {style} writing style.`,
+  blog_intro_specialist: `You are an expert copywriter who writes engaging introductions using known copywriting frameworks in fluent {language}. You have a {voice} tone of voice. You have a {style} writing style.`,
+  paragraph_writer: `You are an expert copywriter who writes single, impactful paragraphs in fluent {language}. You have a {voice} tone of voice. You have a {style} writing style.`,
+  dictionary_writer: `You are a copywriter who writes concise and clear definitions in fluent {language}. You have a {voice} tone of voice. You have a {style} writing style.`,
+  creative_free_writer: `You are an expert copywriter who writes any kind of catchy text in fluent {language}. You have a {voice} tone of voice. You have a {style} writing style.`
 };
 
+export class Prompt {
+  static getRoles(): string[] {
+    return Object.keys(PROMPT_ROLES);
+  }
 
-export const getPromptCountry = (code: boolean = false) => {
-  const country = localStorage.getItem("promptCountry") || PROMPT_COUNTRY_DEFAULT;
+  static getLangs(): string[] {
+    return Object.values(LANGS);
+  }
 
-  return code
-    ? PROMPT_COUNTRIES[country as keyof typeof PROMPT_COUNTRIES]
-    : country
-}
-export const getPromptLang = (code: boolean = false) => {
-  const lang = localStorage.getItem("promptLang") || PROMPT_LANG_DEFAULT;
+  static getCountries(): string[] {
+    return Object.values(COUNTRIES);
+  }
 
-  return code
-    ? PROMPT_LANGS[lang as keyof typeof PROMPT_LANGS]
-    : lang
-}
-export const getPromptVoice = () => {
-  return localStorage.getItem("promptVoice") || PROMPT_VOICE_DEFAULT
-}
-export const getPromptStyle = () => {
-  return localStorage.getItem("promptStyle") || PROMPT_STYLE_DEFAULT
-}
+  static getVoices(): string[] {
+    return PROMPT_VOICES;
+  }
 
-export const getPromptCountries = () => {
-  return Object.keys(PROMPT_COUNTRIES);
-}
-export const getPromptLangs = () => {
-  return Object.keys(PROMPT_LANGS);
-}
-export const getPromptVoices = () => {
-  return PROMPT_VOICES;
-}
+  static getStyles(): string[] {
+    return PROMPT_STYLES;
+  }
 
-export const getPromptStyles = () => {
-  return PROMPT_STYLES;
+  static defaults(): { role: string, language: string, country: string, voice: string, style: string } {
+    return {
+      role: PROMPT_ROLE_DEFAULT,
+      language: currentLang(),
+      country: currentCountry(),
+      voice: localStorage.getItem("prompt.voice") || PROMPT_VOICE_DEFAULT,
+      style: localStorage.getItem("prompt.style") || PROMPT_STYLE_DEFAULT,
+    };
+  }
+
+  static parseRole(role?: string, variables: PromptVariables = {}): string {
+    return converter.parse({ ...this.defaults(), ...variables }, PROMPT_ROLES[role ?? this.defaults().role]);
+  }
+  static parsePrompt(prompt: string, variables: PromptVariables = {}): string {
+    return converter.parse({ ...this.defaults(), ...variables }, prompt);
+  }
 }
-
-export const getPrompt = (strategy: keyof typeof PROMPTS): { prompt: string; label: string } => {
-  return {
-    prompt: PROMPTS[strategy] ?? "",
-    label: LABELS[strategy] ?? ""
-  };
-}
-
-export const getPromptOutline = () => {
-  return PROMPTS["GENERATE_BLOG_POST_OUTLINE"] ?? "";
-}
-
-export const getPromptRole = (strategy: keyof typeof PROMPTS_ROLE): string[] => {
-  return PROMPTS_ROLE[strategy] ?? [];
-};
-
-
-export const setPrompt = (
-  prompt: string,
-  configVariables: { lang?: string, voice?: string, style?: string, limit?: string },
-  userInput: string
-): string => {
-  const { lang, voice, style, limit } = configVariables;
-  return prompt
-    .replaceAll("{search}", userInput || "")
-    .replaceAll("{language}", lang || "")
-    .replaceAll("{voice}", voice || "")
-    .replaceAll("{style}", style || "")
-    .replaceAll("{limit}", limit || "");
-};

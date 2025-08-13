@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { getPrompt, getPromptLangs, getPromptStyles, getPromptVoices, PROMPTS } from '../conf/Prompt';
-import { Col, Row } from '../components/ui/GridSystem';
 import Tab, { TabItem } from '../components/ui/Tab';
 import { ActionButton } from '../components/ui/Buttons';
-import { Number, String, TextArea } from '../components/ui/fields/Input';
+import { Number, TextArea } from '../components/ui/fields/Input';
 import { Select } from '../components/ui/fields/Select';
 import AssistantAI from '../components/ui/fields/AssistantAI'
 import Form from '../components/widgets/Form';

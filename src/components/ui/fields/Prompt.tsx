@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { FormFieldProps, Switch, TextArea, Wrapper, LoadingButton } from '../..';
+import { FormFieldProps, Switch, TextArea, Wrapper, LoadingButton, Dropdown, DropdownItem, Select, Range } from '../..';
 import {useTheme} from "../../../Theme";
-import { AI } from '../../../integrations/ai';
+import { AI, AIFetchConfig } from '../../../integrations/ai';
+import { PromptVariables } from 'conf/Prompt';
 
 
 export interface PromptProps extends FormFieldProps {
@@ -10,6 +11,12 @@ export interface PromptProps extends FormFieldProps {
     defaultValue?: {
         value?: string;
         enabled?: boolean;
+        role?: string;
+        language?: string;
+        voice?: string;
+        style?: string;
+        model?: string;
+        temperature?: number;
     };
 }
 
@@ -58,8 +65,8 @@ export const PromptEditor = ({
                     name={name + (value?.prompt?.enabled ? ".prompt.value" : ".value")} 
                     label={value?.prompt?.enabled ? promptLabel + caption : caption}
                     value={value?.prompt?.enabled ? value?.prompt?.value : value?.value} 
-                    onChange={onChange} 
                     defaultValue={value?.prompt?.enabled && defaultValue?.value}
+                    onChange={onChange} 
                     required={required} 
                     pre={pre} 
                     post={post} 
@@ -92,18 +99,64 @@ export const PromptRunner = ({
             {pre}
             <div className={prompt ? promptClass : "position-relative"}>
                 <div className={promptActionClass}>
-                    <LoadingButton icon={prompt ? "terminal-fill" : "terminal"} onClick={() => {
+                    <LoadingButton icon={prompt ? "terminal-fill" : "terminal"} title={prompt ? "Mode: Prompt Editor" : "Mode: Run Prompt"} onClick={() => {
                         setPrompt(!prompt);
                     }} />
+
                 </div>
                 <TextArea 
                     className={(className || theme.Prompt.className)}
-                    name={name + ".prompt"} 
+                    name={name + ".prompt.value"} 
                     label={promptLabel + caption}
-                    value={value?.prompt} 
-                    onChange={onChange} 
+                    value={value?.prompt?.value} 
                     defaultValue={defaultValue?.value}
+                    onChange={onChange} 
                     required={true} 
+                    post={<Dropdown 
+                        position="end"
+                        toggleButton={{
+                            icon: "gear"
+                        }}
+                    >
+                        <DropdownItem><Select name={name + ".prompt.role"} label="Role" 
+                            value={value?.prompt?.role} 
+                            defaultValue={defaultValue?.role} 
+                            onChange={onChange}
+                            options={AI.getRoles()} 
+                        /></DropdownItem>
+                        <DropdownItem><Select name={name + ".prompt.language"} label="Language" 
+                            value={value?.prompt?.language} 
+                            defaultValue={defaultValue?.language} 
+                            onChange={onChange}
+                            options={AI.getLangs()} 
+                        /></DropdownItem>
+                        <DropdownItem><Select name={name + ".prompt.voice"} label="Voice" 
+                            value={value?.prompt?.voice} 
+                            defaultValue={defaultValue?.voice} 
+                            onChange={onChange}
+                            options={AI.getVoices()} 
+                        /></DropdownItem>
+                        <DropdownItem><Select name={name + ".prompt.style"} label="Style" 
+                            value={value?.prompt?.style} 
+                            defaultValue={defaultValue?.style} 
+                            onChange={onChange}
+                            options={AI.getStyles()} 
+                        /></DropdownItem>
+                        <DropdownItem><Select name={name + ".prompt.model"} label="Model" 
+                            value={value?.prompt?.model} 
+                            defaultValue={defaultValue?.model} 
+                            onChange={onChange}
+                            options={AI.getModels()} 
+                        /></DropdownItem>
+                        <DropdownItem><Range name={name + ".prompt.temperature"} label="Temperature" 
+                            value={value?.prompt?.temperature} 
+                            defaultValue={defaultValue?.temperature} 
+                            onChange={onChange}
+                            min={0} 
+                            max={1} 
+                            step={0.1} 
+                        /></DropdownItem>
+                    </Dropdown>}
                     wrapClass={wrapClass + (prompt ? "" : " d-none")} 
                     rows={rows} />
                 <TextArea 
@@ -114,10 +167,11 @@ export const PromptRunner = ({
                     onChange={onChange} 
                     required={required} 
                     post={<LoadingButton icon="stars" onClick={async () => {
+                        console.log("AAAAAAAAAAAAAAAAAAAAa runPrompt", value?.prompt);
                         onChange?.({
                             target: {
                                 name: name + ".value",
-                                value: await runPrompt(value?.prompt, value)
+                                value: await runPrompt(value?.prompt)
                             }
                         });
                     }} />} 
@@ -129,10 +183,9 @@ export const PromptRunner = ({
     )
 }
 
-//todo: recuperare i dati e fare la gestione della lingua voice e style e temperature e model. e i ruoli
-const runPrompt = async (prompt: string, data: any) => {
-    const ai = new AI();
-    const response = await ai.fetch(prompt);
+const runPrompt = async (config: AIFetchConfig, data?: PromptVariables) => {
+    const response = await AI.fetch(config, data);
+
     console.log(response);
     return response;
 }

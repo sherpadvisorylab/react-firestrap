@@ -30,8 +30,10 @@ root.render(
         }}
         aiConfig={{
             geminiApiKey: process.env.REACT_APP_GEMINI_API_KEY,
-            chatGptApiKey: process.env.REACT_APP_CHATGPT_API_KEY,
+            openaiApiKey: process.env.REACT_APP_OPENAI_API_KEY,
             deepSeekApiKey: process.env.REACT_APP_DEEPSEEK_API_KEY,
+            anthropicApiKey: process.env.REACT_APP_ANTHROPIC_API_KEY,
+            mistralApiKey: process.env.REACT_APP_MISTRAL_API_KEY,
         }}
         scrapeConfig={{
             serpApiKey: process.env.REACT_APP_SERPAPI_API_KEY,
