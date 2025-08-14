@@ -28,11 +28,15 @@ export const Prompt = ({
     mode = "editor",
     ...props
 }: PromptProps) => {
-    return mode === "editor" ? <PromptEditor {...props} /> : <PromptRunner {...props} />
+    return mode === "editor" 
+        ? <PromptEditor {...props} /> 
+        : props.value?.prompt?.enabled 
+            ? <PromptRunner {...props} /> 
+            : <PromptDisabled {...props} />
 }
 
 
-export const PromptEditor = ({
+const PromptEditor = ({
     name,
     label         = undefined,
     value         = undefined,
@@ -78,7 +82,7 @@ export const PromptEditor = ({
     )
 }
 
-export const PromptRunner = ({
+const PromptRunner = ({
     name,
     label,
     value,
@@ -167,7 +171,6 @@ export const PromptRunner = ({
                     onChange={onChange} 
                     required={required} 
                     post={<LoadingButton icon="stars" onClick={async () => {
-                        console.log("AAAAAAAAAAAAAAAAAAAAa runPrompt", value?.prompt);
                         onChange?.({
                             target: {
                                 name: name + ".value",
@@ -178,6 +181,37 @@ export const PromptRunner = ({
                     wrapClass={wrapClass + (prompt ? " d-none" : "")} 
                     rows={rows} />
             </div>
+            {post}
+        </Wrapper>
+    )
+}
+
+const PromptDisabled = ({
+    name,
+    label,
+    value,
+    required,
+    onChange,
+    rows,
+    pre,
+    post,
+    wrapClass,
+    className
+}: Omit<PromptProps, "mode">) => {
+    const theme = useTheme("prompt");
+    return (
+        <Wrapper className={wrapClass || theme.Prompt.wrapClass}>
+            {pre}
+            <TextArea 
+                className={(className || theme.Prompt.className)}
+                name={name + ".value"} 
+                label={label}
+                value={value?.value} 
+                onChange={onChange} 
+                required={required} 
+                wrapClass={wrapClass} 
+                rows={rows} 
+            />
             {post}
         </Wrapper>
     )

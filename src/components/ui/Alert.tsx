@@ -54,21 +54,19 @@ const Alert = ({
     }, [onClose, timeout]);
 
     // @todo ristemare stile alert
-    const renderAlert = () => {
-        return (
-            <Wrapper className={wrapClass}>
-                {pre}
-                <div
-                    className={`d-flex align-items-center alert alert-${type} ${className || theme.Alert.className} ${isFixed && 'position-fixed w-100'}`}
-                    style={isFixed ? { zIndex: 1100, [isFixed]: 50, left: "50%", transform: "translateX(-50%)" } : undefined}
-                >
-                    {icon && <i className={theme.getIcon(icon) + " me-1"}></i>}
-                    {children}
-                </div>
-                {post}
-            </Wrapper>
-        )
-    }
+    const renderAlert = () => (
+        <Wrapper className={wrapClass}>
+            {pre}
+            <div
+                className={`d-flex align-items-center alert alert-${type} ${className || theme.Alert.className} ${isFixed && 'position-fixed w-100'}`}
+                style={isFixed ? { zIndex: 1100, [isFixed]: 50, left: "50%", transform: "translateX(-50%)" } : undefined}
+            >
+                {icon && <i className={theme.getIcon(icon) + " me-1"}></i>}
+                {children}
+            </div>
+            {post}
+        </Wrapper>
+    );
 
     return isFixed ? createPortal(renderAlert(), document.body) : renderAlert();
 }

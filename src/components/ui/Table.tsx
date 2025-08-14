@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { useTheme } from "../../Theme";
 import { Wrapper } from "./GridSystem";
 import { RecordArray, RecordProps } from "../../integrations/google/firedatabase";
@@ -43,7 +43,11 @@ function Table({
 }: TableProps) {
     const theme = useTheme("table");
     const activeClass = selectedClass || theme.Table.selectedClass;
-
+    const [paginationNavEl, setPaginationNavEl] = useState<HTMLElement | null>(null);
+    const paginationNavRef = useCallback((node: HTMLDivElement | null) => {
+        if (node) setPaginationNavEl(node);
+    }, []);
+      
     const handleClick = (e: React.MouseEvent<HTMLElement>, index: number) => {
         let currentElement = e.target as HTMLElement;
 
@@ -66,7 +70,7 @@ function Table({
     }
 
     const getField = (item: RecordProps, key: string) => {
-        const v = item[key];
+        const v = (item[key]?.prompt && item[key]?.value) || item[key];
         if (React.isValidElement(v) || v == null || typeof v !== 'object') return v;
         return Array.isArray(v) && !v.some(e => typeof e === 'object' && e)
             ? v.join(", ")
@@ -83,7 +87,7 @@ function Table({
     const headers = (header || Object.keys(body[0]).map(key => ({ key, label: key })));
 
     return (
-        <div className={"table-responsive " + (wrapClass || theme.Table.wrapClass)}>
+        <div ref={paginationNavRef} className={"table-responsive " + (wrapClass || theme.Table.wrapClass)}>
             <Wrapper className={scrollClass || theme.Table.scrollClass}>
                 <div className={"fixed-table-container"}>
                     {pre}
@@ -110,6 +114,7 @@ function Table({
                                 recordSet={body} 
                                 page={pagination?.page}
                                 limit={pagination?.limit}
+                                appendTo={paginationNavEl}
                             >
                                 {(pageRecords: RecordArray) =>
                                     pageRecords.map((record, index) => (
