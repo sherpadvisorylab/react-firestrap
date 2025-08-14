@@ -519,6 +519,13 @@ export class AI extends Prompt {
         return this;
     }   
 
+    static defaults() {
+        return {
+            ...super.defaults(),
+            model: localStorage.getItem("prompt.model") || PROVIDERS[PROVIDER_DEFAULT].model,
+        }
+    }
+
     async fetchAPI(prompt: string): Promise<any> {
         const body = this.config.parseBody(
             AI.parsePrompt(prompt, { ...this.options, ...this.data }), 

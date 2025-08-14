@@ -98,6 +98,7 @@ const PromptRunner = ({
     const theme = useTheme("prompt");
     const caption = label || name;
     const [prompt, setPrompt] = useState(defaultValue?.enabled || false);
+    const defaultValues = AI.defaults();
     return (
         <Wrapper className={wrapClass || theme.Prompt.wrapClass}>
             {pre}
@@ -127,30 +128,50 @@ const PromptRunner = ({
                             defaultValue={defaultValue?.role} 
                             onChange={onChange}
                             options={AI.getRoles()} 
+                            optionEmpty={{
+                                label: "Default (" + defaultValues.role + ")",
+                                value: ""
+                            }}
                         /></DropdownItem>
                         <DropdownItem><Select name={name + ".prompt.language"} label="Language" 
                             value={value?.prompt?.language} 
                             defaultValue={defaultValue?.language} 
                             onChange={onChange}
                             options={AI.getLangs()} 
+                            optionEmpty={{
+                                label: "Default (" + defaultValues.language + ")",
+                                value: ""
+                            }}
                         /></DropdownItem>
                         <DropdownItem><Select name={name + ".prompt.voice"} label="Voice" 
                             value={value?.prompt?.voice} 
                             defaultValue={defaultValue?.voice} 
                             onChange={onChange}
                             options={AI.getVoices()} 
+                            optionEmpty={{
+                                label: "Default (" + defaultValues.voice + ")",
+                                value: ""
+                            }}
                         /></DropdownItem>
                         <DropdownItem><Select name={name + ".prompt.style"} label="Style" 
                             value={value?.prompt?.style} 
                             defaultValue={defaultValue?.style} 
                             onChange={onChange}
                             options={AI.getStyles()} 
+                            optionEmpty={{
+                                label: "Default (" + defaultValues.style + ")",
+                                value: ""
+                            }}
                         /></DropdownItem>
                         <DropdownItem><Select name={name + ".prompt.model"} label="Model" 
                             value={value?.prompt?.model} 
                             defaultValue={defaultValue?.model} 
                             onChange={onChange}
                             options={AI.getModels()} 
+                            optionEmpty={{
+                                label: "Default (" + defaultValues.model + ")",
+                                value: ""
+                            }}
                         /></DropdownItem>
                         <DropdownItem><Range name={name + ".prompt.temperature"} label="Temperature" 
                             value={value?.prompt?.temperature} 
