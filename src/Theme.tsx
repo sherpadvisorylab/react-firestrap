@@ -1,4 +1,3 @@
-import { Percentage } from 'components';
 import React, {createContext, useContext, useEffect, useState, ReactNode} from 'react';
 
 interface Theme {

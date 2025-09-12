@@ -1,7 +1,8 @@
 import React, {ChangeEvent, useId, useState} from 'react';
 import {isEmpty, isInteractiveElement} from "../../../libs/utils";
 import {Wrapper} from "../GridSystem";
-import { ActionButton, FormFieldProps, Icon, UIProps } from '../../..';
+import { ActionButton, Icon, UIProps } from '../../..';
+import { FormFieldProps, useFormContext } from '../../widgets/Form';
 
 interface BaseInputProps extends FormFieldProps{
     placeholder?: string;
@@ -50,7 +51,7 @@ export interface ListGroupProps extends UIProps {
 
 export const Input = ({
     name,
-    value = undefined,
+    //value = undefined,
     onChange = undefined,
     defaultValue = undefined,
     placeholder = undefined,
@@ -68,9 +69,10 @@ export const Input = ({
     wrapClass = undefined,
     className = undefined
 }: BaseInputProps) => {
+    const { value, handleChange, formWrapClass } = useFormContext({name, onChange, wrapClass});
     const id = useId();
     return (
-        <Wrapper className={wrapClass}>
+        <Wrapper className={formWrapClass}>
             {label && <Label label={label} required={required} htmlFor={id} />}
             <Wrapper className={pre || post ? "input-group" : ""}>
                 {pre && <span className="input-group-text">{pre}</span>}
@@ -82,9 +84,8 @@ export const Input = ({
                     placeholder={placeholder}
                     required={required}
                     disabled={disabled || (!updatable && !isEmpty(value))}
-                    value={value}
-                    defaultValue={defaultValue}
-                    onChange={onChange}
+                    value={value ?? defaultValue}
+                    onChange={handleChange}
                     min={min}
                     max={max}
                     step={step}
@@ -149,7 +150,7 @@ export const Range = (props: InputProps) => (
 
 export const Checkbox = ({
     name,
-    value = false,
+    //value = false,
     onChange = undefined,
     defaultValue = undefined,   //todo: da capire come gestirlo
     label = undefined,
@@ -161,17 +162,19 @@ export const Checkbox = ({
     wrapClass = undefined,
     className = undefined
 }: CheckboxProps) => {
+    const { value, handleChange, formWrapClass } = useFormContext({name, onChange, wrapClass});
+
     const id = useId();
     const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         event.target.value = event.target.checked ? valueChecked : ""
 
-        onChange?.(event);
+        handleChange?.(event);
     };
     if (!wrapClass && label) {
         wrapClass = "checkbox"
     }
     return (
-        <Wrapper className={wrapClass}>
+        <Wrapper className={formWrapClass}>
             {pre}
             <input
                 type="checkbox"
@@ -212,8 +215,8 @@ export const Label = ({
 
 export const TextArea = ({
     name,
-    value = undefined,
-    onChange = undefined,
+    //value = undefined,
+    onChange    = undefined,
     defaultValue = undefined,   
     placeholder = undefined,
     label = undefined,
@@ -228,6 +231,8 @@ export const TextArea = ({
     className = undefined,
     wrapClass = undefined
 }: TextAreaProps) => {
+    const { value, handleChange, formWrapClass } = useFormContext({name, onChange, wrapClass});
+
     const id = useId();
     const handleDrop = React.useCallback((e: React.DragEvent<HTMLTextAreaElement>) => {
         e.preventDefault();
@@ -249,9 +254,9 @@ export const TextArea = ({
         const newValue = (value ?? '').slice(0, caretPosition) + text + (value ?? '').slice(caretPosition);
         
         // Trigger onChange if provided
-        onChange?.({
+        handleChange?.({
             target: {
-                value: newValue,
+                value: newValue.trim(),
                 name
             }
         } as ChangeEvent<HTMLTextAreaElement>);
@@ -262,10 +267,10 @@ export const TextArea = ({
             target.setSelectionRange(newPosition, newPosition);
             console.log("TEXT AREA handleDrop", newValue, newPosition, target);
         });
-    }, [name, value, onChange]);
-console.log("TEXT AREA", name, value, onChange);
+    }, [name, value, handleChange]);
+
     return (
-        <Wrapper className={wrapClass}>
+        <Wrapper className={formWrapClass}>
             {label && <Label required={required} label={label} htmlFor={id} />}
             <Wrapper className={pre || post ? "input-group" : ""}>
                 {pre && <span className="input-group-text">{pre}</span>}
@@ -280,7 +285,7 @@ console.log("TEXT AREA", name, value, onChange);
                     disabled={disabled || (!updatable && !isEmpty(value))}
                     value={value}
                     defaultValue={defaultValue}
-                    onChange={onChange}
+                    onChange={handleChange}
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={handleDrop}
                 />

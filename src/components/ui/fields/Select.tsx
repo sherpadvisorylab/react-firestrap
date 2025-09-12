@@ -5,7 +5,7 @@ import {Col, Wrapper} from "../GridSystem"
 import {useTheme} from "../../../Theme";
 import {arraysEqual, arrayUnique, isEmpty, sanitizeKey} from "../../../libs/utils";
 import {DatabaseOptions, RecordProps} from "../../../integrations/google/firedatabase";
-import { FormFieldProps } from '../..';
+import { FormFieldProps, useFormContext } from '../../widgets/Form';
 
 interface Option extends RecordProps {
     label: string;
@@ -102,7 +102,7 @@ const getOptions = (
 
 export const Select = ({
                               name,
-                              value         = undefined,
+                              //value         = undefined,
                               onChange      = undefined,
                               required      = false,
                               updatable     = true,
@@ -122,6 +122,8 @@ export const Select = ({
                               wrapClass     = undefined,
                               className     = undefined,
 } : SelectProps) => {
+    const { value, handleChange, formWrapClass } = useFormContext({name, onChange, wrapClass});
+    
     const theme = useTheme("select");
     const [selectedValue, setSelectedValue] = useState(value);
     useEffect(() => {
@@ -147,12 +149,12 @@ export const Select = ({
     }, [options, lookup, selectedValue, order]);
 
     if (!selectedValue && !optionEmpty && opts.length > 0) {
-        onChange?.({target: {name: name, value: opts[0].value}}); //, opts
+        handleChange?.({target: {name: name, value: opts[0].value}}); //, opts
     }
 
     const id = useId();
     return (
-        <Wrapper className={wrapClass || theme.Select.wrapClass}>
+        <Wrapper className={formWrapClass || theme.Select.wrapClass}>
             {label && <Label label={label} required={required} htmlFor={id}/>}
             <Wrapper className={pre || post ? "input-group flex-nowrap": ""}>
                 {pre && <span className="input-group-text">{pre}</span>}
@@ -163,11 +165,11 @@ export const Select = ({
                     value={selectedValue}
                     required={required}
                     disabled={disabled || (!updatable && !isEmpty(selectedValue))}
-                    onChange={onChange}
+                    onChange={handleChange}
                     title={title}
                 >
-                    {optionEmpty && <option value={optionEmpty.value}>{optionEmpty.label}</option>}
-                    {opts.map((op, index) => <option value={op.value} key={`${id}-${index}`}>{op.label}</option>)}
+                    {optionEmpty && <option key={`${id}-empty`} value={optionEmpty.value}>{optionEmpty.label}</option>}
+                    {opts.map((op, index) => <option key={`${id}-${index}`} value={op.value}>{op.label}</option>)}
                 </select>
                 {post && <span className="input-group-text">{post}</span>}
             </Wrapper>
@@ -178,7 +180,7 @@ export const Select = ({
 
 export const Autocomplete = ({
                                 name,
-                                value           = undefined,
+                                //value           = undefined,
                                 min             = undefined,
                                 max             = undefined,
                                 onChange        = undefined,
@@ -196,6 +198,8 @@ export const Autocomplete = ({
                                 wrapClass       = undefined,
                                 className       = undefined,
 } : AutocompleteProps) => {
+    const { value, handleChange, formWrapClass } = useFormContext({name, onChange, wrapClass});
+
     const theme = useTheme("select");
 
     const valueArray = useMemo(() => valueToArray(value), [value]);
@@ -215,7 +219,7 @@ export const Autocomplete = ({
         return arrayUnique(combinedOptions, 'value');
     }, [options, lookup]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleAutocompleteChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const currentValue = e.target.value;
 
         if (opts.filter(op => op.value === currentValue).length === 0) {
@@ -230,7 +234,7 @@ export const Autocomplete = ({
         setSelectedItems(prevState => {
             const updatedItems = [...prevState, currentValue];
             setTimeout(() => {
-                onChange?.({target: {name: name, value: updatedItems}}); //, opts
+                handleChange?.({target: {name: name, value: updatedItems}}); //, opts
             }, 0);
 
             return updatedItems;
@@ -243,7 +247,7 @@ export const Autocomplete = ({
         setSelectedItems(prevState => {
             const updatedItems = prevState.filter(item => item !== currentValue);
             setTimeout(() => {
-                onChange?.({target: {name: name, value: updatedItems}}); //, opts
+                handleChange?.({target: {name: name, value: updatedItems}}); //, opts
             }, 0);
 
             return updatedItems;
@@ -252,7 +256,7 @@ export const Autocomplete = ({
 
     const id = useId();
     return (
-        <Wrapper className={wrapClass || theme.Autocomplete.wrapClass}>
+        <Wrapper className={formWrapClass || theme.Autocomplete.wrapClass}>
             {label && <Label label={label} required={required} htmlFor={id}/>}
             <Wrapper className={pre || post ? "input-group flex-nowrap" : ""}>
                 {pre && <span className="input-group-text">{pre}</span>}
@@ -270,7 +274,7 @@ export const Autocomplete = ({
                         disabled={disabled || (!updatable && !isEmpty(value))}
                         placeholder={placeholder}
                         list={name}
-                        onChange={handleChange}
+                        onChange={handleAutocompleteChange}
                     /></Col>}
                 </div>
                 <datalist id={name}>
@@ -285,7 +289,7 @@ export const Autocomplete = ({
 
 export const Checklist = ({
                                 name,
-                                value       = [],
+                                //value       = [],
                                 onChange    = undefined,
                                 required    = false,
                                 updatable   = true,
@@ -301,6 +305,8 @@ export const Checklist = ({
                                 wrapClass   = undefined,
                                 checkClass  = undefined,
 } : ChecklistProps) => {
+    const { value, handleChange, formWrapClass } = useFormContext({name, onChange, wrapClass});
+
     const valueArray = useMemo(() => valueToArray(value), [value]);
     const [selectedItems, setSelectedItems] = useState(() => valueArray);
     useEffect(() => {
@@ -322,14 +328,14 @@ export const Checklist = ({
         setSelectedItems(prevState => {
             const updatedItems = prevState.filter(item => item !== currentValue);
             setTimeout(() => {
-                onChange?.({target: {name: name, value: updatedItems}}); //, opts
+                handleChange?.({target: {name: name, value: updatedItems}}); //, opts
             }, 0);
 
             return updatedItems;
         });
     };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChecklistChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const currentValue = e.target.value;
 
         if(!e.target.checked) {
@@ -348,7 +354,7 @@ export const Checklist = ({
         setSelectedItems(prevState => {
             const updatedItems = [...prevState, currentValue];
             setTimeout(() => {
-                onChange?.({target: {name: name, value: updatedItems}}); //, opts
+                handleChange?.({target: {name: name, value: updatedItems}}); //, opts
             }, 0);
 
             return updatedItems;
@@ -356,7 +362,7 @@ export const Checklist = ({
     };
 
     return (
-        <Wrapper className={wrapClass}>
+        <Wrapper className={formWrapClass}>
             {label && <><Label label={label} className={"form-check-label"} required={required}/><hr className={"mt-0"} /></>}
             <Wrapper className={pre || post ? "input-group" : ""}>
                 {pre && <span className="input-group-text">{pre}</span>}
@@ -369,7 +375,7 @@ export const Checklist = ({
                                 type={"checkbox"}
                                 id={key}
                                 defaultValue={op.value}
-                                onChange={handleChange}
+                                onChange={handleChecklistChange}
                                 defaultChecked={selectedItems.includes(op.value)}
                             />
                             <label htmlFor={key} className={"ms-1"}>{op.label}</label>

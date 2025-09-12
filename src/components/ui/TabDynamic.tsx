@@ -1,14 +1,13 @@
 import React, { useMemo, useState } from 'react';
 import { ActionButton } from "./Buttons";
-import FormEnhancer, { asForm } from "../FormEnhancer";
 import {converter} from "../../libs/converter";
 import { TabLayouts, TabPosition } from './Tab';
-import { ChangeHandler } from 'index';
+import { FieldOnChange, setFormFieldsName, useFormContext } from '../widgets/Form';
 
 interface TabDynamicProps {
     children: React.ReactNode | ((record: any) => React.ReactNode);
     name: string;
-    onChange?: (event: ChangeHandler) => void;
+    onChange?: FieldOnChange;
     onAdd?: (value: any[]) => void;
     onRemove?: (index: number) => void;
     value?: any[];
@@ -27,7 +26,7 @@ const TabDynamic = ({
                  onChange       = undefined,
                  onAdd          = undefined,
                  onRemove       = undefined,
-                 value          = undefined,
+                 //value          = undefined,
                  label          = "Tab",
                  min            = 1,
                  max            = undefined,
@@ -36,6 +35,8 @@ const TabDynamic = ({
                  readOnly       = false,
                  tabPosition    = "default"
 }: TabDynamicProps) => {
+    const { value, handleChange } = useFormContext({name, onChange});
+    
     const [active, setActive] = useState(activeIndex);
     const [release, setRelease] = useState(0);
 
@@ -49,15 +50,13 @@ const TabDynamic = ({
     const components = typeof children === 'function'
     ? children({record: value?.[active], records: value, currentIndex: active})
     : children;
-    
+
     const component = useMemo(() => {
-        return <FormEnhancer
-            key={`${name}-${active}-${release}`}
-            parentName={`${name}.${active}`}
-            components={components}
-            record={value?.[active]}
-            handleChange={onChange}
-        />
+        return setFormFieldsName({
+            children: components, 
+            parentName: `${name}.${active}`, 
+            parentKey: `${name}-${active}-${release}`
+        });
     }, [active, components, name, release]);
 
       
@@ -66,7 +65,7 @@ const TabDynamic = ({
             ? [...value, {}] 
             : Array.from({ length: tabs.length + 1 }, () => ({}));
         onAdd?.(next);
-        onChange?.({ target: { name: `${name}.${next.length - 1}`, value: {} } });
+        handleChange({ target: { name: `${name}.${next.length - 1}`, value: {} } });
 
         setActive(next.length - 1);
         setRelease(prev => prev + 1);
@@ -76,7 +75,7 @@ const TabDynamic = ({
         const lastIndex = tabs.length - 1;
         onRemove?.(index);
         //setRecords(next);
-        onChange?.({ target: { name: `${name}.${index}` } });
+        handleChange({ target: { name: `${name}.${index}` } });
 
         if(active >= lastIndex) {
             setActive(prev => prev - 1);
@@ -118,4 +117,4 @@ const TabDynamic = ({
     );
 }
 
-export default asForm(TabDynamic);
+export default TabDynamic;

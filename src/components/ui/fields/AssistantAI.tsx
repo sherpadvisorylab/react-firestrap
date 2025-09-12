@@ -175,7 +175,7 @@ const AssistantAI = ({
                     name='inputUser'
                     label={promptTopic.label}
                     value={initialValue ?? userInput}
-                    onChange={(e) => setUserInput(e.target.value)}
+                    onChange={({value}) => setUserInput(value)}
                     post={<LoadingButton
                         icon='robot'
                         onClick={handleInput}

@@ -94,7 +94,7 @@ const Tab: React.FC<TabProps> = ({
                             key={active}
                             className={`tab-pane fade show active`}
                         >
-                            {items[active].props.children}
+                            {items[active]?.props?.children}
                         </div>
                     }
                 />

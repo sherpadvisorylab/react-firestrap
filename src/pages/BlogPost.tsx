@@ -6,7 +6,7 @@ import { Number, TextArea } from '../components/ui/fields/Input';
 import { Select } from '../components/ui/fields/Select';
 import AssistantAI from '../components/ui/fields/AssistantAI'
 import Form from '../components/widgets/Form';
-import { ChangeHandler } from '../components';
+import { FieldOnChange } from '../components/widgets/Form';
 
 type PromptKey = keyof typeof PROMPTS;
 
@@ -86,8 +86,8 @@ export default function BlogPost({
     post.title && setDisabledVariables(true);
   }, [post.title]);
 
-  const handleConfigChange = (field: keyof ConfigVariables) => (e: ChangeHandler) => {
-    setConfigVariables(prev => ({ ...prev, [field]: e.target.value }));
+  const handleConfigChange: FieldOnChange = ({name, value}) => {
+    setConfigVariables(prev => ({ ...prev, [name]: value }));
   };
 
   const updatePost = (field: keyof Post) => (value: any) => {
@@ -184,7 +184,7 @@ export default function BlogPost({
               pre='Language'
               value={configVariables.lang}
               options={langsOptions}
-              onChange={handleConfigChange('lang')}
+              onChange={handleConfigChange}
               disabled={disableVariables}
             />
             <Select
@@ -192,7 +192,7 @@ export default function BlogPost({
               pre='Voice'
               value={configVariables.voice}
               options={voicesOptions}
-              onChange={handleConfigChange('voice')}
+              onChange={handleConfigChange}
               disabled={disableVariables}
             />
             <Select
@@ -200,14 +200,14 @@ export default function BlogPost({
               pre='Style'
               value={configVariables.style}
               options={stylesOptions}
-              onChange={handleConfigChange('style')}
+              onChange={handleConfigChange}
               disabled={disableVariables}
             />
             <Number
               name="limit"
               pre="Limit"
               value={configVariables.limit}
-              onChange={handleConfigChange('limit')}
+              onChange={handleConfigChange}
               disabled={disableVariables}
             />
           </div>
@@ -279,10 +279,10 @@ export default function BlogPost({
                       name={`post${item.label}Title`}
                       label={`${item.label} Title`}
                       value={item.section.title}
-                      onChange={e =>
+                      onChange={({value}) =>
                         item.type === 'section'
-                          ? updateSection(item.index, 'title', e.target.value)
-                          : updateSectionContent(item.type, 'title', e.target.value)
+                          ? updateSection(item.index, 'title', value)
+                          : updateSectionContent(item.type, 'title', value)
                       }
                       rows={2}
                     />
@@ -290,10 +290,10 @@ export default function BlogPost({
                       name={`post${item.label}`}
                       label={item.label}
                       value={item.section.paragraphs.join('\n')}
-                      onChange={e =>
+                      onChange={({value}) =>
                         item.type === 'section'
-                          ? updateSection(item.index, 'paragraphs', e.target.value)
-                          : updateSectionContent(item.type, 'paragraphs', e.target.value)
+                          ? updateSection(item.index, 'paragraphs', value)
+                          : updateSectionContent(item.type, 'paragraphs', value)
                       }
                       rows={5}
                     />

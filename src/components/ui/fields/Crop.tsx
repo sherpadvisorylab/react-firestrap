@@ -2,7 +2,7 @@ import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } f
 import Card from "../Card";
 import { String, Switch } from "./Input";
 import { FileProps, getFileUrl } from "./Upload";
-import { ChangeHandler } from "../..";
+import { FieldOnChange } from "../../widgets/Form";
 
 
 const scales: Record<string, number> = {
@@ -279,9 +279,9 @@ export const CropImage = forwardRef(({img, title} : { img: ImageProps, title?: s
                             name={scale}
                             label={scale}
                             value={selectedScales.includes(scale)}
-                            onChange={(e) => {
+                            onChange={({event}) => {
                                 setSelectedScales(prev =>
-                                    e.target.checked
+                                    event.target.checked
                                         ? [...prev, scale]
                                         : prev.filter(a => a !== scale)
                                 );
@@ -420,8 +420,8 @@ export const FileNameEditor = ({
 
     const inputValue = stripFileName(value || "");
 
-    const handleChange = (e: ChangeHandler) => {
-        const baseName = e.target.value.trim();
+    const handleChange: FieldOnChange = ({value}) => {
+        const baseName = value.trim();
         onChange(`${baseName}${scaleSuffix ?? ''}.${ext}`);
     };
 

@@ -5,13 +5,13 @@ import componentBlock from "../models/componentBlock";
 import componentSection from "../models/componentSection";
 
 import { FormDatabase } from "./widgets/Form";
-import { ChangeHandler } from ".";
+import { FieldOnChange } from "./widgets/Form";
 
 type Primitive = string | number | boolean | undefined;
 
 interface FieldAdapter<TProps = any> {
     getDefaults: (key: string) => Record<string, Primitive | any[]>;
-    render: (key: string, value?: any, onChange?: (event: ChangeHandler) => void) => React.ReactNode;
+    render: (key: string, value?: any, onChange?: FieldOnChange) => React.ReactNode;
     __props: TProps;
 }
 

@@ -30,7 +30,7 @@ type ConverterKey = keyof typeof converter;
 type GridProps = {
     columns?: Column[];
     format?: { [key: string]: ConverterKey | ColumnFormatter };
-    dataStoragePath?: string;
+    dataStoragePath?: string;   
     dataArray?: RecordArray;
     header?: string | React.ReactNode;
     headerAction?: string | React.ReactNode;
@@ -51,10 +51,9 @@ type GridProps = {
                        setLoader?: React.Dispatch<React.SetStateAction<boolean>>
     ) => Promise<void> | void;
     // Form handlers for external control
-    onInsert?: (record: any) => Promise<void>;
-    onUpdate?: (record: any) => Promise<void>;
-    onDelete?: (record: any) => Promise<void>;
-    onFinally?: (record: any, action: 'create' | 'update' | 'delete') => Promise<void>;
+    onSave?: ({record, action, storagePath}: {record?: RecordProps, storagePath?: string, action: 'create' | 'update'}) => Promise<string | undefined>;
+    onDelete?: ({record}: {record?: RecordProps}) => Promise<void>;
+    onFinally?: ({record, action}: {record?: RecordProps, action: 'create' | 'update' | 'delete'}) => Promise<boolean>;
     onClick?: (record: RecordProps) => void;
     children?: React.ReactNode;
     scroll?: boolean;
@@ -68,7 +67,7 @@ type GridProps = {
 
 interface ModalProps {
     record?: RecordProps;
-    key?: string;
+    recordKey?: string;
     title?: string;
     dataStoragePath?: string;
 }
@@ -76,7 +75,7 @@ interface ModalProps {
 interface OpenModalParams {
     title?: string;
     data?: RecordProps;
-    key?: string;
+    recordKey?: string;
 }
 
 const Grid = (props: GridProps) => {
@@ -119,8 +118,7 @@ const GridArray = ({
                        setPrimaryKey    = undefined,
                        onLoadRecord     = undefined,
                        onDisplayBefore  = undefined,
-                       onInsert         = undefined,
-                       onUpdate         = undefined,
+                       onSave           = undefined,
                        onDelete         = undefined,
                        onFinally        = undefined,
                        onClick          = undefined,
@@ -234,16 +232,16 @@ const GridArray = ({
         {
             title       = undefined,
             data        = undefined,
-            key         = undefined
+            recordKey   = undefined
         }: OpenModalParams
     ): void => {
-        const formDataStoragePath = key 
-            ? `${dataStoragePath}/${key}`
+        const formDataStoragePath = recordKey 
+            ? `${dataStoragePath}/${recordKey}`
             : dataStoragePath;
 
         setModalData({
             record: data,
-            key: key,
+            recordKey: recordKey,
             title: title,
             dataStoragePath: formDataStoragePath
         });
@@ -252,11 +250,11 @@ const GridArray = ({
 
     const handleSave = useCallback(
         async (e: React.MouseEvent<HTMLButtonElement>) =>
-          formRef?.handleSave(e, !modalData?.key).then(success => {
+          formRef?.handleSave(e, !modalData?.recordKey).then(success => {
             success && closeModal();
             return success;
           }) ?? true,
-        [formRef, modalData?.key, closeModal]
+        [formRef, modalData?.recordKey, closeModal]
       );
 
     const handleDelete = useCallback(async (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -282,7 +280,7 @@ const GridArray = ({
             openModal({
                 title: modal?.setHeader?.(record) || "Modifica",
                 data: record,
-                key: record._key
+                recordKey: record._key
             });
         }
     }, [dataArray, onClick, canEdit, openModal, modal?.setHeader]);
@@ -356,8 +354,7 @@ const GridArray = ({
                     dataStoragePath={modalData.dataStoragePath}
                     defaultValues={modalData.record ?? {}}
                     log={log}
-                    onInsert={onInsert}
-                    onUpdate={onUpdate}
+                    onSave={onSave}
                     onDelete={onDelete}
                     onFinally={onFinally}
                     setPrimaryKey={setPrimaryKey}
@@ -367,15 +364,12 @@ const GridArray = ({
                 </Form>
             case "empty":
             default:
-                return <FormEnhancer 
-                    components={component} 
-                    record={modalData.record} 
-                    dataStoragePath={modalData.dataStoragePath} 
-                    parentName={modalData.key}
-                    formRef={setFormRefCallback}
-                />;
+                return component && React.cloneElement(component as React.ReactElement, {
+                    ...modalData,
+                    ref: setFormRefCallback
+                  });
         }
-    }, [modalData, modal?.mode, modal?.onOpen, children, log, onInsert, onUpdate, onDelete, onFinally, setPrimaryKey, setFormRefCallback]);
+    }, [modalData, modal?.mode, modal?.onOpen, children, log, onSave, onDelete, onFinally, setPrimaryKey, setFormRefCallback]);
     console.log("GRID: formRef", formRef);
     return (<>
         <Card
@@ -404,7 +398,7 @@ const GridArray = ({
                 title={modalData.title}
                 onClose={closeModal}
                 onSave={formRef?.handleSave ? handleSave : undefined}
-                onDelete={formRef?.handleDelete && modalData.key && (!allowedActions || allowedActions.includes("delete")) ? handleDelete : undefined}
+                onDelete={formRef?.handleDelete && modalData.recordKey && (!allowedActions || allowedActions.includes("delete")) ? handleDelete : undefined}
                 wrapClass={theme.Grid.Modal.wrapClass}
                 className={theme.Grid.Modal.className}
                 headerClass={theme.Grid.Modal.headerClass}

@@ -1,8 +1,7 @@
 import React from 'react';
 import {RecordProps} from "../integrations/google/firedatabase";
-import { FormRef } from './widgets/Form';
+import { FormRef, ChangeHandler } from './widgets/Form';
 import { getRecordValue } from '../libs/utils';
-import { ChangeHandler } from 'index';
 
 type FormProps = {
     name?: string;

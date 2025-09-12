@@ -7,10 +7,10 @@ import Percentage from "../Percentage";
 import { CropImage, FileNameEditor } from "./Crop";
 import { Label } from "./Input";
 import { Wrapper } from "../GridSystem";
-import { FormFieldProps, UIProps } from "../..";
 import { base64ToUrl, render2Base64 } from "../../../libs/utils";
 import { PLACEHOLDER_IMAGE } from "../../../Theme";
 import Icon from "../Icon";
+import { FormFieldProps, FieldOnChange, useFormContext } from "../../widgets/Form";
 
 export interface FileProps {
     key: string;
@@ -25,9 +25,11 @@ export interface FileProps {
 
 const useFileUpload = <T extends FileProps>(
     name: string,
-    value?: Array<T>,
-    onChange?: (e: { target: { name: string; value: any } }) => void
+    //value?: Array<T>,
+    onChange?: FieldOnChange,
+    wrapClass?: string
 ) => {
+    const { value, handleChange, formWrapClass } = useFormContext({name, onChange, wrapClass});
     const [files, setFiles] = useState<T[]>(value ?? []);
     const [currentFile, setCurrentFile] = useState<T | null>(null);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -37,7 +39,7 @@ const useFileUpload = <T extends FileProps>(
             const updatedFiles = prev.map(f =>
                 f.key === key ? { ...f, ...updates } : f
             );
-            onChange?.({ target: { name, value: updatedFiles } });
+            handleChange({ target: { name, value: updatedFiles } });
             return updatedFiles;
         });
     };
@@ -45,7 +47,7 @@ const useFileUpload = <T extends FileProps>(
     const removeFile = (key: string) => {
         setFiles(prev => {
             const updatedFiles = prev.filter(f => f.key !== key);
-            onChange?.({ target: { name, value: updatedFiles } });
+            handleChange({ target: { name, value: updatedFiles } });
             return updatedFiles;
         });
     };
@@ -60,7 +62,7 @@ const useFileUpload = <T extends FileProps>(
     const handleEdit = (index: number) => setCurrentFile(files[index]);
     const handleClose = () => setCurrentFile(null);
 
-    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleUploadChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFiles = Array.from(event.target.files || []);
 
         setFiles(prev => {
@@ -115,7 +117,8 @@ const useFileUpload = <T extends FileProps>(
         files,
         currentFile,
         fileInputRef,
-        handleChange,
+        formWrapClass,
+        handleUploadChange,
         handleUpload: () => fileInputRef.current?.click(),
         handleRemove: (key: string) => {
             removeFile(key);
@@ -265,7 +268,7 @@ export const getFileUrl = (file: FileProps, suffix: string = "origin"): string =
 
 export const UploadDocument = ({
     name,
-    value       = undefined,
+    //value       = undefined,
     onChange    = undefined,
     label       = undefined,
     required    = false,
@@ -278,10 +281,10 @@ export const UploadDocument = ({
     wrapClass   = undefined,
     className   = undefined,
 }: UploadDocumentProps) => {
-    const { files, currentFile, fileInputRef, handleChange, handleUpload, handleRemove, handleSave, handleEdit, handleClose } = useFileUpload<FileProps>(name, value, onChange);
+    const { files, currentFile, fileInputRef, formWrapClass, handleUploadChange, handleUpload, handleRemove, handleSave, handleEdit, handleClose } = useFileUpload<FileProps>(name, onChange, wrapClass);
 
     return (
-        <Wrapper className={wrapClass}>
+        <Wrapper className={formWrapClass}>
             {pre}
             <div className={className}>
                 <div className={`d-flex align-items-center ${label ? 'justify-content-between' : 'justify-content-end'}`} >
@@ -291,7 +294,7 @@ export const UploadDocument = ({
                         fileInputRef={fileInputRef}
                         accept={accept}
                         onUpload={handleUpload}
-                        onChange={handleChange}
+                        onChange={handleUploadChange}
                         label={"Upload"}
                         icon={"upload"}
                         required={required}
@@ -336,7 +339,7 @@ export const UploadDocument = ({
 
 export const UploadImage = ({
     name,
-    value           = undefined,
+    //value           = undefined,
     onChange        = undefined,
     label           = undefined,
     editable        = false,
@@ -351,7 +354,7 @@ export const UploadImage = ({
     wrapClass       = undefined,
     className       = undefined,
 }: UploadImageProps) => {
-    const { files, currentFile, fileInputRef, handleChange, handleUpload, handleRemove, handleSave, handleEdit, handleClose } = useFileUpload<FileProps>(name, value, onChange);
+    const { files, currentFile, fileInputRef, formWrapClass, handleUploadChange, handleUpload, handleRemove, handleSave, handleEdit, handleClose } = useFileUpload<FileProps>(name, onChange, wrapClass);
 
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
@@ -367,7 +370,7 @@ export const UploadImage = ({
     }
     
     return (
-        <Wrapper className={wrapClass}>
+        <Wrapper className={formWrapClass}>
             {pre}
             <Wrapper className={className}>
                 {label && <Label label={label} required={required} />}
@@ -409,7 +412,7 @@ export const UploadImage = ({
                         fileInputRef={fileInputRef}
                         accept={accept} 
                         onUpload={handleUpload}
-                        onChange={handleChange}
+                        onChange={handleUploadChange}
                         icon={"upload"}
                         required={required}
                         multiple={multiple}

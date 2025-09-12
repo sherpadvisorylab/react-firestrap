@@ -1,22 +1,10 @@
 import React from 'react';
-
-export type ChangeHandler = React.ChangeEvent<any> | { target: { name: string; value?: any } };
-
   
 export interface UIProps {
     pre?: React.ReactNode;
     post?: React.ReactNode;
     wrapClass?: string;
     className?: string;
-}
-
-export interface FormFieldProps extends UIProps {
-    name: string;
-    label?: string;
-    value?: any;
-    required?: boolean;
-    onChange?: (event: ChangeHandler) => void;
-    defaultValue?: any; //todo: da propagare per le select, checkbox e vrificare la copertura ovunque
 }
 
 export { default as Brand } from './blocks/Brand';
@@ -59,7 +47,6 @@ export { default as Menu } from './blocks/Menu';
 export { default as Form } from './widgets/Form';
 export { default as Grid } from './widgets/Grid';
 export { default as ImageEditor } from './widgets/ImageEditor';
-export { asForm} from './FormEnhancer';
 export { default as Component } from './Component';
 export { ComponentBlock } from './Component';
 export * from './Template';

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { FormFieldProps, Switch, TextArea, Wrapper, LoadingButton, Dropdown, DropdownItem, Select, Range } from '../..';
+import { Switch, TextArea, Wrapper, LoadingButton, Dropdown, DropdownItem, Select, Range } from '../..';
 import {useTheme} from "../../../Theme";
 import { AI, AIFetchConfig } from '../../../integrations/ai';
 import { PromptVariables } from 'conf/Prompt';
+import { FormFieldProps, useFormContext } from '../../widgets/Form';
 
 
 export interface PromptProps extends FormFieldProps {
@@ -39,7 +40,7 @@ export const Prompt = ({
 const PromptEditor = ({
     name,
     label         = undefined,
-    value         = undefined,
+    //value         = undefined,
     required      = false,
     onChange      = undefined,
     defaultValue  = undefined,
@@ -49,6 +50,8 @@ const PromptEditor = ({
     wrapClass     = undefined,
     className     = undefined
 }: Omit<PromptProps, "mode">) => {
+    const { value } = useFormContext({name});
+
     const theme = useTheme("prompt");
     const caption = label || name;
 
@@ -60,7 +63,6 @@ const PromptEditor = ({
                     <Switch 
                         name={name + ".prompt.enabled"} 
                         label={"prompt"} 
-                        value={value?.prompt?.enabled} 
                         defaultValue={defaultValue?.enabled}
                         onChange={onChange} />
                 </div>
@@ -68,13 +70,9 @@ const PromptEditor = ({
                     className={className || theme.Prompt.className}
                     name={name + (value?.prompt?.enabled ? ".prompt.value" : ".value")} 
                     label={value?.prompt?.enabled ? promptLabel + caption : caption}
-                    value={value?.prompt?.enabled ? value?.prompt?.value : value?.value} 
                     defaultValue={value?.prompt?.enabled && defaultValue?.value}
                     onChange={onChange} 
                     required={required} 
-                    pre={pre} 
-                    post={post} 
-                    wrapClass={wrapClass} 
                     rows={rows} />
             </div>
             {post}
@@ -85,7 +83,7 @@ const PromptEditor = ({
 const PromptRunner = ({
     name,
     label,
-    value,
+    //value,
     required,
     onChange,
     defaultValue,
@@ -95,6 +93,8 @@ const PromptRunner = ({
     wrapClass,
     className
 }: Omit<PromptProps, "mode">) => {
+    const { value, handleChange } = useFormContext({name});
+
     const theme = useTheme("prompt");
     const caption = label || name;
     const [prompt, setPrompt] = useState(defaultValue?.enabled || false);
@@ -113,7 +113,6 @@ const PromptRunner = ({
                     className={(className || theme.Prompt.className)}
                     name={name + ".prompt.value"} 
                     label={promptLabel + caption}
-                    value={value?.prompt?.value} 
                     defaultValue={defaultValue?.value}
                     onChange={onChange} 
                     required={true} 
@@ -124,7 +123,6 @@ const PromptRunner = ({
                         }}
                     >
                         <DropdownItem><Select name={name + ".prompt.role"} label="Role" 
-                            value={value?.prompt?.role} 
                             defaultValue={defaultValue?.role} 
                             onChange={onChange}
                             options={AI.getRoles()} 
@@ -134,7 +132,6 @@ const PromptRunner = ({
                             }}
                         /></DropdownItem>
                         <DropdownItem><Select name={name + ".prompt.language"} label="Language" 
-                            value={value?.prompt?.language} 
                             defaultValue={defaultValue?.language} 
                             onChange={onChange}
                             options={AI.getLangs()} 
@@ -144,7 +141,6 @@ const PromptRunner = ({
                             }}
                         /></DropdownItem>
                         <DropdownItem><Select name={name + ".prompt.voice"} label="Voice" 
-                            value={value?.prompt?.voice} 
                             defaultValue={defaultValue?.voice} 
                             onChange={onChange}
                             options={AI.getVoices()} 
@@ -154,7 +150,6 @@ const PromptRunner = ({
                             }}
                         /></DropdownItem>
                         <DropdownItem><Select name={name + ".prompt.style"} label="Style" 
-                            value={value?.prompt?.style} 
                             defaultValue={defaultValue?.style} 
                             onChange={onChange}
                             options={AI.getStyles()} 
@@ -164,7 +159,6 @@ const PromptRunner = ({
                             }}
                         /></DropdownItem>
                         <DropdownItem><Select name={name + ".prompt.model"} label="Model" 
-                            value={value?.prompt?.model} 
                             defaultValue={defaultValue?.model} 
                             onChange={onChange}
                             options={AI.getModels()} 
@@ -174,7 +168,6 @@ const PromptRunner = ({
                             }}
                         /></DropdownItem>
                         <DropdownItem><Range name={name + ".prompt.temperature"} label="Temperature" 
-                            value={value?.prompt?.temperature} 
                             defaultValue={defaultValue?.temperature} 
                             onChange={onChange}
                             min={0} 
@@ -182,24 +175,23 @@ const PromptRunner = ({
                             step={0.1} 
                         /></DropdownItem>
                     </Dropdown>}
-                    wrapClass={wrapClass + (prompt ? "" : " d-none")} 
+                    wrapClass={prompt ? "" : " d-none"} 
                     rows={rows} />
                 <TextArea 
                     className={(className || theme.Prompt.className)}
                     name={name + ".value"} 
                     label={caption}
-                    value={value?.value} 
                     onChange={onChange} 
                     required={required} 
                     post={<LoadingButton icon="stars" onClick={async () => {
-                        onChange?.({
+                        handleChange?.({
                             target: {
                                 name: name + ".value",
                                 value: await runPrompt(value?.prompt)
                             }
                         });
                     }} />} 
-                    wrapClass={wrapClass + (prompt ? " d-none" : "")} 
+                    wrapClass={prompt ? " d-none" : ""} 
                     rows={rows} />
             </div>
             {post}
@@ -210,7 +202,7 @@ const PromptRunner = ({
 const PromptDisabled = ({
     name,
     label,
-    value,
+    //value,
     required,
     onChange,
     rows,
@@ -220,6 +212,7 @@ const PromptDisabled = ({
     className
 }: Omit<PromptProps, "mode">) => {
     const theme = useTheme("prompt");
+
     return (
         <Wrapper className={wrapClass || theme.Prompt.wrapClass}>
             {pre}
@@ -227,10 +220,8 @@ const PromptDisabled = ({
                 className={(className || theme.Prompt.className)}
                 name={name + ".value"} 
                 label={label}
-                value={value?.value} 
                 onChange={onChange} 
                 required={required} 
-                wrapClass={wrapClass} 
                 rows={rows} 
             />
             {post}
