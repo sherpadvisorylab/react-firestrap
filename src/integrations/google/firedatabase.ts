@@ -7,6 +7,7 @@ import {consoleLog} from "../../constant";
 import {Config, onConfigChange} from "../../Config";
 import init from "./firebase";
 import { getSafeAuth } from "./firebase";
+import { cleanRecord } from "../../libs/utils";
 
 type FirebasePrimitive = string | number | boolean | null;
 type FirebaseAny = FirebasePrimitive | object | any[];
@@ -162,6 +163,27 @@ const db = {
             consoleLog(`Data successfully updated in Firebase for ${path}`);
         } catch (error) {
             handleError(`updating data in Firebase for ${path}`, error, exception);
+        }
+    },
+    setChunks: async (path: string, data: any, chunkSize: number = 1000, purge: boolean = false, exception: boolean = false): Promise<void> => {
+        const dbRef = getDatabase().ref(path);
+        try {
+            if (purge) {
+                await dbRef.remove();
+                consoleLog(`Purged existing data at ${path}`);
+            }
+            const entries = Object.entries(cleanRecord(data));
+            for (let i = 0; i < entries.length; i += chunkSize) {
+                const chunk = entries.slice(i, i + chunkSize);
+                const chunkData = Object.fromEntries(chunk);
+                const chunkNumber = Math.floor(i / chunkSize);
+        
+                await dbRef.update(chunkData);
+                consoleLog(`${path}: Chunk ${chunkNumber + 1}/${Math.ceil(entries.length / chunkSize)} saved (${Object.keys(chunkData).length} items)`);
+            }
+            consoleLog(`Data successfully set in chunks in Firebase for ${path}`);
+        } catch (error) {
+            handleError(`setting data in chunks in Firebase for ${path}`, error, exception);
         }
     },
     remove: async (path: string, exception: boolean = false): Promise<void> => {

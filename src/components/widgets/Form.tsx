@@ -1,7 +1,7 @@
-    import React, { createContext, useContext, useEffect, useState, forwardRef, useImperativeHandle, useRef, useCallback } from 'react';
+    import React, { createContext, useContext, useEffect, useState, forwardRef, useImperativeHandle, useRef, useCallback, useMemo } from 'react';
     import { useLocation } from "react-router-dom";
     import { Wrapper } from "../ui/GridSystem";
-    import { trimSlash } from "../../libs/utils";
+    import { trimSlash, cleanRecord } from "../../libs/utils";
     import db from "../../libs/database";
     import Card from "../ui/Card";
     import { BackLink, LoadingButton } from "../ui/Buttons";
@@ -17,8 +17,8 @@
 
     type FormHandleChange = (event: ChangeHandler) => void;
     interface FormProviderProps {
-        record: any;
-        setRecord: React.Dispatch<React.SetStateAction<any>>;
+        record: RecordProps | undefined;
+        setRecord: React.Dispatch<React.SetStateAction<RecordProps | undefined>>;
         wrapClass?: string;
     }
     export type FieldOnChange = (params: {event: ChangeHandler, name: string, value: any, record: RecordProps, onChange: FormHandleChange}) => void;
@@ -144,10 +144,12 @@
 
 
     interface BaseFormProps {
+        aspect?: "card" | "empty";
         header?: React.ReactNode;
         footer?: React.ReactNode;
         dataStoragePath?: string;
-        onLoad?: (record: any) => void;
+        handlers?: FormHandlers;
+        onLoad?: (record: RecordProps) => void;
         onSave?: ({record, action, storagePath}: {record?: RecordProps, storagePath?: string, action: 'create' | 'update'}) => Promise<string | undefined>;
         onDelete?: ({record}: {record?: RecordProps}) => Promise<void>;
         onFinally?: ({record, action}: {record?: RecordProps, action: 'create' | 'update' | 'delete'}) => Promise<boolean>;
@@ -162,7 +164,7 @@
     }
     interface FormDefaultProps extends BaseFormProps {
         children: React.ReactNode | ((args: { record: RecordProps | undefined}) => React.ReactNode);
-        defaultValues?: any;
+        defaultValues?: RecordProps;
     }
 
     interface FormModelProps extends BaseFormProps {
@@ -172,7 +174,7 @@
 
     interface FormProps extends BaseFormProps {
         children?: React.ReactNode | ((fields: FormTree) => React.ReactNode);
-        defaultValues?: any;
+        defaultValues?: RecordProps;
     }
 
     export interface FormRef {
@@ -180,24 +182,23 @@
         handleDelete: (e: React.MouseEvent<HTMLButtonElement>) => Promise<boolean>;
         getRecord: () => RecordProps | undefined;
     }
+    type FormHandlers = Partial<FormRef>;
 
     function Form(props: FormProps, ref?: React.Ref<FormRef>) {
-        const { defaultValues, children, ...rest } = props;
-
-        const formChildren = children as React.ReactNode;
+        const { dataStoragePath, handlers, defaultValues, children, ...rest } = props;
 
         console.log("Form", defaultValues, children, rest);
-        return defaultValues
-            ? <FormData children={formChildren} defaultValues={defaultValues} {...rest} ref={ref} />
-            : <FormDatabase children={formChildren} defaultValues={defaultValues} {...rest} ref={ref} />;
+        return defaultValues || (handlers && !dataStoragePath)
+            ? <FormData children={children} defaultValues={defaultValues} handlers={handlers} dataStoragePath={dataStoragePath} {...rest} ref={ref} />
+            : <FormDatabase children={children} defaultValues={defaultValues} handlers={handlers} dataStoragePath={dataStoragePath} {...rest} ref={ref} />;
     }
 
     export const FormDatabase = forwardRef<FormRef, FormDefaultProps>((props, ref) => {
         const { dataStoragePath, defaultValues, ...rest } = props;
         const location = useLocation();
 
-        const dbStoragePath = props.dataStoragePath ?? trimSlash(location.pathname);
-        const [record, setRecord] = useState<any>(undefined);
+        const dbStoragePath = dataStoragePath ?? trimSlash(location.pathname);
+        const [record, setRecord] = useState<RecordProps | undefined>(undefined);
 
         useEffect(() => {
             db.read(dbStoragePath).then(data => {
@@ -223,9 +224,11 @@
 
     const FormData = forwardRef<FormRef, FormDefaultProps>(({
         children,
+        aspect = undefined,
         header = undefined,
         footer = undefined,
         dataStoragePath = undefined,
+        handlers = undefined,
         defaultValues = undefined,
         onLoad = undefined,
         onSave = undefined,
@@ -262,66 +265,7 @@
             }
         }, [showNotice]);
 
-    /*
-        const handleChange: FormHandleChange = useCallback((event) => {
-            const path = event.target.name.split(".");
-            const value = event.target.value;
         
-            setRecord(prev => {
-                const updated = { ...prev };
-                let target = updated;
-        
-                for (let i = 0; i < path.length - 1; i++) {
-                    if (!target[path[i]]) {
-                        if(path.length > i + 1 && !isNaN(Number(path[i + 1]))) {
-                            target[path[i]] = Array.from({ length: Number(path[i + 1]) + 1 }, () => ({}));
-                        } else {
-                            target[path[i]] = {};
-                        }
-                    }
-                    target = target[path[i]];
-                }
-
-                const lastKey = path[path.length - 1];
-                if (value == null || value === "") {
-                    if (Array.isArray(target) && !isNaN(Number(lastKey))) {
-                        target.splice(Number(lastKey), 1);
-                    } else {
-                        delete (target as Record<string, any>)[lastKey];
-                    }
-                } else {
-                    target[lastKey] = value;
-                }
-                
-                console.log("FORM handleChange", path, value, updated);
-
-                return updated;
-            });
-        }, []);
-    */
-        const cleanedRecord = (record: RecordProps | undefined): RecordProps => {
-            const cleaned: RecordProps = {};
-
-            if (!record) return cleaned;
-            if (record instanceof File) return {
-                name: record.name,
-                type: record.type,
-                size: record.size,
-                lastModified: record.lastModified
-            };
-            for (const [k, v] of Object.entries(record)) {
-                if (Array.isArray(v)) {
-                    cleaned[k] = v
-                    .map(item => typeof item === 'object' ? cleanedRecord(item) : item)
-                    .filter(item => item !== undefined);
-                } else if(v && typeof v === 'object') {
-                    cleaned[k] = cleanedRecord(v);
-                } else if (v !== undefined) {
-                    cleaned[k] = v;
-                }
-            }
-            return cleaned;
-        }
 
         const handleSave = useCallback(async (e: React.MouseEvent<HTMLButtonElement>, newStoragePath?: string): Promise<boolean> => {
             e.preventDefault();
@@ -341,7 +285,7 @@
                 }) 
                 : newStoragePath ?? dataStoragePath;
 
-            recordStoragePath && await db.set(recordStoragePath, cleanedRecord(recordRef.current));
+            recordStoragePath && await db.set(recordStoragePath, cleanRecord(recordRef.current));
             return await handleFinally(newStoragePath ? "create" : "update");
         }, [dataStoragePath, onSave, onFinally, showNotice]);
 
@@ -368,21 +312,59 @@
         }, [log, dataStoragePath, onFinally, notice]);
 
         useImperativeHandle(ref, () => ({
-            handleSave: async (e: React.MouseEvent<HTMLButtonElement>, generateKey?: boolean) => {
+            handleSave: handlers?.handleSave ?? (async (e: React.MouseEvent<HTMLButtonElement>, generateKey?: boolean) => {
                 const storagePath = generateKey && recordRef.current
                     ? dataStoragePath + '/' + (setPrimaryKey?.(recordRef.current) ?? Date.now())
                     : undefined;
                 return handleSave(e, storagePath);
-            },
-            handleDelete,
-            getRecord: () => recordRef.current
-        }), [handleSave, handleDelete]);
+            }),
+            handleDelete: handlers?.handleDelete ?? handleDelete,
+            getRecord: handlers?.getRecord ?? (() => recordRef.current)
+        }), [handleSave, handleDelete, handlers]);
 
         console.log("FORMMMMMM", defaultValues, record, recordRef.current, "REFF", ref);
 
         const components = <FormContext.Provider value={{ record, setRecord, wrapClass: "mb-3" }}>
                                 {typeof children === 'function' ? children({record}) : children}
                             </FormContext.Provider>;
+
+
+        const displayComponent = useMemo(() => {
+            if(!aspect && ref) return components;
+
+            switch (aspect) {
+                case "empty":
+                    return components;
+                case "card":
+                default:
+                    return <Card
+                        header={header || <Breadcrumbs pre={(record?._key ? "Update " : "Insert ")} path={dataStoragePath ?? "Record"} />}
+                        footer={(footer || dataStoragePath || onSave || onDelete || showBack) && <>
+                            {footer}
+                            {(onSave || dataStoragePath) && <LoadingButton
+                                className={theme.Form.buttonSaveClass}
+                                label={"Save"}
+                                onClick={e => handleSave(e)}
+                            />}
+                            {(onDelete || dataStoragePath) && record?._key && <LoadingButton
+                                className={theme.Form.buttonDeleteClass}
+                                label={"Delete"}
+                                onClick={handleDelete}
+                            />}
+                            {showBack && <BackLink
+                                className={theme.Form.buttonBackClass}
+                                label={"Back"}
+                            />}
+                        </>}
+                        headerClass={headerClass || theme.Form.Card.headerClass}
+                        bodyClass={className || theme.Form.Card.bodyClass}
+                        footerClass={footerClass || theme.Form.Card.footerClass}
+                    >
+                        {components}
+                    </Card>;
+            }
+        }, [aspect, header, footer, onSave, onDelete, showBack, record, components, ref]);
+
         return (
             <Wrapper className={wrapClass || theme.Form.wrapClass}>
                 {notification && (
@@ -390,34 +372,7 @@
                         {notification.message}
                     </Alert>
                 )}
-                {ref 
-                ? components
-                : <Card
-                    header={header || <Breadcrumbs pre={(record?._key ? "Update " : "Insert ")} path={dataStoragePath ?? "Record"} />}
-                    footer={(footer || dataStoragePath || onSave || onDelete || showBack) && <>
-                        {footer}
-                        {(onSave || dataStoragePath) && !record?._key && <LoadingButton
-                            className={theme.Form.buttonSaveClass}
-                            label={"Save"}
-                            onClick={e => handleSave(e)}
-                        />}
-                        {(onDelete || dataStoragePath) && record?._key && <LoadingButton
-                            className={theme.Form.buttonDeleteClass}
-                            label={"Delete"}
-                            onClick={handleDelete}
-                        />}
-                        {showBack && <BackLink
-                            className={theme.Form.buttonBackClass}
-                            label={"Back"}
-                        />}
-                    </>}
-                    headerClass={headerClass || theme.Form.Card.headerClass}
-                    bodyClass={className || theme.Form.Card.bodyClass}
-                    footerClass={footerClass || theme.Form.Card.footerClass}
-                >
-                    {components}
-                </Card>
-                }
+                {displayComponent}
             </Wrapper>
         )
     });

@@ -375,3 +375,29 @@ export const getRecordValue = (record?: RecordProps, name?: string): any => {
   
     return name.split('.').reduce((acc: any, part: string) => acc?.[part], record);
 };
+
+export const cleanRecord = (record: RecordProps | undefined): RecordProps => {
+    const cleaned: RecordProps = {};
+
+    if (!record) return cleaned;
+    if (record instanceof File) return {
+        name: record.name,
+        type: record.type,
+        size: record.size,
+        lastModified: record.lastModified
+    };
+    for (const [k, v] of Object.entries(record)) {
+        if (!k) continue;
+        
+        if (Array.isArray(v)) {
+            cleaned[k] = v
+            .map(item => typeof item === 'object' ? cleanRecord(item) : item)
+            .filter(item => item !== undefined);
+        } else if(v && typeof v === 'object') {
+            cleaned[k] = cleanRecord(v);
+        } else if (v !== undefined) {
+            cleaned[k] = v;
+        }
+    }
+    return cleaned;
+}

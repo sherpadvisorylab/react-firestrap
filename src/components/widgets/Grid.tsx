@@ -250,11 +250,11 @@ const GridArray = ({
 
     const handleSave = useCallback(
         async (e: React.MouseEvent<HTMLButtonElement>) =>
-          formRef?.handleSave(e, !modalData?.recordKey).then(success => {
+          formRef?.handleSave(e, modal?.mode !== "empty" && !modalData?.recordKey).then(success => {
             success && closeModal();
             return success;
           }) ?? true,
-        [formRef, modalData?.recordKey, closeModal]
+        [formRef, modalData?.recordKey, closeModal, modal?.mode]
       );
 
     const handleDelete = useCallback(async (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -351,6 +351,7 @@ const GridArray = ({
         switch (modal?.mode || theme.Grid.Modal.mode) {
             case "form":
                 return <Form
+                    aspect="empty"
                     dataStoragePath={modalData.dataStoragePath}
                     defaultValues={modalData.record ?? {}}
                     log={log}
@@ -364,10 +365,11 @@ const GridArray = ({
                 </Form>
             case "empty":
             default:
-                return component && React.cloneElement(component as React.ReactElement, {
+                return component && React.isValidElement(component) && React.cloneElement(component as React.ReactElement, {
                     ...modalData,
+                    ...component?.props,
                     ref: setFormRefCallback
-                  });
+                });
         }
     }, [modalData, modal?.mode, modal?.onOpen, children, log, onSave, onDelete, onFinally, setPrimaryKey, setFormRefCallback]);
     console.log("GRID: formRef", formRef);
