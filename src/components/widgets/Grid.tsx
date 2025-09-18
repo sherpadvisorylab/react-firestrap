@@ -41,7 +41,7 @@ type GridProps = {
         size?: "sm" | "md" | "lg" | "xl" | "fullscreen";
         position?: "center" | "top" | "left" | "right" | "bottom";
         setHeader?: (record?: RecordProps) => string;
-        onOpen?: (data?: ModalProps) => React.ReactNode;
+        onOpen?: ({record}: {record?: RecordProps}) => React.ReactNode;
     };
     pagination?: PaginationParams
     setPrimaryKey?: (record: RecordProps) => string;
@@ -52,7 +52,7 @@ type GridProps = {
     ) => Promise<void> | void;
     // Form handlers for external control
     onSave?: ({record, action, storagePath}: {record?: RecordProps, storagePath?: string, action: 'create' | 'update'}) => Promise<string | undefined>;
-    onDelete?: ({record}: {record?: RecordProps}) => Promise<void>;
+    onDelete?: ({record}: {record?: RecordProps}) => Promise<string | undefined>;
     onFinally?: ({record, action}: {record?: RecordProps, action: 'create' | 'update' | 'delete'}) => Promise<boolean>;
     onClick?: (record: RecordProps) => void;
     children?: React.ReactNode;
@@ -64,19 +64,6 @@ type GridProps = {
     log?: boolean;
     wrapClass?: string;
 };
-
-interface ModalProps {
-    record?: RecordProps;
-    recordKey?: string;
-    title?: string;
-    dataStoragePath?: string;
-}
-
-interface OpenModalParams {
-    title?: string;
-    data?: RecordProps;
-    recordKey?: string;
-}
 
 const Grid = (props: GridProps) => {
     return props.dataArray === undefined
@@ -134,8 +121,7 @@ const GridArray = ({
     const theme = useTheme("grid");
 
     const [loader, setLoader] = useState(false);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [modalData, setModalData] = useState<ModalProps | undefined>(undefined);
+    const [modalData, setModalData] = useState<RecordProps | undefined>(undefined);
     const [formRef, setFormRef] = useState<FormRef | undefined>(undefined);
 
     const [beforeRecords, setBeforeRecords] = useState<RecordArray | undefined>(undefined);
@@ -223,47 +209,9 @@ const GridArray = ({
     console.log("GRID", dataArray, dataStoragePath, body, records);
 
     const closeModal = useCallback(() => {
-        setIsModalOpen(false);
         setModalData(undefined);
         setFormRef(undefined);
     }, []);
-
-    const openModal = useCallback((
-        {
-            title       = undefined,
-            data        = undefined,
-            recordKey   = undefined
-        }: OpenModalParams
-    ): void => {
-        const formDataStoragePath = recordKey 
-            ? `${dataStoragePath}/${recordKey}`
-            : dataStoragePath;
-
-        setModalData({
-            record: data,
-            recordKey: recordKey,
-            title: title,
-            dataStoragePath: formDataStoragePath
-        });
-        setIsModalOpen(true);
-    }, [dataStoragePath]);
-
-    const handleSave = useCallback(
-        async (e: React.MouseEvent<HTMLButtonElement>) =>
-          formRef?.handleSave(e, modal?.mode !== "empty" && !modalData?.recordKey).then(success => {
-            success && closeModal();
-            return success;
-          }) ?? true,
-        [formRef, modalData?.recordKey, closeModal, modal?.mode]
-      );
-
-    const handleDelete = useCallback(async (e: React.MouseEvent<HTMLButtonElement>) => {
-        if (!formRef) return;
-        
-        await formRef.handleDelete(e);
-        
-        closeModal();
-    }, [formRef, closeModal]);
 
     const handleClick = useCallback((index: number) => {
         const data = dataArray?.[index];
@@ -277,13 +225,9 @@ const GridArray = ({
         onClick?.(record);
 
         if (canEdit && record?._key) {
-            openModal({
-                title: modal?.setHeader?.(record) || "Modifica",
-                data: record,
-                recordKey: record._key
-            });
+            setModalData(record);
         }
-    }, [dataArray, onClick, canEdit, openModal, modal?.setHeader]);
+    }, [dataArray, onClick, canEdit, setModalData]);
 
     const setFormRefCallback = useCallback((ref: FormRef | null) => {
         setFormRef(ref ?? undefined);
@@ -298,16 +242,12 @@ const GridArray = ({
         return (
             <button 
                 className="btn btn-primary" 
-                onClick={() => {
-                    openModal({
-                        title: modal?.setHeader?.() || "Aggiungi",
-                    })
-                }}
+                onClick={() => setModalData({})}
             >
                 Aggiungi
             </button>
         );
-    }, [children, allowedActions, openModal, modal?.setHeader]);
+    }, [children, allowedActions, setModalData]);
 
     const displayComponent = useMemo(() => {
         switch (type) {
@@ -347,18 +287,34 @@ const GridArray = ({
     const modalComponent = useMemo((): React.ReactNode => {
         if (!modalData) return null;
         
-        const component = modal?.onOpen?.(modalData) || children;
+        const component = modal?.onOpen?.({record: modalData}) || children;
+        console.log("GRID: MODDDDDDDDDDDDDDDDDDDDDDDDDDDDDDAAALL", modal);
         switch (modal?.mode || theme.Grid.Modal.mode) {
             case "form":
                 return <Form
                     aspect="empty"
-                    dataStoragePath={modalData.dataStoragePath}
-                    defaultValues={modalData.record ?? {}}
+                    dataStoragePath={dataStoragePath}
+                    defaultValues={modalData ?? {}}
                     log={log}
-                    onSave={onSave}
-                    onDelete={onDelete}
-                    onFinally={onFinally}
-                    setPrimaryKey={setPrimaryKey}
+                    onSave={async ({record, action, storagePath: originalStoragePath }) => {
+                        const storagePath = !record?._key  
+                            ? `${originalStoragePath}/${setPrimaryKey?.(record ?? {}) ?? Date.now()}` 
+                            : `${originalStoragePath}/${record?._key}`;
+
+                        console.log("GRID: onSave", record, action, storagePath, dataStoragePath, originalStoragePath);
+
+                        return onSave?.({record, action, storagePath}) ?? storagePath;
+                    }}
+                    onDelete={async ({record}) => {
+                        const storagePath = `${dataStoragePath}/${record?._key}`;
+                        return onDelete?.({record}) ?? storagePath;
+                    }}
+                    onFinally={async ({record, action}) => {
+                        const success = await onFinally?.({record, action}) ?? true;
+                        
+                        success && closeModal();
+                        return success;
+                    }}
                     ref={setFormRefCallback}
                 >
                     {component}
@@ -366,13 +322,17 @@ const GridArray = ({
             case "empty":
             default:
                 return component && React.isValidElement(component) && React.cloneElement(component as React.ReactElement, {
-                    ...modalData,
+                    record: modalData,
+                    dataStoragePath: dataStoragePath,
                     ...component?.props,
                     ref: setFormRefCallback
                 });
         }
-    }, [modalData, modal?.mode, modal?.onOpen, children, log, onSave, onDelete, onFinally, setPrimaryKey, setFormRefCallback]);
-    console.log("GRID: formRef", formRef);
+    }, [modalData, modal?.mode, modal?.onOpen, children, log, onSave, onDelete, onFinally, setPrimaryKey, setFormRefCallback, dataStoragePath]);
+    
+    const currentRecord = formRef?.getRecord();
+    console.log("GRID: formRef", formRef, modalData, currentRecord);
+
     return (<>
         <Card
             wrapClass={wrapClass}
@@ -393,14 +353,17 @@ const GridArray = ({
             showLoader={loader || showLoader}
             showArrow={theme.Grid.Card.showArrow}
         >{displayComponent}</Card>
-        {modalData && isModalOpen && (
+        {modalData && (
             <Modal
                 size={modal?.size || theme.Grid.Modal.size}
                 position={modal?.position || theme.Grid.Modal.position}
-                title={modalData.title}
+                title={modal?.setHeader?.(currentRecord) || (currentRecord?._key ? "Modifica" : "Aggiungi")}
                 onClose={closeModal}
-                onSave={formRef?.handleSave ? handleSave : undefined}
-                onDelete={formRef?.handleDelete && modalData.recordKey && (!allowedActions || allowedActions.includes("delete")) ? handleDelete : undefined}
+                onSave={formRef?.handleSave}
+                onDelete={currentRecord?._key && (!allowedActions || allowedActions.includes("delete")) 
+                    ? formRef?.handleDelete 
+                    : undefined
+                }
                 wrapClass={theme.Grid.Modal.wrapClass}
                 className={theme.Grid.Modal.className}
                 headerClass={theme.Grid.Modal.headerClass}

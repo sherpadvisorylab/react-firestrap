@@ -12,7 +12,7 @@ interface ModalProps extends UIProps {
     footer?: React.ReactNode | false;
     onClose?: () => void;
     onSave?: (e: React.MouseEvent<HTMLButtonElement>) => Promise<boolean>;
-    onDelete?: (e: React.MouseEvent<HTMLButtonElement>) => Promise<void>;
+    onDelete?: (e: React.MouseEvent<HTMLButtonElement>) => Promise<boolean>;
     size?: "sm" | "md" | "lg" | "xl" | "fullscreen";
     position?: "center" | "top" | "left" | "right" | "bottom";
     buttonFullscreen?: boolean;
@@ -26,8 +26,8 @@ interface ModalProps extends UIProps {
 interface ModalYesNoProps {
     title?: string;
     children: React.ReactNode;
-    onYes?: (e: React.MouseEvent<HTMLButtonElement>) => Promise<void>;
-    onNo?: (e: React.MouseEvent<HTMLButtonElement>) => Promise<void>;
+    onYes?: (e: React.MouseEvent<HTMLButtonElement>) => Promise<boolean>;
+    onNo?: (e: React.MouseEvent<HTMLButtonElement>) => Promise<boolean>;
     onClose?: () => void;
 }
 

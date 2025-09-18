@@ -50,7 +50,7 @@
     }
 
     const FormContext = createContext<FormProviderProps | null>(null);
-
+    
 
 
 
@@ -151,9 +151,8 @@
         handlers?: FormHandlers;
         onLoad?: (record: RecordProps) => void;
         onSave?: ({record, action, storagePath}: {record?: RecordProps, storagePath?: string, action: 'create' | 'update'}) => Promise<string | undefined>;
-        onDelete?: ({record}: {record?: RecordProps}) => Promise<void>;
+        onDelete?: ({record}: {record?: RecordProps}) => Promise<string | undefined>;
         onFinally?: ({record, action}: {record?: RecordProps, action: 'create' | 'update' | 'delete'}) => Promise<boolean>;
-        setPrimaryKey?: (record: RecordProps) => string;
         log?: boolean;
         showNotice?: boolean;
         showBack?: boolean;
@@ -178,7 +177,7 @@
     }
 
     export interface FormRef {
-        handleSave: (e: React.MouseEvent<HTMLButtonElement>, generateKey?: boolean) => Promise<boolean>;
+        handleSave: (e: React.MouseEvent<HTMLButtonElement>) => Promise<boolean>;
         handleDelete: (e: React.MouseEvent<HTMLButtonElement>) => Promise<boolean>;
         getRecord: () => RecordProps | undefined;
     }
@@ -234,7 +233,6 @@
         onSave = undefined,
         onDelete = undefined,
         onFinally = undefined,
-        setPrimaryKey = undefined,
         log = false,
         showNotice = true,
         showBack = false,
@@ -267,7 +265,7 @@
 
         
 
-        const handleSave = useCallback(async (e: React.MouseEvent<HTMLButtonElement>, newStoragePath?: string): Promise<boolean> => {
+        const handleSave = useCallback(async (e: React.MouseEvent<HTMLButtonElement>): Promise<boolean> => {
             e.preventDefault();
                     
             showNotice && setNotification(undefined);
@@ -276,17 +274,17 @@
                 showNotice && setNotification({ message: "Please fill in all required fields", type: "warning" });
                 //return false;
             }
-
+            const action = recordRef.current?._key ? "update" : "create";
             const recordStoragePath = onSave 
                 ? await onSave({
                     record: recordRef.current, 
-                    action: newStoragePath ? "create" : "update", 
-                    storagePath: newStoragePath ?? dataStoragePath
+                    action: action, 
+                    storagePath: dataStoragePath
                 }) 
-                : newStoragePath ?? dataStoragePath;
+                : dataStoragePath;
 
             recordStoragePath && await db.set(recordStoragePath, cleanRecord(recordRef.current));
-            return await handleFinally(newStoragePath ? "create" : "update");
+            return await handleFinally(action);
         }, [dataStoragePath, onSave, onFinally, showNotice]);
 
         const handleDelete = useCallback(async (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -312,12 +310,7 @@
         }, [log, dataStoragePath, onFinally, notice]);
 
         useImperativeHandle(ref, () => ({
-            handleSave: handlers?.handleSave ?? (async (e: React.MouseEvent<HTMLButtonElement>, generateKey?: boolean) => {
-                const storagePath = generateKey && recordRef.current
-                    ? dataStoragePath + '/' + (setPrimaryKey?.(recordRef.current) ?? Date.now())
-                    : undefined;
-                return handleSave(e, storagePath);
-            }),
+            handleSave: handlers?.handleSave ?? handleSave,
             handleDelete: handlers?.handleDelete ?? handleDelete,
             getRecord: handlers?.getRecord ?? (() => recordRef.current)
         }), [handleSave, handleDelete, handlers]);
