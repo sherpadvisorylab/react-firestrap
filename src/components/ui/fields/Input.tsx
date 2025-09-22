@@ -1,8 +1,8 @@
-import React, {ChangeEvent, useId, useState} from 'react';
+import React, { useId, useState} from 'react';
 import {isEmpty, isInteractiveElement} from "../../../libs/utils";
 import {Wrapper} from "../GridSystem";
 import { ActionButton, Icon, UIProps } from '../../..';
-import { FormFieldProps, useFormContext } from '../../widgets/Form';
+import {FormFieldProps, useFormContext, useHandleDrop } from '../../widgets/Form';
 
 interface BaseInputProps extends FormFieldProps{
     placeholder?: string;
@@ -43,11 +43,17 @@ export interface ListGroupProps extends UIProps {
     onClick?: (event: React.MouseEvent<HTMLDivElement>, index: number) => void;
     label?: string;
     draggable?: boolean;
+    dragPrefix?: string;
+    dragSuffix?: string;
     actives?: number[];
     disables?: number[];
     loaders?: number[];
     itemClass?: string;
 }
+
+
+
+
 
 export const Input = ({
     name,
@@ -71,6 +77,8 @@ export const Input = ({
 }: BaseInputProps) => {
     const { value, handleChange, formWrapClass } = useFormContext({name, onChange, wrapClass});
     const id = useId();
+    const handleDrop = useHandleDrop({ name, value, handleChange });
+
     return (
         <Wrapper className={formWrapClass}>
             {label && <Label label={label} required={required} htmlFor={id} />}
@@ -89,6 +97,8 @@ export const Input = ({
                     min={min}
                     max={max}
                     step={step}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={handleDrop}
                 />
                 {post && <span className="input-group-text">{post}</span>}
             </Wrapper>
@@ -234,40 +244,7 @@ export const TextArea = ({
     const { value, handleChange, formWrapClass } = useFormContext({name, onChange, wrapClass});
 
     const id = useId();
-    const handleDrop = React.useCallback((e: React.DragEvent<HTMLTextAreaElement>) => {
-        e.preventDefault();
-        
-        const target = e.target as HTMLTextAreaElement;
-        const raw = e.dataTransfer.getData('text/plain').replace(/{{|}}/g, '');
-        const text = ` {${raw}} `;
-        
-        target.focus();
-        
-        // Get caret position using modern or fallback API
-        const caretPosition = (() => {
-            const position = document.caretPositionFromPoint?.(e.clientX, e.clientY)
-                ?? (document as any).caretRangeFromPoint?.(e.clientX, e.clientY);
-            return position && 'offset' in position ? position.offset : target.value.length;
-        })();
-        
-        // Create new value with inserted text
-        const newValue = (value ?? '').slice(0, caretPosition) + text + (value ?? '').slice(caretPosition);
-        
-        // Trigger onChange if provided
-        handleChange?.({
-            target: {
-                value: newValue.trim(),
-                name
-            }
-        } as ChangeEvent<HTMLTextAreaElement>);
-        
-        // Set cursor position after inserted text
-        requestAnimationFrame(() => {
-            const newPosition = caretPosition + text.length;
-            target.setSelectionRange(newPosition, newPosition);
-            console.log("TEXT AREA handleDrop", newValue, newPosition, target);
-        });
-    }, [name, value, handleChange]);
+    const handleDrop = useHandleDrop({ name, value, handleChange });
 
     return (
         <Wrapper className={formWrapClass}>
@@ -302,6 +279,8 @@ export const ListGroup = ({
     label           = undefined,
     actives         = undefined,
     draggable       = undefined,
+    dragPrefix      = "",
+    dragSuffix      = "",
     disables        = undefined,
     loaders         = undefined,
     pre             = undefined,
@@ -313,7 +292,7 @@ export const ListGroup = ({
     const fullClassName = `list-group${className ? ' ' + className : ''}`;
 
     const handleDragStart = (e: React.DragEvent<HTMLSpanElement>, key: React.ReactNode) => {
-        e.dataTransfer.setData('text/plain', `{{${key}}}`)
+        e.dataTransfer.setData('text/plain', `${dragPrefix}${key}${dragSuffix}`)
     }
 
     return <Wrapper className={wrapClass}>

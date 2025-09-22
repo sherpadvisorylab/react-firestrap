@@ -141,7 +141,7 @@ const ModalDefault = ({
                         <div>
                             {title && <h3 className={pos.titleClass}>{title}</h3>}
                             {(title && header) && <div className={pos.subTitleClass}>{header}</div>}
-                            {!title && header}
+                            {!title && header && (typeof header === "string" ? <h3 className={pos.titleClass}>{header}</h3> : header)}
                         </div>
                         {(buttonFullscreen || onClose) && <div className={"ms-auto"}>
                             {buttonFullscreen && <ActionButton

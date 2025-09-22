@@ -106,6 +106,58 @@
         };  
     };
 
+    type UseHandleDropProps = {
+        name: string;
+        value: string;
+        handleChange?: FormHandleChange;
+      };
+
+    export const useHandleDrop = ({ name, value, handleChange }: UseHandleDropProps) => {
+        return React.useCallback(
+          (e: React.DragEvent<HTMLTextAreaElement | HTMLInputElement>) => {
+            e.preventDefault();
+      
+            const target = e.target as HTMLTextAreaElement | HTMLInputElement;
+            const raw = e.dataTransfer.getData("text/plain");
+            const text = `${raw}`;
+      
+            target.focus();
+      
+            // Calcola posizione caret
+            const caretPosition = (() => {
+              const position =
+                document.caretPositionFromPoint?.(e.clientX, e.clientY) ??
+                (document as any).caretRangeFromPoint?.(e.clientX, e.clientY);
+              return position && "offset" in position
+                ? position.offset
+                : target.value.length;
+            })();
+      
+            // Crea nuovo valore
+            const newValue =
+              (value ?? "").slice(0, caretPosition) +
+              text +
+              (value ?? "").slice(caretPosition);
+      
+            // Notifica onChange
+      
+            handleChange?.({
+              target: {
+                value: newValue.trim(),
+                name,
+              },
+            });
+      
+            // Posiziona il cursore dopo il testo inserito
+            requestAnimationFrame(() => {
+              const newPosition = caretPosition + text.length;
+              target.setSelectionRange(newPosition, newPosition);
+            });
+          },
+          [name, value, handleChange]
+        );
+    }
+
     function setParentName(name: string, parentName: string) {
         if (name.indexOf('.') === -1 || parentName.indexOf('.') === -1) return `${parentName}.${name}`;
 
@@ -179,7 +231,9 @@
     export interface FormRef {
         handleSave: (e: React.MouseEvent<HTMLButtonElement>) => Promise<boolean>;
         handleDelete: (e: React.MouseEvent<HTMLButtonElement>) => Promise<boolean>;
+        getHeader: () => React.ReactNode | undefined;
         getRecord: () => RecordProps | undefined;
+        getFooter: () => React.ReactNode | undefined;
     }
     type FormHandlers = Partial<FormRef>;
 
@@ -312,7 +366,9 @@
         useImperativeHandle(ref, () => ({
             handleSave: handlers?.handleSave ?? handleSave,
             handleDelete: handlers?.handleDelete ?? handleDelete,
-            getRecord: handlers?.getRecord ?? (() => recordRef.current)
+            getHeader: handlers?.getHeader ?? (() => header),
+            getRecord: handlers?.getRecord ?? (() => recordRef.current),
+            getFooter: handlers?.getFooter ?? (() => footer),
         }), [handleSave, handleDelete, handlers]);
 
         console.log("FORMMMMMM", defaultValues, record, recordRef.current, "REFF", ref);

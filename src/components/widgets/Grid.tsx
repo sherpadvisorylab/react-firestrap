@@ -32,15 +32,15 @@ type GridProps = {
     format?: { [key: string]: ConverterKey | ColumnFormatter };
     dataStoragePath?: string;   
     dataArray?: RecordArray;
-    header?: string | React.ReactNode;
-    headerAction?: string | React.ReactNode;
-    footer?: string | React.ReactNode;
+    header?: React.ReactNode;
+    headerAction?: React.ReactNode;
+    footer?: React.ReactNode;
     allowedActions?: Array<"add" | "edit" | "delete">;
     modal?: {
         mode?: "form" | "empty";
         size?: "sm" | "md" | "lg" | "xl" | "fullscreen";
         position?: "center" | "top" | "left" | "right" | "bottom";
-        setHeader?: (record?: RecordProps) => string;
+        setHeader?: (record?: RecordProps) => React.ReactNode;
         onOpen?: ({record}: {record?: RecordProps}) => React.ReactNode;
     };
     pagination?: PaginationParams
@@ -357,7 +357,7 @@ const GridArray = ({
             <Modal
                 size={modal?.size || theme.Grid.Modal.size}
                 position={modal?.position || theme.Grid.Modal.position}
-                title={modal?.setHeader?.(currentRecord) || (currentRecord?._key ? "Modifica" : "Aggiungi")}
+                header={formRef?.getHeader() || modal?.setHeader?.(currentRecord) || (currentRecord?._key ? "Modifica" : "Aggiungi")}
                 onClose={closeModal}
                 onSave={formRef?.handleSave}
                 onDelete={currentRecord?._key && (!allowedActions || allowedActions.includes("delete")) 
