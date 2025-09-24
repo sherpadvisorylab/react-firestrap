@@ -4,6 +4,7 @@ import {useTheme} from "../../../Theme";
 import { AI, AIFetchConfig } from '../../../integrations/ai';
 import { PromptVariables } from 'conf/Prompt';
 import { FormFieldProps, useFormContext } from '../../widgets/Form';
+import { RecordProps } from '../../../integrations/google/firedatabase';
 
 
 export interface PromptProps extends FormFieldProps {
@@ -21,6 +22,10 @@ export interface PromptProps extends FormFieldProps {
     };
 }
 
+interface PromptInternalProps extends Omit<PromptProps, "mode"> {
+    value?: RecordProps
+}
+
 const promptLabel = "Prompt: ";
 const promptClass = "position-relative border-start border-4 ps-2 border-secondary";
 const promptActionClass = "position-absolute top-0 end-0 d-flex gap-2";
@@ -29,10 +34,11 @@ export const Prompt = ({
     mode = "editor",
     ...props
 }: PromptProps) => {
+    const { value } = useFormContext({name: props.name});
     return mode === "editor" 
-        ? <PromptEditor {...props} /> 
-        : props.value?.prompt?.enabled 
-            ? <PromptRunner {...props} /> 
+        ? <PromptEditor {...props} value={value} /> 
+        : value?.prompt?.enabled 
+            ? <PromptRunner {...props} value={value} /> 
             : <PromptDisabled {...props} />
 }
 
@@ -40,7 +46,7 @@ export const Prompt = ({
 const PromptEditor = ({
     name,
     label         = undefined,
-    //value         = undefined,
+    value         = undefined,
     required      = false,
     onChange      = undefined,
     defaultValue  = undefined,
@@ -49,9 +55,7 @@ const PromptEditor = ({
     post          = undefined,
     wrapClass     = undefined,
     className     = undefined
-}: Omit<PromptProps, "mode">) => {
-    const { value } = useFormContext({name});
-
+}: PromptInternalProps) => {
     const theme = useTheme("prompt");
     const caption = label || name;
 
@@ -64,7 +68,7 @@ const PromptEditor = ({
                         name={name + ".prompt.enabled"} 
                         label={"prompt"} 
                         defaultValue={defaultValue?.enabled}
-                        onChange={onChange} />
+                    />
                 </div>
                 <TextArea 
                     className={className || theme.Prompt.className}
@@ -83,7 +87,7 @@ const PromptEditor = ({
 const PromptRunner = ({
     name,
     label,
-    //value,
+    value,
     required,
     onChange,
     defaultValue,
@@ -92,8 +96,8 @@ const PromptRunner = ({
     post,
     wrapClass,
     className
-}: Omit<PromptProps, "mode">) => {
-    const { value, handleChange } = useFormContext({name});
+}: PromptInternalProps) => {
+    const { handleChange } = useFormContext({name});
 
     const theme = useTheme("prompt");
     const caption = label || name;
@@ -124,7 +128,6 @@ const PromptRunner = ({
                     >
                         <DropdownItem><Select name={name + ".prompt.role"} label="Role" 
                             defaultValue={defaultValue?.role} 
-                            onChange={onChange}
                             options={AI.getRoles()} 
                             optionEmpty={{
                                 label: "Default (" + defaultValues.role + ")",
@@ -133,7 +136,6 @@ const PromptRunner = ({
                         /></DropdownItem>
                         <DropdownItem><Select name={name + ".prompt.language"} label="Language" 
                             defaultValue={defaultValue?.language} 
-                            onChange={onChange}
                             options={AI.getLangs()} 
                             optionEmpty={{
                                 label: "Default (" + defaultValues.language + ")",
@@ -142,7 +144,6 @@ const PromptRunner = ({
                         /></DropdownItem>
                         <DropdownItem><Select name={name + ".prompt.voice"} label="Voice" 
                             defaultValue={defaultValue?.voice} 
-                            onChange={onChange}
                             options={AI.getVoices()} 
                             optionEmpty={{
                                 label: "Default (" + defaultValues.voice + ")",
@@ -151,7 +152,6 @@ const PromptRunner = ({
                         /></DropdownItem>
                         <DropdownItem><Select name={name + ".prompt.style"} label="Style" 
                             defaultValue={defaultValue?.style} 
-                            onChange={onChange}
                             options={AI.getStyles()} 
                             optionEmpty={{
                                 label: "Default (" + defaultValues.style + ")",
@@ -160,7 +160,6 @@ const PromptRunner = ({
                         /></DropdownItem>
                         <DropdownItem><Select name={name + ".prompt.model"} label="Model" 
                             defaultValue={defaultValue?.model} 
-                            onChange={onChange}
                             options={AI.getModels()} 
                             optionEmpty={{
                                 label: "Default (" + defaultValues.model + ")",
@@ -169,7 +168,6 @@ const PromptRunner = ({
                         /></DropdownItem>
                         <DropdownItem><Range name={name + ".prompt.temperature"} label="Temperature" 
                             defaultValue={defaultValue?.temperature} 
-                            onChange={onChange}
                             min={0} 
                             max={1} 
                             step={0.1} 
@@ -202,7 +200,6 @@ const PromptRunner = ({
 const PromptDisabled = ({
     name,
     label,
-    //value,
     required,
     onChange,
     rows,

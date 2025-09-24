@@ -288,27 +288,30 @@ const GridArray = ({
         if (!modalData) return null;
         
         const component = modal?.onOpen?.({record: modalData}) || children;
-        console.log("GRID: MODDDDDDDDDDDDDDDDDDDDDDDDDDDDDDAAALL", modal);
-        switch (modal?.mode || theme.Grid.Modal.mode) {
+        switch (modal?.mode) {
+            case "empty":
+                return component && React.isValidElement(component) && React.cloneElement(component as React.ReactElement, {
+                    record: modalData,
+                    dataStoragePath: modalData?._key ? `${dataStoragePath}/${modalData?._key}` : `${dataStoragePath}/${new Date().getTime()}`,
+                    savePath: (record: RecordProps) => record?._key 
+                        ? `${dataStoragePath}/${record?._key}` 
+                        : `${dataStoragePath}/${setPrimaryKey?.(record ?? {}) ?? new Date().getTime()}`,
+                    ...component?.props,
+                    ref: setFormRefCallback
+                });
             case "form":
+            default:
                 return <Form
                     aspect="empty"
-                    dataStoragePath={dataStoragePath}
                     defaultValues={modalData ?? {}}
                     log={log}
-                    onSave={async ({record, action, storagePath: originalStoragePath }) => {
-                        const storagePath = !record?._key  
-                            ? `${originalStoragePath}/${setPrimaryKey?.(record ?? {}) ?? Date.now()}` 
-                            : `${originalStoragePath}/${record?._key}`;
-
-                        console.log("GRID: onSave", record, action, storagePath, dataStoragePath, originalStoragePath);
-
-                        return onSave?.({record, action, storagePath}) ?? storagePath;
-                    }}
-                    onDelete={async ({record}) => {
-                        const storagePath = `${dataStoragePath}/${record?._key}`;
-                        return onDelete?.({record}) ?? storagePath;
-                    }}
+                    dataStoragePath={modalData?._key ? `${dataStoragePath}/${modalData?._key}` : `${dataStoragePath}/${Date.now()}`}
+                    savePath={(record: RecordProps) => record?._key 
+                        ? `${dataStoragePath}/${record?._key}` 
+                        : `${dataStoragePath}/${setPrimaryKey?.(record ?? {}) ?? Date.now()}`
+                    }
+                    onSave={onSave}
+                    onDelete={onDelete}
                     onFinally={async ({record, action}) => {
                         const success = await onFinally?.({record, action}) ?? true;
                         
@@ -319,14 +322,7 @@ const GridArray = ({
                 >
                     {component}
                 </Form>
-            case "empty":
-            default:
-                return component && React.isValidElement(component) && React.cloneElement(component as React.ReactElement, {
-                    record: modalData,
-                    dataStoragePath: dataStoragePath,
-                    ...component?.props,
-                    ref: setFormRefCallback
-                });
+            
         }
     }, [modalData, modal?.mode, modal?.onOpen, children, log, onSave, onDelete, onFinally, setPrimaryKey, setFormRefCallback, dataStoragePath]);
     

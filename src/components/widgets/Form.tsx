@@ -199,8 +199,9 @@
         aspect?: "card" | "empty";
         header?: React.ReactNode;
         footer?: React.ReactNode;
-        dataStoragePath?: string;
+        dataStoragePath?: string ;
         handlers?: FormHandlers;
+        savePath?: (record: RecordProps) => string;
         onLoad?: (record: RecordProps) => void;
         onSave?: ({record, action, storagePath}: {record?: RecordProps, storagePath?: string, action: 'create' | 'update'}) => Promise<string | undefined>;
         onDelete?: ({record}: {record?: RecordProps}) => Promise<string | undefined>;
@@ -240,7 +241,6 @@
     function Form(props: FormProps, ref?: React.Ref<FormRef>) {
         const { dataStoragePath, handlers, defaultValues, children, ...rest } = props;
 
-        console.log("Form", defaultValues, children, rest);
         return defaultValues || (handlers && !dataStoragePath)
             ? <FormData children={children} defaultValues={defaultValues} handlers={handlers} dataStoragePath={dataStoragePath} {...rest} ref={ref} />
             : <FormDatabase children={children} defaultValues={defaultValues} handlers={handlers} dataStoragePath={dataStoragePath} {...rest} ref={ref} />;
@@ -262,7 +262,7 @@
             });
         }, [dbStoragePath]);
 
-        console.log("FormDatabase", defaultValues, record);
+        console.log("FormDatabase", dbStoragePath, defaultValues, record);
         if (!record) {
             return <p className={"p-4"}><i className={"spinner-border spinner-border-sm"}></i> Caricamento in corso...</p>;
         }
@@ -283,6 +283,7 @@
         dataStoragePath = undefined,
         handlers = undefined,
         defaultValues = undefined,
+        savePath = undefined,
         onLoad = undefined,
         onSave = undefined,
         onDelete = undefined,
@@ -335,11 +336,13 @@
                     action: action, 
                     storagePath: dataStoragePath
                 }) 
-                : dataStoragePath;
+                : savePath?.(recordRef.current ?? {}) ?? dataStoragePath;
+
+            console.log("handleSave TESSST", recordRef.current?._key, defaultValues, Object.keys(defaultValues ?? {}).length, recordStoragePath, dataStoragePath);
 
             recordStoragePath && await db.set(recordStoragePath, cleanRecord(recordRef.current));
             return await handleFinally(action);
-        }, [dataStoragePath, onSave, onFinally, showNotice]);
+        }, [dataStoragePath, onSave, onFinally, showNotice, savePath]);
 
         const handleDelete = useCallback(async (e: React.MouseEvent<HTMLButtonElement>) => {
             e.preventDefault();
@@ -348,11 +351,11 @@
 
             const recordStoragePath = onDelete 
                 ? await onDelete({record: recordRef.current})
-                : dataStoragePath;
+                : savePath?.(recordRef.current ?? {}) ?? dataStoragePath;
 
             recordStoragePath && await db.remove(recordStoragePath);
             return await handleFinally("delete");
-        }, [dataStoragePath, onDelete, onFinally, showNotice]);
+        }, [dataStoragePath, onDelete, onFinally, showNotice, savePath]);
 
         const handleFinally = useCallback(async (action: 'create' | 'update' | 'delete') => {
             log && dataStoragePath && setLog(dataStoragePath, action, recordRef.current);
@@ -425,27 +428,7 @@
             </Wrapper>
         )
     });
-    /*
-    function defaultFormRenderer(tree: FormTree): React.ReactNode {
-        return Object.entries(tree).map(([key, value]) => {
-            if (React.isValidElement(value)) {
-                return (
-                    <div key={key} className="form-group">
-                        {value}
-                    </div>
-                );
-            } else if (value && typeof value === 'object') {
-                return (
-                    <>
-                        {defaultFormRenderer(value as FormTree)}
-                    </>
-                );
-            } else {
-                return null;
-            }
-        });
-    }
-    */
+    
     export function FormModel({
                                 model,
                                 children,
