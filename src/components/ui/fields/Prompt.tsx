@@ -226,7 +226,7 @@ const PromptDisabled = ({
     )
 }
 
-const runPrompt = async (config: AIFetchConfig, data?: PromptVariables) => {
+export const runPrompt = async (config: AIFetchConfig, data?: PromptVariables) => {
     const response = await AI.fetch(config, data);
 
     console.log(response);
