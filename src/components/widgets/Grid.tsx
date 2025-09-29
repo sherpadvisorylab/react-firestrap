@@ -33,7 +33,7 @@ type GridProps = {
     dataStoragePath?: string;   
     dataArray?: RecordArray;
     header?: React.ReactNode;
-    headerAction?: React.ReactNode;
+    headerAction?: React.ReactNode | ((records?: RecordArray) => React.ReactNode);
     footer?: React.ReactNode;
     allowedActions?: Array<"add" | "edit" | "delete">;
     modal?: {
@@ -234,6 +234,13 @@ const GridArray = ({
         console.log("GRID: formRef callback", ref);
     }, []);
 
+    const headerActionComponent = useMemo(() => {
+        if (headerAction && typeof headerAction === "function") {
+            return headerAction(records);
+        }
+        return headerAction;
+    }, [headerAction, records]);
+
     const addNewButton = useMemo(() => {
         if ((children || modal) && (allowedActions && !allowedActions.includes("add"))) {
             return;
@@ -332,11 +339,11 @@ const GridArray = ({
     return (<>
         <Card
             wrapClass={wrapClass}
-            header={(header || headerAction || addNewButton) &&  <>
+            header={(header || headerActionComponent || addNewButton) &&  <>
                 {header || <span />}
-                {(headerAction || addNewButton) &&  (
+                {(headerActionComponent || addNewButton) &&  (
                 <span>
-                    {headerAction}
+                    {headerActionComponent}
                     {addNewButton}
                 </span>
                 )}

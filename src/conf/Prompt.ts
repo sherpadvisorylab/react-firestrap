@@ -1,8 +1,8 @@
 import { converter } from "../libs/converter";
 import { currentCountry, currentLang, COUNTRIES, LANGS } from "../libs/locale";
 
-const PROMPT_CLEANUP = `Please ignore all previous instructions.`;
-const PROMPT_NO_REFERENCE = `Do not repeat yourself. Do not self reference. Do not explain what you are doing.`;
+export const PROMPT_CLEANUP = `Please ignore all previous instructions.`;
+export const PROMPT_NO_REFERENCE = `Do not repeat yourself. Do not self reference. Do not explain what you are doing.`;
 
 export const PROMPTS = {
   SEARCH_INTENT_FROM_KEYWORDS: `

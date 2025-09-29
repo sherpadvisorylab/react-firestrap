@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Switch, TextArea, Wrapper, LoadingButton, Dropdown, DropdownItem, Select, Range } from '../..';
 import {useTheme} from "../../../Theme";
 import { AI, AIFetchConfig } from '../../../integrations/ai';
-import { PromptVariables } from 'conf/Prompt';
+import { PROMPT_CLEANUP, PROMPT_NO_REFERENCE, PromptVariables } from '../../../conf/Prompt';
 import { FormFieldProps, useFormContext } from '../../widgets/Form';
 import { RecordProps } from '../../../integrations/google/firedatabase';
 
@@ -108,7 +108,7 @@ const PromptRunner = ({
             {pre}
             <div className={prompt ? promptClass : "position-relative"}>
                 <div className={promptActionClass}>
-                    <LoadingButton icon={prompt ? "terminal-fill" : "terminal"} title={prompt ? "Mode: Prompt Editor" : "Mode: Run Prompt"} onClick={() => {
+                    <LoadingButton className={value?.prompt?.value ? "btn-outline-theme border-0" : "btn-outline-warning border-0"} icon={prompt ? "terminal-fill" : "terminal"} title={prompt ? "Mode: Prompt Editor" : "Mode: Run Prompt"} onClick={() => {
                         setPrompt(!prompt);
                     }} />
 
@@ -227,7 +227,10 @@ const PromptDisabled = ({
 }
 
 export const runPrompt = async (config: AIFetchConfig, data?: PromptVariables) => {
-    const response = await AI.fetch(config, data);
+    const response = await AI.fetch({
+        ...config, 
+        value: [PROMPT_CLEANUP, config.value, PROMPT_NO_REFERENCE].join("\n")
+    }, data);
 
     console.log(response);
     return response;
