@@ -22,11 +22,13 @@
         wrapClass?: string;
     }
     export type FieldOnChange = (params: {event: ChangeHandler, name: string, value: any, record: RecordProps, onChange: FormHandleChange}) => void;
-
+    export type InputType = "text" | "number" | "email" | "password" | "color" | "date" | "time" | "datetime-local" | "week" | "month" | "range" | "checkbox" | "radio" ;
+    
     interface FormContextProps {
         name: string;
         onChange?: FieldOnChange;
         wrapClass?: string;
+        inputType?: InputType;
     }
     interface FormContextResult {
         value: any;
@@ -54,7 +56,7 @@
 
 
 
-    export const useFormContext = ({name, onChange, wrapClass}: FormContextProps): FormContextResult => {
+    export const useFormContext = ({name, onChange, wrapClass, inputType = "text"}: FormContextProps): FormContextResult => {
         const ctx = useContext(FormContext);
         if (!ctx) throw new Error("useFormContext must be used within a FormContext.Provider");
         if (!name) throw new Error("useFormContext: name is required");
@@ -62,7 +64,7 @@
         const record = {...ctx.record};
         const formChange = (event: ChangeHandler) => {
             const path = event.target.name.split(".");
-            const value = event.target.value;
+            const value = ["number", "range"].includes(inputType) ? Number(event.target.value) : event.target.value;
             
             let target = record;
             for (let i = 0; i < path.length - 1; i++) {

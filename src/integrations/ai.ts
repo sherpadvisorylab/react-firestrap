@@ -397,7 +397,7 @@ const PROVIDERS = {
                     ...(role ? [{ role: 'system', content: role }] : []),
                     { role: 'user', content: prompt }
                 ],
-                temperature: options.temperature || PROVIDERS[PROVIDER_OPENAI].temperature
+                temperature: options.temperature ?? PROVIDERS[PROVIDER_OPENAI].temperature
             }
         },
         parseResponse: (response: any) => {
@@ -421,7 +421,7 @@ const PROVIDERS = {
             return {
                 model: options.model || PROVIDERS[PROVIDER_GEMINI].model,
                 instances: [{ content: role ? role + "\n\n" + prompt : prompt }],
-                temperature: options.temperature || PROVIDERS[PROVIDER_GEMINI].temperature
+                temperature: options.temperature ?? PROVIDERS[PROVIDER_GEMINI].temperature
             }
         },
         parseResponse: (response: any) => {
@@ -448,7 +448,7 @@ const PROVIDERS = {
                     ...(role ? [{ role: 'system', content: role }] : []),
                     { role: 'user', content: prompt }
                 ],
-                temperature: options.temperature || PROVIDERS[PROVIDER_ANTHROPIC].temperature
+                temperature: options.temperature ?? PROVIDERS[PROVIDER_ANTHROPIC].temperature
             }
         },
         parseResponse: (response: any) => {
@@ -475,7 +475,7 @@ const PROVIDERS = {
                     ...(role ? [{ role: 'system', content: role }] : []),
                     { role: 'user', content: prompt }
                 ],
-                temperature: options.temperature || PROVIDERS[PROVIDER_MISTRAL].temperature 
+                temperature: options.temperature ?? PROVIDERS[PROVIDER_MISTRAL].temperature 
             }
         },
         parseResponse: (response: any) => {

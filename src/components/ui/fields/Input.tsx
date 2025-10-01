@@ -2,11 +2,11 @@ import React, { useId, useState} from 'react';
 import {isEmpty, isInteractiveElement} from "../../../libs/utils";
 import {Wrapper} from "../GridSystem";
 import { ActionButton, Icon, UIProps } from '../../..';
-import {FormFieldProps, useFormContext, useHandleDrop } from '../../widgets/Form';
+import {FormFieldProps, InputType, useFormContext, useHandleDrop } from '../../widgets/Form';
 
 interface BaseInputProps extends FormFieldProps{
     placeholder?: string;
-    type?: string;
+    type?: InputType;
     updatable?: boolean;
     disabled?: boolean;
     feedback?: string;
@@ -75,7 +75,7 @@ export const Input = ({
     wrapClass = undefined,
     className = undefined
 }: BaseInputProps) => {
-    const { value, handleChange, formWrapClass } = useFormContext({name, onChange, wrapClass});
+    const { value, handleChange, formWrapClass } = useFormContext({name, onChange, wrapClass, inputType: type});
     const id = useId();
     const handleDrop = useHandleDrop({ name, value, handleChange });
 
