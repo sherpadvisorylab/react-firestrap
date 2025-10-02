@@ -337,7 +337,7 @@
                     record: recordRef.current, 
                     action: action, 
                     storagePath: dataStoragePath
-                }) 
+                }) ?? dataStoragePath
                 : savePath?.(recordRef.current ?? {}) ?? dataStoragePath;
 
             console.log("handleSave TESSST", recordRef.current?._key, defaultValues, Object.keys(defaultValues ?? {}).length, recordStoragePath, dataStoragePath);

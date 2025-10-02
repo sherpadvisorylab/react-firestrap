@@ -33,7 +33,7 @@ const Repeat = ({
     const [release, setRelease] = useState(0);
 
     const components = (Array.isArray(value) ? value : Array.from({ length: min || 0 }, () => ({})))?.map((_, index) =>
-        <div key={`${name}-${index}-${release}`} className="position-relative pt-3">
+        <div key={`${name}-${index}-${release}`} className="position-relative pt-3 px-2">
             {!readOnly && index >= (min || 0) && <ActionButton 
                 wrapClass='position-absolute top-0 end-0' 
                 className='btn-close' 
