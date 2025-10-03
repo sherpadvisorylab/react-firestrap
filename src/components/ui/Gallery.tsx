@@ -4,8 +4,8 @@ import Carousel from "../blocks/Carousel";
 import {Wrapper} from "../ui/GridSystem";
 import {converter} from "../../libs/converter";
 import {RecordProps} from "../../integrations/google/firedatabase";
-import { UIProps } from '../..';
 import Pagination, { PaginationParams } from './Pagination';
+import { UIProps } from '../';
 
 type ImageProps = React.ReactElement<HTMLImageElement>;
 type GalleryRecord = RecordProps & {
@@ -185,7 +185,7 @@ const Gallery = ({
                             page={pagination?.page} 
                             limit={pagination?.limit}
                         >
-                            {(pageRecords: [])=>pageRecords.map((Component, index) => (
+                            {(pageRecords)=>pageRecords.map((Component, index) => (
                                 <div key={index} className={"item position-relative p-" + paddingSize}>
                                     {Component}
                                     {itemTopLeft && <div className={"position-absolute start-0 top-0 p-" + paddingSize}>

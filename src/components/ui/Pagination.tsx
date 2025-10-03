@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from 'react';
 import { UIProps, Wrapper } from "../index";
-import { RecordArray } from 'integrations/google/firedatabase';
 import { createPortal } from 'react-dom';
 
 export type PaginationParams = {
@@ -9,13 +8,13 @@ export type PaginationParams = {
     navLimit?: number;
 };
 
-interface PaginationProps extends UIProps, PaginationParams {
-    recordSet: RecordArray | any[];
-    children: any;
+interface PaginationProps<T> extends UIProps, PaginationParams {
+    recordSet: T[];
+    children: (pageRecords: T[], pageOffset: number) => React.ReactNode;
     appendTo?: HTMLElement | null;
 }
 
-const Pagination = ({
+const Pagination = <T,>({
     recordSet,
     children,
     limit               = undefined,
@@ -26,16 +25,16 @@ const Pagination = ({
     post                = undefined,
     className           = undefined,
     wrapClass           = undefined
-}: PaginationProps) => {
+}: PaginationProps<T>) => {
     const NAV_LIMIT_DEFAULT = 5;
     const [currentPage, setCurrentPage] = useState(page || 1);
 
     const pageLimit = limit || recordSet.length;
     const totalPages = Math.ceil(recordSet.length / pageLimit);
 
-    const start = (currentPage - 1) * pageLimit;
-    const end = start + pageLimit;
-    const pageRecords = useMemo(() => recordSet.slice(start, end), [recordSet, start, end]);
+    const pageOffset = (currentPage - 1) * pageLimit;
+    const end = pageOffset + pageLimit;
+    const pageRecords = useMemo(() => recordSet.slice(pageOffset, end), [recordSet, pageOffset, end]);
 
     const go = (p: number) => p >= 1 && p <= totalPages && setCurrentPage(p);
 
@@ -94,7 +93,7 @@ const Pagination = ({
 
     return (
         <>
-          {children(pageRecords)}
+          {children(pageRecords, pageOffset)}
           {appendTo ? createPortal(nav, appendTo) : appendTo === undefined && nav}
         </>
       );

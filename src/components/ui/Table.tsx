@@ -2,7 +2,7 @@ import React, { useCallback, useRef, useState } from 'react';
 import { useTheme } from "../../Theme";
 import { Wrapper } from "./GridSystem";
 import { RecordArray, RecordProps } from "../../integrations/google/firedatabase";
-import { UIProps } from 'components';
+import { UIProps } from '../';
 import Pagination, { PaginationParams } from './Pagination';
 
 export type TableHeaderProp = {
@@ -69,7 +69,7 @@ function Table({
         onClick?.(index);
     }
 
-    const getField = (item: RecordProps, key: string) => {
+    const getFieldComponent = (item: RecordProps, key: string): React.ReactNode => {
         const v = (item[key]?.prompt && item[key]?.value) || item[key];
         if (React.isValidElement(v) || v == null || typeof v !== 'object') return v;
         return Array.isArray(v) && !v.some(e => typeof e === 'object' && e)
@@ -116,17 +116,19 @@ function Table({
                                 limit={pagination?.limit}
                                 appendTo={paginationNavEl}
                             >
-                                {(pageRecords: RecordArray) =>
+                                {(pageRecords, pageOffset) =>
                                     pageRecords.map((record, index) => (
                                         <tr
                                             key={index}
                                             style={{ cursor: onClick ? "pointer" : "cursor" }}
                                             onClick={(e) => {
-                                                onClick && handleClick(e, index);
+                                                
+                                                onClick && handleClick(e, pageOffset + index);
+
                                             }}
                                         >
                                             {headers.map((hdr) => (
-                                                <td key={hdr.key}>{getField(record, hdr.key)}</td>
+                                                <td key={hdr.key}>{getFieldComponent(record, hdr.key)}</td>
                                             ))}
                                         </tr>
                                     ))

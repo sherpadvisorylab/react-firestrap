@@ -24,14 +24,12 @@ import Gallery from "../components/ui/Gallery";
 import Loader from "../components/ui/Loader";
 import Percentage from "../components/ui/Percentage";
 import Repeat from "../components/ui/Repeat";
-import Component from "../components/Component";
 import Modal from "../components/ui/Modal";
-import ImageEditor from "../components/widgets/ImageEditor";
 import { PLACEHOLDER_BRAND, PLACEHOLDER_IMAGE } from '../Theme';
 import Menu from '../components/blocks/Menu';
 import Code from '../components/ui/Code';
 import Pagination from '../components/ui/Pagination';
-import { useLocation } from 'react-router-dom';
+import { RecordArray } from '../integrations/google/firedatabase';
 
 
 declare global {
@@ -63,9 +61,12 @@ function Helper() {
     };
   }, []);
 
-  const recordSet = []
+  const recordSet = [] as RecordArray;
   for (let i = 1; i <= 30; i++) {
-    recordSet.push('Valore ' + i)
+    recordSet.push({
+      id: i,
+      name: 'Valore ' + i
+    })
   }
 
   return (

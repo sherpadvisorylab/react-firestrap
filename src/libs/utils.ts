@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import {converter} from "./converter";
 import {getConfig} from "../Config";
 import { RecordProps } from '../integrations/google/firedatabase';
