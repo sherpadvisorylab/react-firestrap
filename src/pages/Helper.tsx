@@ -42,7 +42,7 @@ function Helper() {
 
   const [showModal, setShowModal] = useState(false);
   const [showAlert, setShowAlert] = useState(false)
-  
+
   const scrollRef = useRef(null);
 
   useEffect(() => {
@@ -179,7 +179,7 @@ function Helper() {
                 </Row>
 
                 <Row>
-                  <Col xs={12} lg={5}>
+                  <Col lg={5}>
                     {/* Boolean */}
                     <Form dataStoragePath='' header="Boolean Input">
                       {/* Checkbox */}
@@ -206,12 +206,47 @@ function Helper() {
                       </ListGroup>
                     </Form>
                   </Col>
+                  <Col lg={7}>
+                    <Code language='jsx' className='h-100 d-flex flex-grow-1 m-0'>
+                      {`{/* Boolean */}
+                      <Form dataStoragePath='' header="Boolean Input">
+                        
+                        {/* Checkbox */}
+                        <Label label='Checkboxes' />
+                        <Checkbox name='checkbox1' label='Checkbox1' />
+                        <Checkbox name='checkbox2' label='Checkbox2' className='mb-3' value={true} />
+                      
+                        {/* Switch */}
+                        <Label label='Switches' />
+                        <Switch name='switch1' label='Switch input' onChange={() => { }} value={false} />
+                        <Switch name='switch2' onChange={() => { }} label='Switch input' className='mb-3' value={true} />
+                      </Form>
+
+
+                      {/* List */}
+                      <Form dataStoragePath='' header="List Group">
+                        
+                        <ListGroup actives={[0]} disables={[1]} className='mb-3' itemClass='p-1'>
+                          <span className='text-danger'>Element1</span>
+                          <span className='text-success'>Element2</span>
+                          <span className='text-warning'>Element3</span>
+                        </ListGroup>
+                      
+                        <ListGroup label='List Group with onClick' onClick={(e, index) => { console.log("List Group click", index, e.currentTarget.innerHTML) }} actives={[0]} disables={[1]}>
+                          <span className='text-danger'>Element1</span>
+                          <span className='text-success'>Element2</span>
+                          <span className='text-warning'>Element3</span>
+                        </ListGroup>
+                      </Form>
+                      `}
+                    </Code>
+                  </Col>
 
                   {/* Selectors */}
                   <Col xs={12} className='mb-5'>
                     <h2 id='selectors'>Selectors</h2>
                     <Card className='mb-3'>
-                      <form className='form-group'>
+                      <Form dataStoragePath='' className='form-group'>
                         {/* Select  */}
                         <Select name='select' label='Select' className='mb-3' value={'Option1'} options={['Option1', 'Option2', 'Option3']} />
                         {/* Autocomplete */}
@@ -219,7 +254,7 @@ function Helper() {
                         {/* Checklist */}
                         <Checklist name='checklist' label='Checklist' checkClass='mb-3' options={['Option1', 'Option2', 'Option3']} />
 
-                      </form>
+                      </Form>
                     </Card>
                   </Col>
 
@@ -256,8 +291,8 @@ function Helper() {
                       <Alert type="light" children="Light" />
                       <Alert type="dark" children="Dark" />
 
-                      <ActionButton onClick={()=>setShowAlert(true)} label='click alert fixed'/>
-                      {showAlert && <Alert isFixed='top' onClose={()=>setShowAlert(false)}>Prova Alert fixedTop con timeout 5s</Alert>}
+                      <ActionButton onClick={() => setShowAlert(true)} label='click alert fixed' />
+                      {showAlert && <Alert isFixed='top' onClose={() => setShowAlert(false)}>Prova Alert fixedTop con timeout 5s</Alert>}
                     </Card>
                   </Col>
 
@@ -567,11 +602,13 @@ function Helper() {
                   <Col xs={12} className='mb-5'>
                     <h2 id='repeat'>Repeat</h2>
                     <Card className='mb-3' title=''>
-                      <Repeat name=''>
-                        <String name='repeat' label='Repeat 1' className='mb-3' placeholder='Lorem ipsum.' />
-                        <String name='repeat' label='Repeat 2' className='mb-3' placeholder='Lorem ipsum.' />
-                        <String name='repeat' label='Repeat 3' className='mb-3' placeholder='Lorem ipsum.' />
-                      </Repeat>
+                      <Form dataStoragePath='' header="Repeat Demo">
+                        <Repeat name='repeatGroup'>
+                          <String name='repeat1' label='Repeat 1' className='mb-3' placeholder='Lorem ipsum.' />
+                          <String name='repeat2' label='Repeat 2' className='mb-3' placeholder='Lorem ipsum.' />
+                          <String name='repeat3' label='Repeat 3' className='mb-3' placeholder='Lorem ipsum.' />
+                        </Repeat>
+                      </Form>
                     </Card>
                   </Col>
 
@@ -587,8 +624,10 @@ function Helper() {
                           <p>Lorem ipsum. Content 3 or Component Nested 3</p>
                         </TabItem>
                         <TabItem label='Tab 2'>
-                          <String name='example' label='Example Tab 2' />
-                          <TextArea name='example' label='Example Tab 2' />
+                          <Form dataStoragePath=''>
+                            <String name='example1' label='Example Tab 2' />
+                            <TextArea name='example2' label='Example Tab 2' />
+                          </Form>
                         </TabItem>
                         <TabItem label='End'>
                           <Card
@@ -600,7 +639,9 @@ function Helper() {
                           >
                             <p>Main content.</p>
                             <hr />
-                            <TextArea name='example' label='Example Tab 3' />
+                            <Form dataStoragePath=''>
+                              <TextArea name='example' label='Example Tab 3' />
+                            </Form>
                           </Card>
                         </TabItem>
                       </Tab>
@@ -659,29 +700,31 @@ function Helper() {
                     </Card>
                     <Card className='mb-3' title='Dynamic Tabs (TabDynamic)'>
                       <h3>Default</h3>
-                      <TabDynamic name='tabDynamic' min={1} label='Tab'>
-                        <String name='example' label='Example Tab 1' />
-                      </TabDynamic>
-                      <br /><hr /><br />
-                      <h3>Top</h3>
-                      <TabDynamic name='tabDynamic2' min={2} label='Tab' tabPosition='top'>
-                        <String name='example' label='Example Tab 2' />
-                      </TabDynamic>
-                      <br /><hr /><br />
-                      <h3>Left</h3>
-                      <TabDynamic name='tabDynamic3' min={3} label='Tab' tabPosition='left'>
-                        <String name='example' label='Example Tab 3' />
-                      </TabDynamic>
-                      <br /><hr /><br />
-                      <h3>Right</h3>
-                      <TabDynamic name='tabDynamic4' min={4} max={4} label='Tab' tabPosition='right'>
-                        <String name='example' label='Example Tab 4' />
-                      </TabDynamic>
-                      <br /><hr /><br />
-                      <h3>Bottom</h3>
-                      <TabDynamic name='tabDynamic5' min={0} readOnly={true} value={[{ example: 'first Tab' }, { example: 'second Tab' }, { example: 'third Tab' }]} label='Tab' tabPosition='bottom'>
-                        <String name='example' label='Example Tab 5' />
-                      </TabDynamic>
+                      <Form dataStoragePath='' header="TabDynamic Demo">
+                        <TabDynamic name='tabDynamic' min={1} label='Tab'>
+                          <String name='example' label='Example Tab 1' />
+                        </TabDynamic>
+                        <br /><hr /><br />
+                        <h3>Top</h3>
+                        <TabDynamic name='tabDynamic2' min={2} label='Tab' tabPosition='top'>
+                          <String name='example' label='Example Tab 2' />
+                        </TabDynamic>
+                        <br /><hr /><br />
+                        <h3>Left</h3>
+                        <TabDynamic name='tabDynamic3' min={3} label='Tab' tabPosition='left'>
+                          <String name='example' label='Example Tab 3' />
+                        </TabDynamic>
+                        <br /><hr /><br />
+                        <h3>Right</h3>
+                        <TabDynamic name='tabDynamic4' min={4} max={4} label='Tab' tabPosition='right'>
+                          <String name='example' label='Example Tab 4' />
+                        </TabDynamic>
+                        <br /><hr /><br />
+                        <h3>Bottom</h3>
+                        <TabDynamic name='tabDynamic5' min={0} readOnly={true} value={[{ example: 'first Tab' }, { example: 'second Tab' }, { example: 'third Tab' }]} label='Tab' tabPosition='bottom'>
+                          <String name='example' label='Example Tab 5' />
+                        </TabDynamic>
+                      </Form>
                     </Card>
                   </Col>
 
@@ -879,7 +922,7 @@ function Helper() {
                     <Card className="mb-3" title="Basic Form with Manual Fields">
                       <Pagination recordSet={recordSet} limit={10}>
                         {(pageRecords: any) => pageRecords.map((component: any, index: number) => (
-                          <p key={index}>{component}</p>
+                          <p key={index}>{component.name}</p>
                         ))}
                       </Pagination>
                     </Card>

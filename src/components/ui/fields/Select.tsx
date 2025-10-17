@@ -1,10 +1,10 @@
-import React, {useEffect, useId, useMemo, useState} from 'react';
+import React, { useEffect, useId, useMemo, useState } from 'react';
 import database from "../../../libs/database";
-import {Label} from "./Input";
-import {Col, Wrapper} from "../GridSystem"
-import {useTheme} from "../../../Theme";
-import {arraysEqual, arrayUnique, isEmpty, sanitizeKey} from "../../../libs/utils";
-import {DatabaseOptions, RecordProps} from "../../../integrations/google/firedatabase";
+import { Label } from "./Input";
+import { Col, Wrapper } from "../GridSystem"
+import { useTheme } from "../../../Theme";
+import { arraysEqual, arrayUnique, isEmpty, sanitizeKey } from "../../../libs/utils";
+import { DatabaseOptions, RecordProps } from "../../../integrations/google/firedatabase";
 import { FormFieldProps, useFormContext } from '../../widgets/Form';
 
 interface Option extends RecordProps {
@@ -47,7 +47,7 @@ export interface ChecklistProps extends BaseProps {
 }
 
 const valueToArray = (value: string | number | any[] | undefined): any[] => {
-    if(!value) return []
+    if (!value) return []
 
     return typeof value === 'string' || typeof value === "number"
         ? value.toString().split(',')
@@ -86,7 +86,7 @@ const getOptions = (
     options: Array<string | number | Option>,
     lookup: Option[],
     order?: OrderConfig
-) : Option[] => {
+): Option[] => {
     return [
         ...options.map(normalizeOption),
         ...lookup
@@ -95,42 +95,36 @@ const getOptions = (
         const aVal = (a[field] ?? "").toString();
         const bVal = (b[field] ?? "").toString();
         return order?.dir === "desc"
-        ? bVal.localeCompare(aVal)
-        : aVal.localeCompare(bVal)
+            ? bVal.localeCompare(aVal)
+            : aVal.localeCompare(bVal)
     });
 }
 
 export const Select = ({
-                              name,
-                              //value         = undefined,
-                              onChange      = undefined,
-                              required      = false,
-                              updatable     = true,
-                              disabled      = false,
-                              optionEmpty   = {
-                                              label: "Select...",
-                                              value: ""
-                                            },
-                              label         = undefined,
-                              title         = undefined,
-                              pre           = undefined,
-                              post          = undefined,
-                              feedback      = undefined,
-                              options       = [],
-                              db            = undefined,
-                              order         = undefined,
-                              wrapClass     = undefined,
-                              className     = undefined,
-} : SelectProps) => {
-    const { value, handleChange, formWrapClass } = useFormContext({name, onChange, wrapClass});
-    
+    name,
+    //value         = undefined,
+    onChange = undefined,
+    required = false,
+    updatable = true,
+    disabled = false,
+    optionEmpty = {
+        label: "Select...",
+        value: ""
+    },
+    label = undefined,
+    title = undefined,
+    pre = undefined,
+    post = undefined,
+    feedback = undefined,
+    options = [],
+    db = undefined,
+    order = undefined,
+    wrapClass = undefined,
+    className = undefined,
+}: SelectProps) => {
+    const { value, handleChange, formWrapClass } = useFormContext({ name, onChange, wrapClass });
+
     const theme = useTheme("select");
-    const [selectedValue, setSelectedValue] = useState(value);
-    useEffect(() => {
-        if (value !== selectedValue) {
-            setSelectedValue(value);
-        }
-    }, [value]);
 
     const dbOptions = useMemo(() => getOptionsDB(db), [db?.fieldMap, db?.where, db?.onLoad]);
     const [lookup, setLookup] = useState<Option[]>([]);
@@ -140,31 +134,31 @@ export const Select = ({
         const combinedOptions = getOptions(options, lookup, order);
 
         return arrayUnique(
-            selectedValue && !combinedOptions.length
-                ? [...combinedOptions, {label: `❌ ${selectedValue.toString()}`, value: selectedValue.toString()}]
-                : combinedOptions,
-            'value'
+            value && !combinedOptions.length
+                ? [...combinedOptions, { label: `❌ ${value.toString()}`, value: value.toString() }]
+                : combinedOptions
         );
 
-    }, [options, lookup, selectedValue, order]);
+    }, [options, lookup, order]);
 
-    if (!selectedValue && !optionEmpty && opts.length > 0) {
-        handleChange?.({target: {name: name, value: opts[0].value}}); //, opts
+    if (!value && !optionEmpty && opts.length > 0) {
+        handleChange?.({ target: { name, value: opts[0].value } });
     }
+    
 
     const id = useId();
     return (
         <Wrapper className={formWrapClass || theme.Select.wrapClass}>
-            {label && <Label label={label} required={required} htmlFor={id}/>}
-            <Wrapper className={pre || post ? "input-group flex-nowrap": ""}>
+            {label && <Label label={label} required={required} htmlFor={id} />}
+            <Wrapper className={pre || post ? "input-group flex-nowrap" : ""}>
                 {pre && <span className="input-group-text">{pre}</span>}
                 <select
                     id={id}
                     name={name}
                     className={`form-select ${className || theme.Select.className}`}
-                    value={selectedValue}
+                    value={value ?? ''}
                     required={required}
-                    disabled={disabled || (!updatable && !isEmpty(selectedValue))}
+                    disabled={disabled || (!updatable && !isEmpty(value))}
                     onChange={handleChange}
                     title={title}
                 >
@@ -179,26 +173,26 @@ export const Select = ({
 };
 
 export const Autocomplete = ({
-                                name,
-                                //value           = undefined,
-                                min             = undefined,
-                                max             = undefined,
-                                onChange        = undefined,
-                                required        = false,
-                                updatable       = true,
-                                disabled        = false,
-                                label           = undefined,
-                                placeholder     = undefined,
-                                pre             = undefined,
-                                post            = undefined,
-                                feedback        = undefined,
-                                options         = [],
-                                db              = undefined,
-                                order           = undefined,
-                                wrapClass       = undefined,
-                                className       = undefined,
-} : AutocompleteProps) => {
-    const { value, handleChange, formWrapClass } = useFormContext({name, onChange, wrapClass});
+    name,
+    //value           = undefined,
+    min = undefined,
+    max = undefined,
+    onChange = undefined,
+    required = false,
+    updatable = true,
+    disabled = false,
+    label = undefined,
+    placeholder = undefined,
+    pre = undefined,
+    post = undefined,
+    feedback = undefined,
+    options = [],
+    db = undefined,
+    order = undefined,
+    wrapClass = undefined,
+    className = undefined,
+}: AutocompleteProps) => {
+    const { value, handleChange, formWrapClass } = useFormContext({ name, onChange, wrapClass });
 
     const theme = useTheme("select");
 
@@ -234,7 +228,7 @@ export const Autocomplete = ({
         setSelectedItems(prevState => {
             const updatedItems = [...prevState, currentValue];
             setTimeout(() => {
-                handleChange?.({target: {name: name, value: updatedItems}}); //, opts
+                handleChange?.({ target: { name: name, value: updatedItems } }); //, opts
             }, 0);
 
             return updatedItems;
@@ -247,7 +241,7 @@ export const Autocomplete = ({
         setSelectedItems(prevState => {
             const updatedItems = prevState.filter(item => item !== currentValue);
             setTimeout(() => {
-                handleChange?.({target: {name: name, value: updatedItems}}); //, opts
+                handleChange?.({ target: { name: name, value: updatedItems } }); //, opts
             }, 0);
 
             return updatedItems;
@@ -257,7 +251,7 @@ export const Autocomplete = ({
     const id = useId();
     return (
         <Wrapper className={formWrapClass || theme.Autocomplete.wrapClass}>
-            {label && <Label label={label} required={required} htmlFor={id}/>}
+            {label && <Label label={label} required={required} htmlFor={id} />}
             <Wrapper className={pre || post ? "input-group flex-nowrap" : ""}>
                 {pre && <span className="input-group-text">{pre}</span>}
                 <div className={`d-flex flex-wrap gap-1 form-control`}>
@@ -288,24 +282,24 @@ export const Autocomplete = ({
 };
 
 export const Checklist = ({
-                                name,
-                                //value       = [],
-                                onChange    = undefined,
-                                required    = false,
-                                updatable   = true,
-                                disabled    = false,
-                                label       = undefined,
-                                title       = undefined,
-                                pre         = undefined,
-                                post        = undefined,
-                                feedback    = undefined,
-                                options     = [],
-                                db          = undefined,
-                                order       = undefined,
-                                wrapClass   = undefined,
-                                checkClass  = undefined,
-} : ChecklistProps) => {
-    const { value, handleChange, formWrapClass } = useFormContext({name, onChange, wrapClass});
+    name,
+    //value       = [],
+    onChange = undefined,
+    required = false,
+    updatable = true,
+    disabled = false,
+    label = undefined,
+    title = undefined,
+    pre = undefined,
+    post = undefined,
+    feedback = undefined,
+    options = [],
+    db = undefined,
+    order = undefined,
+    wrapClass = undefined,
+    checkClass = undefined,
+}: ChecklistProps) => {
+    const { value, handleChange, formWrapClass } = useFormContext({ name, onChange, wrapClass });
 
     const valueArray = useMemo(() => valueToArray(value), [value]);
     const [selectedItems, setSelectedItems] = useState(() => valueArray);
@@ -328,7 +322,7 @@ export const Checklist = ({
         setSelectedItems(prevState => {
             const updatedItems = prevState.filter(item => item !== currentValue);
             setTimeout(() => {
-                handleChange?.({target: {name: name, value: updatedItems}}); //, opts
+                handleChange?.({ target: { name: name, value: updatedItems } }); //, opts
             }, 0);
 
             return updatedItems;
@@ -338,7 +332,7 @@ export const Checklist = ({
     const handleChecklistChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const currentValue = e.target.value;
 
-        if(!e.target.checked) {
+        if (!e.target.checked) {
             removeItem(currentValue);
             return;
         }
@@ -354,7 +348,7 @@ export const Checklist = ({
         setSelectedItems(prevState => {
             const updatedItems = [...prevState, currentValue];
             setTimeout(() => {
-                handleChange?.({target: {name: name, value: updatedItems}}); //, opts
+                handleChange?.({ target: { name: name, value: updatedItems } }); //, opts
             }, 0);
 
             return updatedItems;
@@ -363,7 +357,7 @@ export const Checklist = ({
 
     return (
         <Wrapper className={formWrapClass}>
-            {label && <><Label label={label} className={"form-check-label"} required={required}/><hr className={"mt-0"} /></>}
+            {label && <><Label label={label} className={"form-check-label"} required={required} /><hr className={"mt-0"} /></>}
             <Wrapper className={pre || post ? "input-group" : ""}>
                 {pre && <span className="input-group-text">{pre}</span>}
                 {opts.map((op) => {
