@@ -165,21 +165,34 @@ const db = {
             handleError(`updating data in Firebase for ${path}`, error, exception);
         }
     },
-    setChunks: async (path: string, data: any, chunkSize: number = 1000, purge: boolean = false, exception: boolean = false): Promise<void> => {
+    setChunks: async (
+        path: string,
+        data: any,
+        chunkSize: number = 1000,
+        purge: boolean = false,
+        setMessage?: (p: { message: string; chunkDone?: number; totalChunks?: number }) => void,
+        exception: boolean = false
+      ): Promise<void> => {
         const dbRef = getDatabase().ref(path);
         try {
             if (purge) {
                 await dbRef.remove();
+                setMessage?.({message: `Purging existing data at ${path}`});
                 consoleLog(`Purged existing data at ${path}`);
             }
+            
             const entries = Object.entries(cleanRecord(data));
+            const totalChunks = Math.ceil(entries.length / chunkSize); 
             for (let i = 0; i < entries.length; i += chunkSize) {
                 const chunk = entries.slice(i, i + chunkSize);
                 const chunkData = Object.fromEntries(chunk);
                 const chunkNumber = Math.floor(i / chunkSize);
         
                 await dbRef.update(chunkData);
-                consoleLog(`${path}: Chunk ${chunkNumber + 1}/${Math.ceil(entries.length / chunkSize)} saved (${Object.keys(chunkData).length} items)`);
+
+                const chunkDone = chunkNumber + 1;
+                setMessage?.({message: `Saving chunk ${chunkDone}/${totalChunks}`, chunkDone: chunkDone, totalChunks: totalChunks});
+                consoleLog(`${path}: Chunk ${chunkDone}/${totalChunks} saved (${chunkSize} items)`);
             }
             consoleLog(`Data successfully set in chunks in Firebase for ${path}`);
         } catch (error) {
