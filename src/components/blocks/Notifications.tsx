@@ -29,8 +29,8 @@ function Notifications({
               toggleButton={{
                 icon: "bell",
               }}
-              className={theme.Notifications.Dropdown.className}
-              buttonClass={theme.Notifications.Dropdown.buttonClass}
+              className={"d-flex align-items-center " + theme.Notifications.Dropdown.className}
+              buttonClass={"fs-20px " + theme.Notifications.Dropdown.buttonClass}
               menuClass={theme.Notifications.Dropdown.menuClass}
               badge={badge}
               header="NOTIFICATIONS"

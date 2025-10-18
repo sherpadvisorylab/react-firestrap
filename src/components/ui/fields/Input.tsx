@@ -74,7 +74,7 @@ export const Input = ({
     wrapClass = undefined,
     className = undefined
 }: BaseInputProps) => {
-    const { value, handleChange, formWrapClass } = useFormContext({name, onChange, wrapClass, inputType: type});
+    const { value, handleChange, formWrapClass } = useFormContext({name, onChange, wrapClass, inputType: type, defaultValue});
     const id = useId();
     const handleDrop = useHandleDrop({ name, value, handleChange });
 
@@ -91,7 +91,7 @@ export const Input = ({
                     placeholder={placeholder}
                     required={required}
                     disabled={disabled || (!updatable && !isEmpty(value))}
-                    value={value ?? defaultValue ?? ""}
+                    value={value}
                     onChange={handleChange}
                     min={min}
                     max={max}
@@ -171,7 +171,7 @@ export const Checkbox = ({
     wrapClass = undefined,
     className = undefined
 }: CheckboxProps) => {
-    const { value, handleChange, formWrapClass } = useFormContext({name, onChange, wrapClass});
+    const { value, handleChange, formWrapClass } = useFormContext({name, onChange, wrapClass, defaultValue});
 
     const id = useId();
     const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -182,6 +182,7 @@ export const Checkbox = ({
     if (!wrapClass && label) {
         wrapClass = "checkbox"
     }
+    console.log("Checkbox", name, value, defaultValue);
     return (
         <Wrapper className={formWrapClass}>
             {pre}
@@ -240,7 +241,7 @@ export const TextArea = ({
     className = undefined,
     wrapClass = undefined
 }: TextAreaProps) => {
-    const { value, handleChange, formWrapClass } = useFormContext({name, onChange, wrapClass});
+    const { value, handleChange, formWrapClass } = useFormContext({name, onChange, wrapClass, defaultValue});
 
     const id = useId();
     const handleDrop = useHandleDrop({ name, value, handleChange });
@@ -260,7 +261,6 @@ export const TextArea = ({
                     required={required}
                     disabled={disabled || (!updatable && !isEmpty(value))}
                     value={value}
-                    defaultValue={defaultValue}
                     onChange={handleChange}
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={handleDrop}

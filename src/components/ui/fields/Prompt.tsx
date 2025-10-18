@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Switch, TextArea, Wrapper, LoadingButton, Dropdown, DropdownItem, Select, Range } from '../..';
+import { Switch, TextArea, Wrapper, LoadingButton, Dropdown, DropdownItem, Select, Range, ActionButton } from '../..';
 import {useTheme} from "../../../Theme";
 import { AI, AIFetchConfig } from '../../../integrations/ai';
 import { PROMPT_CLEANUP, PROMPT_NO_REFERENCE, PromptVariables } from '../../../conf/Prompt';
@@ -108,7 +108,9 @@ const PromptRunner = ({
             {pre}
             <div className={prompt ? promptClass : "position-relative"}>
                 <div className={promptActionClass}>
-                    <LoadingButton className={value?.prompt?.value ? "btn-outline-theme border-0" : "btn-outline-warning border-0"} icon={prompt ? "terminal-fill" : "terminal"} title={prompt ? "Mode: Prompt Editor" : "Mode: Run Prompt"} onClick={() => {
+                    <ActionButton className={value?.prompt?.value ? "btn-outline-theme border-0" : "btn-outline-warning border-0"} 
+                        icon={prompt ? "terminal-fill" : "terminal"} title={prompt ? "Mode: Prompt Editor" : "Mode: Run Prompt"} 
+                        onClick={() => {
                         setPrompt(!prompt);
                     }} />
 
