@@ -29,6 +29,7 @@
         onChange?: FieldOnChange;
         wrapClass?: string;
         inputType?: InputType;
+        defaultValue?: any;
     }
     interface FormContextResult {
         value: any;
@@ -54,13 +55,11 @@
     const FormContext = createContext<FormProviderProps | null>(null);
     
 
-
-
-    export const useFormContext = ({name, onChange, wrapClass, inputType = "text"}: FormContextProps): FormContextResult => {
+    export const useFormContext = ({name, onChange, wrapClass, inputType = "text", defaultValue}: FormContextProps): FormContextResult => {
         const ctx = useContext(FormContext);
         if (!ctx) throw new Error("useFormContext must be used within a FormContext.Provider");
         if (!name) throw new Error("useFormContext: name is required");
-        
+
         const record = {...ctx.record};
         const formChange = (event: ChangeHandler) => {
             const path = event.target.name.split(".");
@@ -95,6 +94,10 @@
         }
 
         const value = name.split(".").reduce((acc, key) => acc?.[key], ctx.record);
+        if (value === undefined && defaultValue !== undefined) {
+            formChange({ target: { name, value: defaultValue } });
+        }
+
         return {
             value,
             handleChange: (event) => {
@@ -102,7 +105,6 @@
                 onChange?.({event, name, value, record, onChange: formChange});
 
                 ctx.setRecord(record);
-                console.log("useFormContext handleChange", onChange);
             },
             formWrapClass: [wrapClass, ctx.wrapClass].filter(Boolean).join(" ")
         };  

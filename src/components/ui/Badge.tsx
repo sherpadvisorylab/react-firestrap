@@ -3,9 +3,11 @@ import {useTheme} from "../../Theme";
 import { UIProps } from '../..';
 import { Wrapper } from "./GridSystem";
 
+export type BadgeType = "info" | "success" | "warning" | "danger" | "primary" | "secondary" | "light" | "dark";
+
 export type BadgeProps = {
     children: string | React.ReactNode;
-    type?: "info" | "success" | "warning" | "danger" | "primary" | "secondary" | "light" | "dark";
+    type?: BadgeType;
 } & UIProps;
 
 const Badge = ({

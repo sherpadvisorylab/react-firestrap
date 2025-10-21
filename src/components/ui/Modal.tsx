@@ -129,7 +129,7 @@ const ModalDefault = ({
     window.document.body.style.overflow = "hidden";
     const handleClose = () => {
         window.document.body.style.overflow = "auto";
-        onClose && onClose();
+        onClose?.();
     }
 
     return createPortal(<>
@@ -152,7 +152,7 @@ const ModalDefault = ({
                                     setSizeClass((prev) => prev === "fullscreen" ? size === "fullscreen" ? "lg" : size : "fullscreen")
                                 }}
                             />}
-                            {onClose && <LoadingButton
+                            {onClose && <ActionButton
                                 className="btn-close"
                                 onClick={handleClose}
                             />}
@@ -181,7 +181,7 @@ const ModalDefault = ({
                                 handleClose()
                             }}
                         />}
-                        {onClose && <LoadingButton
+                        {onClose && <ActionButton
                             className="btn-link"
                             label={"Cancel"}
                             onClick={handleClose}
@@ -205,7 +205,6 @@ export const ModalYesNo = ({
     return <ModalDefault
         title={title}
         buttonFullscreen={false}
-        onClose={onClose}
         footer={<>
             {onYes && <LoadingButton
                 className="btn-primary"
@@ -213,7 +212,7 @@ export const ModalYesNo = ({
                 onClick={async (e) => {
                     e.preventDefault();
                     await onYes(e);
-                    onClose && onClose()
+                    onClose?.()
                 }}
             />}
             {onNo && <LoadingButton
@@ -222,7 +221,7 @@ export const ModalYesNo = ({
                 onClick={async (e) => {
                     e.preventDefault();
                     await onNo(e);
-                    onClose && onClose()
+                    onClose?.()
                 }}
             />}
         </>}
@@ -239,9 +238,8 @@ export const ModalOk = ({
     return <ModalDefault
         title={title}
         buttonFullscreen={false}
-        onClose={onClose}
         footer={<>
-            <LoadingButton className="btn-primary" label={"Ok"} onClick={onClose} />
+            <ActionButton className="btn-primary" label={"Ok"} onClick={onClose} />
         </>}
     >
         {children}

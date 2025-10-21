@@ -1,18 +1,19 @@
 import React, {useEffect, useState} from 'react';
 import { useNavigate } from 'react-router-dom';
 import {useTheme} from "../../Theme";
-import { UIProps } from '../..';
+import { Badge, UIProps } from '../..';
 import { Wrapper } from './GridSystem';
+import { BadgeType } from './Badge';
 
 export interface IButton extends UIProps {
-    onClick?: (e: any) => void;
+    onClick?: (e: any) => any;
     icon?: string;
     label?: string | React.ReactNode;
     badge?: string;
     title?: string;
     disabled?: boolean;
     showLoader?: boolean;
-    badgeClass?: string;
+    badgeType?: BadgeType;
     iconClass?: string;
     toggle?: string;
     target?: string;
@@ -20,7 +21,7 @@ export interface IButton extends UIProps {
 }
 
 export interface LoadingButtonProps extends Omit<IButton, "onClick"> {
-    onClick?: (e: any, setMessage?: (msg: string) => void) => void;
+    onClick?: (e: any, setMessage?: (msg: string) => any) => Promise<any>;
 }
   
 export const LoadingButton = ({
@@ -35,7 +36,7 @@ export const LoadingButton = ({
     post            = undefined,
     wrapClass       = undefined,
     className       = undefined,
-    badgeClass      = undefined,
+    badgeType       = undefined,
     iconClass       = undefined,
     style           = undefined
 }: LoadingButtonProps = {}) => {
@@ -55,7 +56,7 @@ export const LoadingButton = ({
             {pre}
             <button
                 title={title}
-                className={"btn " + (className || theme.LoadingButton.className) + (badge ? " position-relative" : "") + (loader && message ? " text-nowrap" : "")}
+                className={"btn " + (className || theme.LoadingButton.className) + (badge != null ? " position-relative" : "") + (loader && message ? " text-nowrap" : "")}
                 style={style}
                 disabled={disable || loader}
                 onClick={async (e) => {
@@ -70,7 +71,7 @@ export const LoadingButton = ({
                 {loader && <><i className={(label ? "me-1 " : "") + theme.LoadingButton.spinnerClass}></i>{message && <span className='ms-1'>{message}</span>}</>}
                 {(icon && !loader) && <i className={(label ? "me-1 " : "") + (iconClass ? iconClass + " " : "") + theme.getIcon(icon)}></i>}
                 {label}
-                {badge && !loader && <span className={"position-absolute end-0 top-0 badge " + (badgeClass || theme.LoadingButton.badgeClass)}>{badge}</span>}
+                {(badge != null && !loader) && <Badge type={badgeType} className={"position-absolute end-0 top-0 rounded-pill"}>{badge}</Badge>}
             </button>
             {post}
         </Wrapper>
@@ -90,7 +91,7 @@ export const ActionButton = ({
     post            = undefined,
     wrapClass       = undefined,
     className       = undefined,
-    badgeClass      = undefined,
+    badgeType       = undefined,
     iconClass       = undefined,
     style           = undefined
 }: IButton = {}) => {
@@ -101,7 +102,7 @@ export const ActionButton = ({
             {pre}
             <button
                 title={title}
-                className={"btn " + (className || theme.ActionButton.className) + (badge ? " position-relative" : "")}
+                className={"btn " + (className || theme.ActionButton.className) + (badge != null ? " position-relative" : "")}
                 style={style}
                 data-bs-toggle={toggle}
                 data-bs-target={target}
@@ -114,7 +115,7 @@ export const ActionButton = ({
             >
                 {icon && <i className={(label ? "me-1 " : "") + (iconClass ? iconClass + " " : "") + theme.getIcon(icon)}></i>}
                 {label}
-                {badge && <span className={"position-absolute badge " + (badgeClass || theme.ActionButton.badgeClass)}>{badge}</span>}
+                {badge != null&& <Badge type={badgeType} className={"position-absolute end-0 top-0 rounded-pill"}>{badge}</Badge>}
             </button>
             {post}
         </Wrapper>
