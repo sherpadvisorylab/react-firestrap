@@ -2,6 +2,7 @@ import React, { useState, ChangeEvent, DragEvent } from 'react';
 import Papa, { ParseResult } from 'papaparse';
 import { Wrapper } from '../GridSystem';
 import { Icon, normalizeKey, UIProps } from '../../..';
+import { smartTypeCast } from '../../../libs/utils';
 
 type CsvCell = string | null | undefined;
 interface CsvDataProps {
@@ -47,32 +48,36 @@ export const UploadCSV: React.FC<UploadCSVProps> = ({
     if (removeEmptyFields && ["", null].includes(value)) return;
     if (normalizeKeys) key = normalizeKey(key);
     if (onParseField) return onParseField([key, value]);
-
-    return [key.trim(), typeof value === "string" ? value.trim() : value] as ParseFieldProp;
+    return [key.trim(), smartTypeCast(value)] as ParseFieldProp;
   }
 
   const handleFile = (file: File | null) => {
     if (!file) return;
+    
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
-      dynamicTyping: true,
       delimiter: delimiter,
+      dynamicTyping: false,
       complete: (results: ParseResult<CsvDataProps>) => {
         setError(null);
-        onDataLoaded({data: results.data.map(item =>
-          Object.fromEntries(
-            Object.entries(item).reduce<ParseFieldProp[]>((acc, [k, v]) => {
-              const sanitizedField = sanitizeField([k, v]);
-              if (sanitizedField) acc.push(sanitizedField);
-              return acc;
-            }, [])
-          )
-        ), fields: (results.meta?.fields || []).reduce<string[]>((acc, field) => {
-          if (!field) return acc;
-          acc.push(normalizeKeys ? normalizeKey(field) : field);
-          return acc;
-        }, []), file: file});
+        onDataLoaded({
+          data: results.data.map(item =>
+            Object.fromEntries(
+              Object.entries(item).reduce<ParseFieldProp[]>((acc, [k, v]) => {
+                const sanitizedField = sanitizeField([k, v]);
+                if (sanitizedField) acc.push(sanitizedField);
+                return acc;
+              }, [])
+            )
+          ), 
+          fields: (results.meta?.fields || []).reduce<string[]>((acc, field) => {
+            if (!field) return acc;
+            acc.push(normalizeKeys ? normalizeKey(field) : field);
+            return acc;
+          }, []), 
+          file: file
+        });
       },
       error: (err: any) => {
         setError(err.message);

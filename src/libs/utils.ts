@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React from 'react';
 import {converter} from "./converter";
 import {getConfig} from "../Config";
 import { RecordProps } from '../integrations/google/firedatabase';
@@ -402,3 +402,12 @@ export const cleanRecord = (record: RecordProps | undefined): RecordProps => {
     }
     return cleaned;
 }
+
+export const smartTypeCast = (value: any): string | number | boolean | null | undefined => {
+    if (value === null || value === undefined || value === "" || typeof value !== "string") return value;
+    if (/^(true|false)$/i.test(value)) return value.toLowerCase() === "true";
+    if (/^0\d+$/.test(value)) return value;
+    if (/^-?\d+(\.\d+)?$/.test(value)) return Number(value);
+    return value.trim();
+};
+  

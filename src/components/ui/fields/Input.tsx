@@ -182,7 +182,7 @@ export const Checkbox = ({
     if (!wrapClass && label) {
         wrapClass = "checkbox"
     }
-    console.log("Checkbox", name, value, defaultValue);
+    //console.log("Checkbox", name, value, defaultValue);
     return (
         <Wrapper className={formWrapClass}>
             {pre}

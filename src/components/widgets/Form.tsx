@@ -183,11 +183,11 @@
             const {name, children: childChildren} = child.props;
             const newProps: Record<string, any> = {};
             if (name) {
-                newProps.name   = setParentName(name, parentName);
-                newProps.key    = parentKey ?? newProps.name;
+                newProps.name       = setParentName(name, parentName);
+                newProps.key        = parentKey ?? newProps.name;
             }
             if (childChildren) {
-                newProps.children = setFormFieldsName({
+                newProps.children   = setFormFieldsName({
                     children: childChildren, 
                     parentName, 
                     parentKey,
@@ -207,7 +207,7 @@
         handlers?: FormHandlers;
         savePath?: (record: RecordProps) => string;
         onLoad?: (record: RecordProps) => void;
-        onSave?: ({record, action, storagePath}: {record?: RecordProps, storagePath?: string, action: 'create' | 'update'}) => Promise<string | undefined>;
+        onSave?: ({record, prevRecord, action, storagePath}: {record?: RecordProps, prevRecord?: RecordProps, storagePath?: string, action: 'create' | 'update'}) => Promise<string | undefined>;
         onDelete?: ({record}: {record?: RecordProps}) => Promise<string | undefined>;
         onFinally?: ({record, action}: {record?: RecordProps, action: 'create' | 'update' | 'delete'}) => Promise<boolean>;
         log?: boolean;
@@ -337,12 +337,11 @@
             const recordStoragePath = onSave 
                 ? await onSave({
                     record: recordRef.current, 
+                    prevRecord: defaultValues,
                     action: action, 
                     storagePath: dataStoragePath
                 }) ?? dataStoragePath
                 : savePath?.(recordRef.current ?? {}) ?? dataStoragePath;
-
-            console.log("handleSave TESSST", recordRef.current?._key, defaultValues, Object.keys(defaultValues ?? {}).length, recordStoragePath, dataStoragePath);
 
             recordStoragePath && await db.set(recordStoragePath, cleanRecord(recordRef.current));
             return await handleFinally(action);

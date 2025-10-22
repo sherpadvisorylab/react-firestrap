@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { ActionButton } from './Buttons';
 import { FieldOnChange, setFormFieldsName, useFormContext } from '../widgets/Form';
+import { Row } from './GridSystem';
 
 interface RepeatProps {
     name: string;
@@ -10,6 +11,7 @@ interface RepeatProps {
     onAdd?: (value: any[]) => void;
     onRemove?: (index: number) => void;
     className?: string;
+    layout?: 'vertical' | 'horizontal';
     min?: number;
     max?: number;
     label?: string;
@@ -24,6 +26,7 @@ const Repeat = ({
     onAdd,
     onRemove,
     className,
+    layout = 'vertical',
     min = undefined,
     max = undefined,
     label = undefined,
@@ -33,19 +36,21 @@ const Repeat = ({
     const [release, setRelease] = useState(0);
 
     const components = (Array.isArray(value) ? value : Array.from({ length: min || 0 }, () => ({})))?.map((_, index) =>
-        <div key={`${name}-${index}-${release}`} className="position-relative pt-3 px-2">
+        <div key={`${name}-${index}-${release}`} className={`position-relative pt-3 px-2`}>
             {!readOnly && index >= (min || 0) && <ActionButton 
                 wrapClass='position-absolute top-0 end-0' 
                 className='btn-close' 
                 
                 onClick={() => handleRemove(index)} 
             />}
-            {setFormFieldsName({
-                children: typeof children === 'function'
-                ? children({record: value?.[index], records: value, index: index})
-                : children, 
-                parentName: `${name}.${index}` 
-            })}
+            <Row>
+                {setFormFieldsName({
+                    children: typeof children === 'function'
+                    ? children({record: value?.[index], records: value, index: index})
+                    : children, 
+                    parentName: `${name}.${index}`
+                })}
+            </Row>
             <hr />
         </div>
     );
