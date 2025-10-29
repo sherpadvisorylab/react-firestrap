@@ -93,10 +93,25 @@
             console.log("FORM handleChange", path, value, record);
         }
 
-        const value = name.split(".").reduce((acc, key) => acc?.[key], ctx.record);
-        if (value === undefined && defaultValue !== undefined) {
+        const currentValue = name.split(".").reduce((acc, key) => acc?.[key], ctx.record);
+        if (currentValue === undefined && defaultValue !== undefined) {
             formChange({ target: { name, value: defaultValue } });
         }
+
+        const toControlled = (val: any) => {
+            switch (inputType) {
+              case "checkbox":
+                // i checkbox vogliono boolean (usato poi come checked={value})
+                return val ?? false;
+              case "number":
+              case "range":
+                // number/range vogliono numero oppure '' (mai undefined)
+              default:
+                // tutti gli altri (text, email, password, color, date, time, datetime-local, week, month, radio, select, textarea)
+                return val ?? "";
+            }
+        };
+        const value = toControlled(currentValue ?? defaultValue);
 
         return {
             value,
