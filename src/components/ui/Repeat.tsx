@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { ActionButton } from './Buttons';
 import { FieldOnChange, setFormFieldsName, useFormContext } from '../widgets/Form';
-import { Row } from './GridSystem';
+import { Col, Row } from './GridSystem';
 
 interface RepeatProps {
     name: string;
@@ -11,7 +11,7 @@ interface RepeatProps {
     onAdd?: (value: any[]) => void;
     onRemove?: (index: number) => void;
     className?: string;
-    layout?: 'vertical' | 'horizontal';
+    layout?: 'vertical' | 'horizontal' | 'inline';
     min?: number;
     max?: number;
     label?: string;
@@ -26,44 +26,58 @@ const Repeat = ({
     onAdd,
     onRemove,
     className,
-    layout = 'vertical',
+    layout = 'inline',
     min = undefined,
     max = undefined,
     label = undefined,
     readOnly = false,
 }: RepeatProps) => {
-    const { value, handleChange } = useFormContext({name, onChange});
+    const { value, handleChange } = useFormContext({ name, onChange });
     const [release, setRelease] = useState(0);
 
-    const components = (Array.isArray(value) ? value : Array.from({ length: min || 0 }, () => ({})))?.map((_, index) =>
-        <div key={`${name}-${index}-${release}`} className={`position-relative pt-3 px-2`}>
-            {!readOnly && index >= (min || 0) && <ActionButton 
-                wrapClass='position-absolute top-0 end-0' 
-                className='btn-close' 
-                
-                onClick={() => handleRemove(index)} 
-            />}
-            <Row>
-                {setFormFieldsName({
-                    children: typeof children === 'function'
-                    ? children({record: value?.[index], records: value, index: index})
-                    : children, 
-                    parentName: `${name}.${index}`
-                })}
-            </Row>
-            <hr />
-        </div>
+    const components = (Array.isArray(value) ? value : Array.from({ length: min || 0 }, () => ({})))?.map((_, index) => {
+        const canRemove = !readOnly && index >= (min || 0);
+
+        return (
+            <div key={`${name}-${index}-${release}`} className={`position-relative pt-3 px-2`}>
+                {layout === 'horizontal' && canRemove && (
+                    <ActionButton
+                        wrapClass="position-absolute top-0 end-0"
+                        className="btn-close"
+                        onClick={() => handleRemove(index)}
+                    />
+                )}
+                <Row className='d-flex align-items-center'>
+                    {setFormFieldsName({
+                        children: typeof children === 'function'
+                            ? children({ record: value?.[index], records: value, index: index })
+                            : children,
+                        parentName: `${name}.${index}`
+                    })}
+                    {layout === 'inline' && canRemove && (
+                        <Col xs={1}>
+                            <ActionButton
+                                className="btn-close"
+                                onClick={() => handleRemove(index)}
+                            />
+                        </Col>
+                    )}
+                </Row>
+                {layout !== 'inline' && <hr />}
+            </div>
+        )
+    }
     );
 
     const handleAdd = () => {
-        const next = Array.isArray(value) 
-            ? [...value, {}] 
+        const next = Array.isArray(value)
+            ? [...value, {}]
             : Array.from({ length: components.length + 1 }, () => ({}));
         onAdd?.(next);
         handleChange({ target: { name: `${name}.${next.length - 1}`, value: {} } });
         setRelease(prev => prev + 1);
     };
-    
+
     const handleRemove = (index: number) => {
         onRemove?.(index);
         handleChange({ target: { name: `${name}.${index}` } });
