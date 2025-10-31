@@ -289,7 +289,7 @@ export const arrayUnique = <T>(array: T[], key?: keyof T): T[] => {
 };
 
 export const isEmpty = (data: any): boolean => {
-    return data === undefined || data === null || data === '';
+    return data === undefined || data === null || data === '' || data === false || data === '0' || data === 0 || (typeof data === 'object' && Object.keys(data).length === 0);
 };
 
 

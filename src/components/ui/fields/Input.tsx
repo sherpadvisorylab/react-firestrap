@@ -192,7 +192,7 @@ export const Checkbox = ({
                 name={name}
                 title={title}
                 className={`form-check-input${className ? " " + className : ""}`}
-                defaultChecked={value}
+                checked={value === valueChecked}
                 onChange={handleCheckboxChange}
             />
             {label && <label className="form-check-label ps-1" htmlFor={id}>

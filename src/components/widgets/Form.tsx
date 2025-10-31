@@ -61,6 +61,8 @@
         if (!name) throw new Error("useFormContext: name is required");
 
         const record = {...ctx.record};
+        const initialized = useRef(false);
+
         const formChange = (event: ChangeHandler) => {
             const path = event.target.name.split(".");
             const value = ["number", "range"].includes(inputType) ? Number(event.target.value) : event.target.value;
@@ -94,24 +96,13 @@
         }
 
         const currentValue = name.split(".").reduce((acc, key) => acc?.[key], ctx.record);
-        if (currentValue === undefined && defaultValue !== undefined) {
+        if (!initialized.current && currentValue === undefined && defaultValue !== undefined) {
+            console.log("FORM defaultValue!!!!!!!!!!!!", name, defaultValue);
             formChange({ target: { name, value: defaultValue } });
+            initialized.current = true;
         }
 
-        const toControlled = (val: any) => {
-            switch (inputType) {
-              case "checkbox":
-                // i checkbox vogliono boolean (usato poi come checked={value})
-                return val ?? false;
-              case "number":
-              case "range":
-                // number/range vogliono numero oppure '' (mai undefined)
-              default:
-                // tutti gli altri (text, email, password, color, date, time, datetime-local, week, month, radio, select, textarea)
-                return val ?? "";
-            }
-        };
-        const value = toControlled(currentValue ?? defaultValue);
+        const value = currentValue ?? defaultValue;
 
         return {
             value,
