@@ -61,7 +61,7 @@
         if (!name) throw new Error("useFormContext: name is required");
 
         const record = {...ctx.record};
-        const initialized = useRef(false);
+        //const initialized = useRef(false);
 
         const formChange = (event: ChangeHandler) => {
             const path = event.target.name.split(".");
@@ -94,7 +94,7 @@
             
             console.log("FORM handleChange", path, value, record);
         }
-
+/*
         const currentValue = name.split(".").reduce((acc, key) => acc?.[key], ctx.record);
         if (!initialized.current && currentValue === undefined && defaultValue !== undefined) {
             console.log("FORM defaultValue!!!!!!!!!!!!", name, defaultValue);
@@ -103,14 +103,28 @@
         }
 
         const value = currentValue ?? defaultValue;
+*/
 
+        const value = useMemo(() => {
+            const currentValue = name.split(".").reduce((acc, key) => (acc === undefined ? undefined : acc[key]), ctx.record);
+            //if (!initialized.current) {
+               // initialized.current = true;
+                if (currentValue === undefined && defaultValue !== undefined) {
+                    //formChange({ target: { name, value: defaultValue } });
+                    return defaultValue ?? '';
+                }
+            //}
+            return currentValue ?? '';
+        }, [name, ctx.record, defaultValue]);
+
+        
         return {
             value,
             handleChange: (event) => {
                 formChange(event);
                 onChange?.({event, name, value, record, onChange: formChange});
 
-                ctx.setRecord(record);
+                ctx.setRecord({...record});
             },
             formWrapClass: [wrapClass, ctx.wrapClass].filter(Boolean).join(" ")
         };  

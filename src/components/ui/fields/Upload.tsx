@@ -30,7 +30,7 @@ const useFileUpload = <T extends FileProps>(
     wrapClass?: string
 ) => {
     const { value, handleChange, formWrapClass } = useFormContext({name, onChange, wrapClass});
-    const [files, setFiles] = useState<T[]>(value ?? []);
+    const [files, setFiles] = useState<T[]>(value || []);
     const [currentFile, setCurrentFile] = useState<T | null>(null);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     

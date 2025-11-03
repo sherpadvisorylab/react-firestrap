@@ -27,6 +27,7 @@ export type InputProps = Omit<BaseInputProps, 'type'>;
 export interface CheckboxProps extends FormFieldProps { 
     title?: string;
     valueChecked?: string;
+    valueUnchecked?: string;
 }
 
 export interface TextAreaProps extends FormFieldProps    {
@@ -166,16 +167,27 @@ export const Checkbox = ({
     title = undefined,
     required = false,
     valueChecked = "on",
+    valueUnchecked = "",
     pre = undefined,
     post = undefined,
     wrapClass = undefined,
     className = undefined
 }: CheckboxProps) => {
-    const { value, handleChange, formWrapClass } = useFormContext({name, onChange, wrapClass, defaultValue});
+//todo:se aggiungo il defaultvalue, succede che impazzisce. vedi pageeditor denominazione-regione
+//trattements esce object[object]
+// gli orari nelle card non escono
+//in page editor quando si usano le select per scegliere i tag html si salvano in un punto sbagliato
+//il render frontendnelle pagine non funziona quando voglio nascondere un elemento vedi social link
+//il render frontend l'ultimo elemento dentro al comune se non ha quartiere esce l'ultimo centro estetico
+    const { value, handleChange, formWrapClass } = useFormContext({name, onChange, wrapClass, 
+        defaultValue: defaultValue !== undefined 
+        ? defaultValue === valueChecked ? valueChecked : valueUnchecked
+        : undefined
+    });
 
     const id = useId();
     const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        event.target.value = event.target.checked ? valueChecked : ""
+        event.target.value = event.target.checked ? valueChecked : valueUnchecked
 
         handleChange?.(event);
     };
