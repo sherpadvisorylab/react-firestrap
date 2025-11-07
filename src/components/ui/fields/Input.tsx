@@ -27,7 +27,6 @@ export type InputProps = Omit<BaseInputProps, 'type'>;
 export interface CheckboxProps extends FormFieldProps { 
     title?: string;
     valueChecked?: string;
-    valueUnchecked?: string;
 }
 
 export interface TextAreaProps extends FormFieldProps    {
@@ -167,7 +166,6 @@ export const Checkbox = ({
     title = undefined,
     required = false,
     valueChecked = "on",
-    valueUnchecked = "",
     pre = undefined,
     post = undefined,
     wrapClass = undefined,
@@ -181,13 +179,13 @@ export const Checkbox = ({
 //il render frontend l'ultimo elemento dentro al comune se non ha quartiere esce l'ultimo centro estetico
     const { value, handleChange, formWrapClass } = useFormContext({name, onChange, wrapClass, 
         defaultValue: defaultValue !== undefined 
-        ? defaultValue === valueChecked ? valueChecked : valueUnchecked
+        ? defaultValue === valueChecked ? valueChecked : ''
         : undefined
     });
 
     const id = useId();
     const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        event.target.value = event.target.checked ? valueChecked : valueUnchecked
+        event.target.value = event.target.checked ? valueChecked : ''
 
         handleChange?.(event);
     };

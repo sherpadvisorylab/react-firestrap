@@ -4,6 +4,7 @@ export {default as path} from './path';
 export {default as log} from './log';
 export {default as seo} from './seo';
 export * from './converter';
+export * from './sanitizer';
 export * from './email';
 export * from './fetch';
 export * from './utils';

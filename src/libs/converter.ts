@@ -110,7 +110,8 @@ interface ConverterCore {
 }
 
 interface Converter extends ConverterCore {
-    parse: (values: Record<string, string>, pattern: string) => string;
+    parse: (values: Record<string, string>, pattern: string, target?: {key: string, value: any, hideEmpty: boolean}) => string;
+    truncate: (str: string, length?: number) => string;
     splitLast: (str: string, seps: string | string[], regException?: RegExp) => [string, string];
     splitFirst: (str: string, seps: string | string[], regException?: RegExp) => [string, string];
     padLeft: (str: string, length: number, char?: string, regex?: RegExp) => string;
@@ -120,20 +121,75 @@ interface Converter extends ConverterCore {
     [key: string]: ConverterCore[keyof ConverterCore] | any;
 }
 
-const getPathValue = (obj: Record<string, any>, path: string) => {
-    return path.split('.').reduce((acc, part) => acc?.[part], obj);
+type GetPathValueTarget = {
+    key: string;
+    value: Record<string, any>;
+    hideEmpty: boolean;
+}
+
+type SanitizerCallback = (value: any) => any;
+
+type GetPathValue = (
+    obj: Record<string, any>,
+    path: string,
+    target?: GetPathValueTarget,
+    sanitizerCallback?: SanitizerCallback
+  ) => string; 
+
+const getPathValue: GetPathValue = (obj, path, target, sanitizerCallback) => {
+    if (!obj || !path) return '';
+  
+    const parts = path.split(".");
+    let acc: any = obj;
+  
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i];
+  
+      if (acc == null) return '';
+  
+      // 🔹 Caso con [] → esplodo l’array e ricorro
+      if (target && part.endsWith("[]")) {
+        const key = part.slice(0, -2);
+        const arr = acc?.[key];
+        if (!Array.isArray(arr)) return '';
+  
+        const rest = parts.slice(i + 1).join(".");
+        if (!rest) {
+            target.value[target.key] = arr;
+            return '';
+        }
+
+        for(const index in arr) {
+            const value = getPathValue(arr[index], rest);
+            if(!target.hideEmpty || value !== '') {    
+                target.value[index] = {
+                    ...target.value?.[index] ?? {}, 
+                    [target.key]: sanitizerCallback?.(value) ?? value
+                };
+            }
+        }
+        return '';
+      }
+
+      acc = acc[part];
+    }
+
+    if (target && (!target.hideEmpty || acc !== '')) {
+        target.value[target.key] = sanitizerCallback?.(acc) ?? acc;
+    }
+    
+    return sanitizerCallback?.(acc) ?? acc;
 }
 
 export const converter: Converter = {
-    parse: (values, pattern) => {
+    parse: (values, pattern, target = undefined, sanitizerCallback = undefined) => {
         if (typeof pattern !== 'string') return pattern;
         const parse = pattern.replace(/{([^}:]+)(?::([^}:]+))?(?::([^}:]+))?}/g, (_, Key, Func, format) => {
             const [pre, key] = ((Key || '').indexOf('(') === -1 ? ['', Key] : Key.split('(', 2));
             const [func, post] = ((Func || '').indexOf(')') === -1 ? [Func, ''] : Func.split(')', 2));
 
-            const value = getPathValue(values, key);
+            const value = getPathValue(values, key, target, sanitizerCallback);
             if (!converter?.[func] || !value) {
-                //console.error(`Conversion failed`, values, key, func)
                 return value || '';
             }
 
@@ -242,6 +298,9 @@ export const converter: Converter = {
     subStringCount: (str, subStr) => {
         if (subStr === '') return 0;
         return str.split(subStr).length - 1;
+    },
+    truncate: (str, length = 100) => {
+        return str.length > length ? str.substring(0, length) : str;
     }
 };
 

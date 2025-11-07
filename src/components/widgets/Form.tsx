@@ -205,6 +205,21 @@
             if (name) {
                 newProps.name       = setParentName(name, parentName);
                 newProps.key        = parentKey ?? newProps.name;
+
+                if (child.props.pre && React.isValidElement(child.props.pre) ) {
+                    newProps.pre = setFormFieldsName({
+                        children: child.props.pre,
+                        parentName,
+                        parentKey: `${parentKey}.pre` ,
+                    });
+                }
+                if (child.props.post && React.isValidElement(child.props.post) ) {
+                    newProps.post = setFormFieldsName({
+                        children: child.props.post,
+                        parentName,
+                        parentKey: `${parentKey}.post` ,
+                    });
+                }
             }
             if (childChildren) {
                 newProps.children   = setFormFieldsName({
