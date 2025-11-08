@@ -160,11 +160,15 @@ const getPathValue: GetPathValue = (obj, path, target, sanitizerCallback) => {
         }
 
         for(const index in arr) {
-            const value = getPathValue(arr[index], rest);
+            const value = (() => {
+                const v = getPathValue(arr[index], rest);
+                return sanitizerCallback?.(v) ?? v;
+              })();
+            
             if(!target.hideEmpty || value !== '') {    
                 target.value[index] = {
                     ...target.value?.[index] ?? {}, 
-                    [target.key]: sanitizerCallback?.(value) ?? value
+                    [target.key]: value
                 };
             }
         }
@@ -174,11 +178,12 @@ const getPathValue: GetPathValue = (obj, path, target, sanitizerCallback) => {
       acc = acc[part];
     }
 
+    acc = sanitizerCallback?.(acc) ?? acc;
     if (target && (!target.hideEmpty || acc !== '')) {
-        target.value[target.key] = sanitizerCallback?.(acc) ?? acc;
+        target.value[target.key] = acc;
     }
     
-    return sanitizerCallback?.(acc) ?? acc;
+    return acc;
 }
 
 export const converter: Converter = {

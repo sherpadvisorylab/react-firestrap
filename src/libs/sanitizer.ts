@@ -15,6 +15,7 @@ type ConverterMask =
   | { func: keyof typeof converter; arg?: string };
 
 export interface SanitizerRule {
+  description?: string;
   transformations?: Transformation[];
   mask?: ConverterMask[];
 }
@@ -64,25 +65,30 @@ export const NORMALIZE_MAP: Record<string, string> = {
 
 const defaultRules: SanitizerConfig = {
     email: {
+        description: "Email: no spaces -> Lower/Trim",
         transformations: [{ pattern: "\\s+", replace: "" }],
         mask: ["toLower", "trim"]
     },
     phone: {
+        description: "Phone: Digits only",
         transformations: [{ pattern: "\\D", replace: "" }],
         mask: []
     },
     price: {
+        description: "Price: Digits/Dot/Comma/Minus -> toCurrency",
         transformations: [
-        { pattern: "[^0-9.,-]", replace: "" },
+        { pattern: "[^0-9.-]", replace: "" },
         { pattern: ",", replace: "." }
         ],
-        mask: ["toNumber"]
+        mask: ["toCurrency"]
     },
     name: {
+        description: "Name: All chars -> UcWords/Trim",
         transformations: [],
         mask: ["ucwords", "trim"]
     },
     date: {
+        description: "Date: All chars -> toDate (YYYY-MM-DD)",
         transformations: [],
         mask: [{ func: "toDate", arg: "YYYY-MM-DD" }]
     }
@@ -187,7 +193,7 @@ export class Sanitizer {
   }
 
   getOptions(): Record<string, string>[] {
-    return Object.keys(this.config).sort().map((key) => ({ label: converter.toCamel(key), value: key }));
+    return Object.keys(this.config).sort().map((key) => ({ label: this.config[key].description ?? converter.toCamel(key), value: key }));
   }
   
 
