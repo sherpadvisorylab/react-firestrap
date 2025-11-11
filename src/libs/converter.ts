@@ -1,3 +1,5 @@
+import { normalizeKey } from "./utils";
+
 interface DateTimeResult {
     year: string;
     shortYear: string;
@@ -106,6 +108,7 @@ interface ConverterCore {
     toCamel: (str: string, separator?: string, delimiter?: string[]) => string;
     toUpper: (str: string) => string;
     toLower: (str: string) => string;
+    toSlug: (str: string) => string;
     subStringCount: (str: string, subStr: string) => number;
 }
 
@@ -122,7 +125,7 @@ interface Converter extends ConverterCore {
 }
 
 type GetPathValueTarget = {
-    key: string;
+    key?: string;
     value: Record<string, any>;
     hideEmpty: boolean;
 }
@@ -155,7 +158,7 @@ const getPathValue: GetPathValue = (obj, path, target, sanitizerCallback) => {
   
         const rest = parts.slice(i + 1).join(".");
         if (!rest) {
-            target.value[target.key] = arr;
+            target.key && (target.value[target.key] = arr) || (target.value = arr);
             return '';
         }
 
@@ -166,10 +169,9 @@ const getPathValue: GetPathValue = (obj, path, target, sanitizerCallback) => {
               })();
             
             if(!target.hideEmpty || value !== '') {    
-                target.value[index] = {
-                    ...target.value?.[index] ?? {}, 
-                    [target.key]: value
-                };
+                target.value[index] = target.key
+                ? { ...(target.value?.[index] ?? {}), [target.key]: value }
+                : value;
             }
         }
         return '';
@@ -180,7 +182,8 @@ const getPathValue: GetPathValue = (obj, path, target, sanitizerCallback) => {
 
     acc = sanitizerCallback?.(acc) ?? acc;
     if (target && (!target.hideEmpty || acc !== '')) {
-        target.value[target.key] = acc;
+        target.key && (target.value[target.key] = acc) || (target.value = acc);
+
     }
     
     return acc;
@@ -236,6 +239,7 @@ export const converter: Converter = {
     },
     toUpper: (str) => str.toUpperCase(),
     toLower: (str) => str.toLowerCase(),
+    toSlug: (str) => normalizeKey(str),
     toNumberFormat: (num: string | number, locale = navigator.language) => {
         return new Intl.NumberFormat(locale).format(Number(num));
     },

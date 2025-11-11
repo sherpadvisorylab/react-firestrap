@@ -91,6 +91,11 @@ const defaultRules: SanitizerConfig = {
         description: "Date: All chars -> toDate (YYYY-MM-DD)",
         transformations: [],
         mask: [{ func: "toDate", arg: "YYYY-MM-DD" }]
+    },
+    slug: {
+        description: "Slug: All chars -> toSlug",
+        transformations: [],
+        mask: ["toSlug"]
     }
 }
 
