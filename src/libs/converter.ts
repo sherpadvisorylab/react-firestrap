@@ -151,30 +151,36 @@ const getPathValue: GetPathValue = (obj, path, target, sanitizerCallback) => {
       if (acc == null) return '';
   
       // 🔹 Caso con [] → esplodo l’array e ricorro
-      if (target && part.endsWith("[]")) {
+      if (part.endsWith("[]")) {
         const key = part.slice(0, -2);
         const arr = acc?.[key];
         if (!Array.isArray(arr)) return '';
   
         const rest = parts.slice(i + 1).join(".");
         if (!rest) {
-            target.key && (target.value[target.key] = arr) || (target.value = arr);
-            return '';
+            if(target) {
+                target.key && (target.value[target.key] = arr) || (target.value = arr);
+                return '';
+            }
+            return arr;
         }
 
+        const resultValue = target?.value ?? {};
         for(const index in arr) {
             const value = (() => {
                 const v = getPathValue(arr[index], rest);
                 return sanitizerCallback?.(v) ?? v;
-              })();
+            })();
             
-            if(!target.hideEmpty || value !== '') {    
-                target.value[index] = target.key
-                ? { ...(target.value?.[index] ?? {}), [target.key]: value }
-                : value;
+            if (target) {
+                if(!target.hideEmpty || value !== '') {    
+                    resultValue[index] = target.key
+                    ? { ...(resultValue?.[index] ?? {}), [target.key]: value }
+                    : value;
+                }
             }
         }
-        return '';
+        return target ? '' : resultValue;
       }
 
       acc = acc[part];
@@ -183,7 +189,7 @@ const getPathValue: GetPathValue = (obj, path, target, sanitizerCallback) => {
     acc = sanitizerCallback?.(acc) ?? acc;
     if (target && (!target.hideEmpty || acc !== '')) {
         target.key && (target.value[target.key] = acc) || (target.value = acc);
-
+        return '';
     }
     
     return acc;
