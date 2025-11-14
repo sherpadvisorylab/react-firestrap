@@ -9,6 +9,7 @@ import { RecordProps } from '../../../integrations/google/firedatabase';
 
 export interface PromptProps extends FormFieldProps {
     mode?: "editor" | "runner";
+    renderPromptDisabled?: (props: Omit<FormFieldProps, "defaultValue">) => React.ReactNode;
     rows?: number;
     defaultValue?: {
         value?: string;
@@ -32,6 +33,7 @@ const promptActionClass = "position-absolute top-0 end-0 d-flex gap-2";
 
 export const Prompt = ({
     mode = "editor",
+    renderPromptDisabled,
     ...props
 }: PromptProps) => {
     const { value } = useFormContext({name: props.name});
@@ -39,7 +41,7 @@ export const Prompt = ({
         ? <PromptEditor {...props} value={value} /> 
         : value?.prompt?.enabled 
             ? <PromptRunner {...props} value={value} /> 
-            : <PromptDisabled {...props} />
+            : <PromptDisabled {...props} renderPromptDisabled={renderPromptDisabled} />
 }
 
 
@@ -58,7 +60,7 @@ const PromptEditor = ({
 }: PromptInternalProps) => {
     const theme = useTheme("prompt");
     const caption = label || name;
-
+console.log("PromptEditorAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", name, value, defaultValue);
     return (
         <Wrapper className={wrapClass || theme.Prompt.wrapClass}>
             {pre}
@@ -208,21 +210,24 @@ const PromptDisabled = ({
     pre,
     post,
     wrapClass,
-    className
+    className,
+    renderPromptDisabled
 }: Omit<PromptProps, "mode">) => {
     const theme = useTheme("prompt");
 
     return (
         <Wrapper className={wrapClass || theme.Prompt.wrapClass}>
             {pre}
-            <TextArea 
-                className={(className || theme.Prompt.className)}
-                name={name + ".value"} 
-                label={label}
-                onChange={onChange} 
-                required={required} 
-                rows={rows} 
-            />
+            {renderPromptDisabled?.({name, label, required, onChange}) ?? (
+                <TextArea 
+                    className={(className || theme.Prompt.className)}
+                    name={name} 
+                    label={label}
+                    onChange={onChange} 
+                    required={required} 
+                    rows={rows} 
+                />
+            )}
             {post}
         </Wrapper>
     )
