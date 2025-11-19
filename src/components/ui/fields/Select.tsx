@@ -58,7 +58,7 @@ const normalizeOption = (
     fieldMap: Record<string, any> | string | number | undefined
 ): Option => {
     if (!fieldMap) {
-        return { label: '', value: '' };
+        return { label: '@value', value: '@value' };
     }
 
     if (typeof fieldMap !== 'object') {
@@ -257,7 +257,7 @@ export const Autocomplete = ({
                 <div className={`d-flex flex-wrap gap-1 form-control`}>
                     {selectedItems.map(item => (
                         <Col xs="auto" className="p-1 bg-secondary rounded" key={item}>
-                            {item}<button className={"btn-close"} onClick={() => removeItem(item)}></button>
+                            {item}<button className={"btn-close ms-1 p-0"} onClick={() => removeItem(item)}></button>
                         </Col>
                     ))}
                     {(!max || selectedItems.length < max) && <Col><input

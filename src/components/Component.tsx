@@ -9,9 +9,16 @@ import { FieldOnChange } from "./widgets/Form";
 
 type Primitive = string | number | boolean | undefined;
 
+interface FieldRenderProps {
+    name: string;                       
+    defaultValue?: any;
+    label?: string;
+    onChange?: FieldOnChange;
+}
+
 interface FieldAdapter<TProps = any> {
-    getDefaults: (key: string) => Record<string, Primitive | any[]>;
-    render: (key: string, value?: any, onChange?: FieldOnChange) => React.ReactNode;
+    getDefaults: (name: string) => Record<string, any>;
+    render: (props?: FieldRenderProps & TProps) => React.ReactNode;
     __props: TProps;
 }
 
@@ -32,6 +39,8 @@ export type FormTree = {
     [key: string]: React.ReactNode | FormTree;
 };
 
+
+//todo: deprecata: eliminare tutta la gestione dei value e onchange in .render 
 export const Component = {
     layout: componentLayout,
     input: componentFormFields,
@@ -104,39 +113,39 @@ export function buildFormFields(
         }
     }
 
-    for (const [key, value] of Object.entries(model)) {
+    for (const [name, value] of Object.entries(model)) {
         if (isFieldAdapter(value)) {
-            fields[key] = value.render(key);
-            setDefaults(value.getDefaults(key));
+            fields[name] = value.render({name});
+            setDefaults(value.getDefaults(name));
         } else if (isComponentBlock(value)) {
             const instance = new value();
             const [subFields, subDefaults] = buildFormFields(instance.model);
 
-            fields[key] = instance.form(subFields);
+            fields[name] = instance.form(subFields);
             setDefaults(subDefaults);
         } else if (Array.isArray(value)) {
             console.warn(
-                `[buildFormFields] ⚠️ The field "${key}" is defined as an array. ` +
-                `It has been automatically converted into an object with generated keys (e.g., "${key}_0"). ` +
+                `[buildFormFields] ⚠️ The field "${name}" is defined as an array. ` +
+                `It has been automatically converted into an object with generated keys (e.g., "${name}_0"). ` +
                 `Consider refactoring your model to use an explicit object instead of an array.`
             );
             const syntheticModel: ModelProps = {};
 
             value.forEach((item, i) => {
-                const itemKey = `${key}_${i}`;
+                const itemKey = `${name}_${i}`;
                 syntheticModel[itemKey] = item;
             });
 
             const [subFields, subDefaults] = buildFormFields(syntheticModel);
             setDefaults(subDefaults);
 
-            fields[key] = subFields
+            fields[name] = subFields
         } else if (isNestedModel(value)) {
             const [nestedFields, nestedDefaults] = buildFormFields(value);
-            fields[key] = nestedFields;
+            fields[name] = nestedFields;
             setDefaults(nestedDefaults);
         } else {
-            fields[key] = value;
+            fields[name] = value;
         }
     }
 

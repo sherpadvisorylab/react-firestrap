@@ -58,9 +58,11 @@ const PromptEditor = ({
     wrapClass     = undefined,
     className     = undefined
 }: PromptInternalProps) => {
+    const { handleChange } = useFormContext({ name });
     const theme = useTheme("prompt");
     const caption = label || name;
 console.log("PromptEditorAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", name, value, defaultValue);
+
     return (
         <Wrapper className={wrapClass || theme.Prompt.wrapClass}>
             {pre}
@@ -70,6 +72,14 @@ console.log("PromptEditorAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", name, value, defaultV
                         name={name + ".prompt.enabled"} 
                         label={"prompt"} 
                         defaultValue={defaultValue?.enabled}
+                        onChange={({event}) => {
+                            handleChange({
+                                target: {
+                                    name: name + ".prompt.value",
+                                    value: event.target.value && defaultValue?.value
+                                }
+                            });
+                        }}
                     />
                 </div>
                 <TextArea 
@@ -103,7 +113,7 @@ const PromptRunner = ({
 
     const theme = useTheme("prompt");
     const caption = label || name;
-    const [prompt, setPrompt] = useState(defaultValue?.enabled || false);
+    const [prompt, setPrompt] = useState(false);
     const defaultValues = AI.defaults();
     return (
         <Wrapper className={wrapClass || theme.Prompt.wrapClass}>
@@ -130,7 +140,7 @@ const PromptRunner = ({
                             icon: "gear"
                         }}
                     >
-                        <DropdownItem><Select name={name + ".prompt.role"} label="Role" 
+                        <DropdownItem><Select name={name + ".prompt.role"} pre="Role" 
                             defaultValue={defaultValue?.role} 
                             options={AI.getRoles()} 
                             optionEmpty={{
@@ -138,7 +148,7 @@ const PromptRunner = ({
                                 value: ""
                             }}
                         /></DropdownItem>
-                        <DropdownItem><Select name={name + ".prompt.language"} label="Language" 
+                        <DropdownItem><Select name={name + ".prompt.language"} pre="Language" 
                             defaultValue={defaultValue?.language} 
                             options={AI.getLangs()} 
                             optionEmpty={{
@@ -146,7 +156,7 @@ const PromptRunner = ({
                                 value: ""
                             }}
                         /></DropdownItem>
-                        <DropdownItem><Select name={name + ".prompt.voice"} label="Voice" 
+                        <DropdownItem><Select name={name + ".prompt.voice"} pre="Voice" 
                             defaultValue={defaultValue?.voice} 
                             options={AI.getVoices()} 
                             optionEmpty={{
@@ -154,7 +164,7 @@ const PromptRunner = ({
                                 value: ""
                             }}
                         /></DropdownItem>
-                        <DropdownItem><Select name={name + ".prompt.style"} label="Style" 
+                        <DropdownItem><Select name={name + ".prompt.style"} pre="Style" 
                             defaultValue={defaultValue?.style} 
                             options={AI.getStyles()} 
                             optionEmpty={{
@@ -162,7 +172,7 @@ const PromptRunner = ({
                                 value: ""
                             }}
                         /></DropdownItem>
-                        <DropdownItem><Select name={name + ".prompt.model"} label="Model" 
+                        <DropdownItem><Select name={name + ".prompt.model"} pre="Model" 
                             defaultValue={defaultValue?.model} 
                             options={AI.getModels()} 
                             optionEmpty={{
@@ -221,7 +231,7 @@ const PromptDisabled = ({
             {renderPromptDisabled?.({name, label, required, onChange}) ?? (
                 <TextArea 
                     className={(className || theme.Prompt.className)}
-                    name={name} 
+                    name={name + ".value"} 
                     label={label}
                     onChange={onChange} 
                     required={required} 

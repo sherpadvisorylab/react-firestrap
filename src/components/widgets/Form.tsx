@@ -50,6 +50,7 @@
         children: React.ReactNode;
         parentName: string;
         parentKey?: string;
+        wrapClass?: string;
     }
 
     const FormContext = createContext<FormProviderProps | null>(null);
@@ -196,7 +197,7 @@
         return `${parentName}.${name.slice(lastDot + 1)}`;
     }
     
-    export const setFormFieldsName = ({children, parentName, parentKey}: SetFormFieldsNameProps): React.ReactNode => {
+    export const setFormFieldsName = ({children, parentName, parentKey, wrapClass}: SetFormFieldsNameProps): React.ReactNode => {
         return React.Children.map(children, (child) => {
             if (!parentName || !React.isValidElement(child)) return child;
 
@@ -205,19 +206,20 @@
             if (name) {
                 newProps.name       = setParentName(name, parentName);
                 newProps.key        = parentKey ?? newProps.name;
+                newProps.wrapClass  = child.props.wrapClass ?? wrapClass;
 
                 if (child.props.pre && React.isValidElement(child.props.pre) ) {
                     newProps.pre = setFormFieldsName({
                         children: child.props.pre,
                         parentName,
-                        parentKey: `${parentKey}.pre` ,
+                        parentKey: `${newProps.key}.pre` ,
                     });
                 }
                 if (child.props.post && React.isValidElement(child.props.post) ) {
                     newProps.post = setFormFieldsName({
                         children: child.props.post,
                         parentName,
-                        parentKey: `${parentKey}.post` ,
+                        parentKey: `${newProps.key}.post` ,
                     });
                 }
             }
@@ -340,10 +342,13 @@
         const [record, setRecord] = useState<RecordProps | undefined>(defaultValues);
 
         useEffect(()=>{
-            onLoad?.({...defaultValues});
-        }, [])
+            if (defaultValues) {
+                setRecord({...defaultValues});
+                onLoad?.({...defaultValues});
+            }
+        }, [defaultValues]);
         
-        console.log("FormData", defaultValues, children, record, dataStoragePath);
+        console.log("FormData", defaultValues, record, dataStoragePath, children);
         const recordRef = useRef(record);
         useEffect(() => { 
             recordRef.current = record;

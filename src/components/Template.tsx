@@ -82,14 +82,14 @@ class Template {
     }
     public setFields(fields: FormFieldsMap, bucket: string, reset: boolean = false): Template {
         if (reset || !this.useFields(bucket)) {
-            for (const [key, {tag, props = {}}] of Object.entries(fields)) {
+            for (const [name, {tag, props = {}}] of Object.entries(fields)) {
                 const field = this.buildFormField(tag, props);
                 if (!field) {
-                    console.warn(`[Template] Tipo di input non riconosciuto: "${tag}" per la variabile "${key}"`);
+                    console.warn(`[Template] Tipo di input non riconosciuto: "${tag}" per la variabile "${name}"`);
                     continue;
                 }
-                this.formFields[key] = field.render(key);
-                Object.assign(this.defaultValues, field.getDefaults(key));
+                this.formFields[name] = field.render({name});
+                Object.assign(this.defaultValues, field.getDefaults(name));
             }
 
             fieldCache.set(bucket, {

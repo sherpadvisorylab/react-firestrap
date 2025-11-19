@@ -26,7 +26,7 @@ const Repeat = ({
     onAdd,
     onRemove,
     className,
-    layout = 'inline',
+    layout = 'horizontal',
     min = undefined,
     max = undefined,
     label = undefined,
@@ -35,39 +35,58 @@ const Repeat = ({
     const { value, handleChange } = useFormContext({ name, onChange });
     const [release, setRelease] = useState(0);
 
+    const renderChildren = (index: number, wrapClass?: string) => {
+        return setFormFieldsName({
+            children: typeof children === 'function'
+                ? children({ record: value?.[index], records: value, index: index })
+                : children,
+            parentName: `${name}.${index}`,
+            wrapClass
+        })
+    }
+    const renderLayout = (index: number, canRemove: boolean) => {
+        switch (layout) {
+            case 'horizontal': 
+            return <>
+                {canRemove && (<div className='d-flex justify-content-between ps-1 mb-2'>
+                    <h6>#{index + 1}</h6>
+                    <ActionButton
+                        className="btn-close p-0"
+                        onClick={() => handleRemove(index)}
+                    />
+                </div>)}
+                <div className={`ps-2`}>
+                    {renderChildren(index)}
+                </div>
+                <hr className='mb-2' />
+            </>
+            case 'vertical':
+                return <></>
+            case 'inline':
+            return <Row className={`ps-2`}>
+                {renderChildren(index, 'col')}
+                {canRemove && (
+                    <Col xs='auto' className='d-flex align-items-center justify-content-end'>
+                        <ActionButton
+                            className="btn-close p-0"
+                            onClick={() => handleRemove(index)}
+                        />
+                    </Col>
+                )}
+            </Row>
+        }
+    }
+
+
     const components = (Array.isArray(value) ? value : Array.from({ length: min || 0 }, () => ({})))?.map((_, index) => {
         const canRemove = !readOnly && index >= (min || 0);
 
         return (
-            <div key={`${name}-${index}-${release}`} className={`position-relative pt-3 px-2`}>
-                {layout === 'horizontal' && canRemove && (
-                    <ActionButton
-                        wrapClass="position-absolute top-0 end-0"
-                        className="btn-close"
-                        onClick={() => handleRemove(index)}
-                    />
-                )}
-                <Row className='d-flex align-items-center'>
-                    {setFormFieldsName({
-                        children: typeof children === 'function'
-                            ? children({ record: value?.[index], records: value, index: index })
-                            : children,
-                        parentName: `${name}.${index}`
-                    })}
-                    {layout === 'inline' && canRemove && (
-                        <Col xs={1}>
-                            <ActionButton
-                                className="btn-close"
-                                onClick={() => handleRemove(index)}
-                            />
-                        </Col>
-                    )}
-                </Row>
-                {layout !== 'inline' && <hr />}
-            </div>
-        )
-    }
-    );
+            <React.Fragment key={`${name}-${index}-${release}`}>
+                {renderLayout(index, canRemove)}
+            </React.Fragment>
+        );
+    });
 
     const handleAdd = () => {
         const next = Array.isArray(value)
@@ -87,14 +106,14 @@ const Repeat = ({
     const addButton = useMemo(() => {
         if (readOnly) return null;
         if (!max || components.length < max) {
-            return <ActionButton wrapClass='text-end' icon='plus' label='Add' onClick={handleAdd} />
+            return <ActionButton wrapClass='text-end' icon='plus' label={label ? undefined : 'Add'} onClick={handleAdd} />
         }
         return null;
     }, [readOnly, max, components.length]);
 
     return (
         <div className={className}>
-            {label && <h4 className='d-flex justify-content-between'>{label}{addButton}</h4>}
+            {label && <h6 className='d-flex align-items-center justify-content-between'>{label}{addButton}</h6>}
             {components}
             {!label && addButton}
         </div>

@@ -17,223 +17,162 @@ import {
     Month
 } from "../components/ui/fields/Input";
 import {Autocomplete, Checklist, Select, SelectProps} from "../components/ui/fields/Select";
-import { getContextMenu } from "../App";
 import {Col, Row} from "../components";
 import {UploadDocument, UploadDocumentProps, UploadImage, UploadImageProps} from "../components/ui/fields/Upload";
 import { Prompt, PromptProps } from "../components/ui/fields/Prompt";
 
 export interface ComponentFormFieldsMap {
-//    label: FieldFactory<Omit<LabelProps, 'name' | 'onChange'>>;
-    string: FieldFactory<Omit<InputProps, 'name' | 'onChange'>>;
-    number: FieldFactory<Omit<InputProps, 'name' | 'onChange'>>;
-    email: FieldFactory<Omit<InputProps, 'name' | 'onChange'>>;
-    password: FieldFactory<Omit<InputProps, 'name' | 'onChange'>>;
-    color: FieldFactory<Omit<InputProps, 'name' | 'onChange'>>;
-    date: FieldFactory<Omit<InputProps, 'name' | 'onChange'>>;         
-    time: FieldFactory<Omit<InputProps, 'name' | 'onChange'>>;          
-    datetime: FieldFactory<Omit<InputProps, 'name' | 'onChange'>>;  
-    week: FieldFactory<Omit<InputProps, 'name' | 'onChange'>>;  
-    month: FieldFactory<Omit<InputProps, 'name' | 'onChange'>>;  
-    textarea: FieldFactory<Omit<TextAreaProps, 'name' | 'onChange'>>;
-    checkbox: FieldFactory<Omit<CheckboxProps, 'name' | 'onChange'>>;
-    switch: FieldFactory<Omit<CheckboxProps, 'name' | 'onChange'>>;      
-//    listgroup: FieldFactory<Omit<ListGroupProps, 'name' | 'onChange'>>;
-    select: FieldFactory<Omit<SelectProps, 'name' | 'onChange'>>;
-    autocomplete: FieldFactory<Omit<SelectProps, 'name' | 'onChange'>>;
-    checklist: FieldFactory<Omit<SelectProps, 'name' | 'onChange'>>;
-    uploadImage: FieldFactory<Omit<UploadImageProps, 'name' | 'onChange'>>;
-    uploadDocument: FieldFactory<Omit<UploadDocumentProps, 'name' | 'onChange'>>;
-    prompt: FieldFactory<Omit<PromptProps, 'name' | 'onChange'>>;
+//    label: FieldFactory<Partial<InputProps>>;
+    string: FieldFactory<Partial<InputProps>>;
+    number: FieldFactory<Partial<InputProps>>;
+    email: FieldFactory<Partial<InputProps>>;
+    password: FieldFactory<Partial<InputProps>>;
+    color: FieldFactory<Partial<InputProps>>;
+    date: FieldFactory<Partial<InputProps>>;         
+    time: FieldFactory<Partial<InputProps>>;          
+    datetime: FieldFactory<Partial<InputProps>>;  
+    week: FieldFactory<Partial<InputProps>>;  
+    month: FieldFactory<Partial<InputProps>>;  
+    textarea: FieldFactory<Partial<TextAreaProps>>;
+    checkbox: FieldFactory<Partial<CheckboxProps>>;
+    switch: FieldFactory<Partial<CheckboxProps>>;      
+//    listgroup: FieldFactory<Partial<ListGroupProps>>;
+    select: FieldFactory<Partial<SelectProps>>;
+    autocomplete: FieldFactory<Partial<SelectProps>>;
+    checklist: FieldFactory<Partial<SelectProps>>;
+    uploadImage: FieldFactory<Partial<UploadImageProps>>;
+    uploadDocument: FieldFactory<Partial<UploadDocumentProps>>;
+    prompt: FieldFactory<Partial<PromptProps>>;
     image: FieldFactory<{
         src?: string;
         alt?: string;
         width?: number;
         height?: number;
     }>;
-    menu: FieldFactory<{ context?: string }>;
+    menu: FieldFactory<{ defaultValue?: string }>;
 }
 
 const componentFormFields: ComponentFormFieldsMap = {
-    string: (props = {}) => {
-        const { value, label, ...rest } = props;
-        return {
-            __props: props,
-            getDefaults: (key) => ({[key]: value}),
-            render: (key, value, onChange) => <String name={key} label={label ?? key} {...rest} value={value} onChange={onChange} />
-        }
-    },
-    number: (props = {}) => {
-        const { value, label, ...rest } = props;
-        return {
-            __props: props,
-            getDefaults: (key) => ({[key]: value}),
-            render: (key, value, onChange) => <Number name={key} label={label ?? key} {...rest} value={value} onChange={onChange} />
-        }
-    },
-    email: (props = {}) => {
-        const { value, label, ...rest } = props;
-        return {
-            __props: props,
-            getDefaults: (key) => ({[key]: value}),
-            render: (key, value, onChange) => <Email name={key} label={label ?? key} {...rest} value={value} onChange={onChange} />
-        }
-    },
-    password: (props = {}) => {
-        const { value, label, ...rest } = props;
-        return {
-            __props: props,
-            getDefaults: (key) => ({[key]: value}),
-            render: (key, value, onChange) => <Password name={key} label={label ?? key} {...rest} value={value} onChange={onChange} />
-        }
-    },
-    color: (props = {}) => {
-        const { value, label, ...rest } = props;
-        return {
-            __props: props,
-            getDefaults: (key) => ({[key]: value}),
-            render: (key, value, onChange) => <Color name={key} label={label ?? key} {...rest} value={value} onChange={onChange} />
-        }
-    },
-    date: (props = {}) => {
-        const { value, label, ...rest } = props;
-        return {
-            __props: props,
-            getDefaults: (key) => ({[key]: value}),
-            render: (key, value, onChange) => <Date name={key} label={label ?? key} {...rest} value={value} onChange={onChange} />
-        }
-    },
-    time: (props = {}) => {
-        const { value, label, ...rest } = props;
-        return {
-            __props: props,
-            getDefaults: (key) => ({[key]: value}),
-            render: (key, value, onChange) => <Time name={key} label={label ?? key} {...rest} value={value} onChange={onChange} />
-        }
-    },
-    datetime: (props = {}) => {
-        const { value, label, ...rest } = props;
-        return {
-            __props: props,
-            getDefaults: (key) => ({ [key]: value }),
-            render: (key, value, onChange) => <DateTime name={key} label={label ?? key} {...rest} value={value} onChange={onChange} />
-        }
-    },
-    week: (props = {}) => {
-        const { value, label, ...rest } = props;
-        return {
-            __props: props,
-            getDefaults: (key) => ({ [key]: value }),
-            render: (key, value, onChange) => <Week name={key} label={label ?? key} {...rest} value={value} onChange={onChange} />
-        }
-    },
-    month: (props = {}) => {
-        const { value, label, ...rest } = props;
-        return {
-            __props: props,
-            getDefaults: (key) => ({ [key]: value }),
-            render: (key, value, onChange) => <Month name={key} label={label ?? key} {...rest} value={value} onChange={onChange} />
-        }
-    },
-    textarea: (props = {}) => {
-        const { value, label, ...rest } = props;
-        return {
-            __props: props,
-            getDefaults: (key) => ({[key]: value}),
-            render: (key, value, onChange) => <TextArea name={key} label={label ?? key} {...rest} value={value} onChange={onChange} />
-        }
-    },
-    checkbox: (props = {}) => {
-        const { value, label, ...rest } = props;
-        return {
-            __props: props,
-            getDefaults: (key) => ({[key]: value}),
-            render: (key, value, onChange) => <Checkbox name={key} label={label ?? key} {...rest} value={value} onChange={onChange} />
-        }
-    },
-    switch: (props = {}) => {
-        const { value, label, ...rest } = props;
-        return {
-            __props: props,
-            getDefaults: (key) => ({[key]: value}),
-            render: (key, value, onChange) => <Switch name={key} label={label ?? key} {...rest} value={value} onChange={onChange} />
-        }
-    },
-    select: (props = {}) => {
-        const { value, label, ...rest } = props;
-        return {
-            __props: props,
-            getDefaults: (key) => ({[key]: value}),
-            render: (key, value, onChange) => <Select name={key} label={label ?? key} {...rest} value={value} onChange={onChange} />
-        }
-    },
-    autocomplete: (props = {}) => {
-        const { value, label, ...rest } = props;
-        return {
-            __props: props,
-            getDefaults: (key) => ({[key]: value}),
-            render: (key, value, onChange) => <Autocomplete name={key} label={label ?? key} {...rest} value={value} onChange={onChange} />
-        }
-    },
-    checklist: (props = {}) => {
-        const { value, label, ...rest } = props;
-        return {
-            __props: props,
-            getDefaults: (key) => ({[key]: value}),
-            render: (key, value, onChange) => <Checklist name={key} label={label ?? key} {...rest} value={value} onChange={onChange} />
-        }
-    },
-    uploadImage: (props = {}) => {
-        const { value, label, ...rest } = props;
-        return {
-            __props: props,
-            getDefaults: (key) => ({[key]: value}),
-            render: (key, value, onChange) => <UploadImage name={key} label={label ?? key} {...rest} value={value} onChange={onChange} />
-        }
-    },
-    uploadDocument: (props = {}) => {
-        const { value, label, ...rest } = props;
-        return {
-            __props: props,
-            getDefaults: (key) => ({[key]: value}),
-            render: (key, value, onChange) => <UploadDocument name={key} label={label ?? key} {...rest} value={value} onChange={onChange} />
-        }
-    },
-    prompt: (props = {}) => {
-        const { value, label, ...rest } = props;
-        return {
-            __props: props,
-            getDefaults: (key) => ({[key]: value}),
-            render: (key, value, onChange) => <Prompt name={key} label={label ?? key} {...rest} value={value} onChange={onChange} />
-        }
-    },
+    string: (props = {}) => ({
+        __props: props,
+        getDefaults: (name) => ({[name]: props.defaultValue}),
+        render: ({name, label, ...rest} = {}) => <String key={name ?? props.name} name={name ?? props.name} label={label ?? props.label ?? name} {...props} {...rest} />
+    }),
+    number: (props = {}) => ({
+        __props: props,
+        getDefaults: (name) => ({[name]: props.defaultValue}),
+        render: ({name, label, ...rest} = {}) => <Number key={name ?? props.name} name={name ?? props.name} label={label ?? props.label ?? name} {...props} {...rest} />
+    }),
+    email: (props = {}) => ({
+        __props: props,
+        getDefaults: (name) => ({[name]: props.defaultValue}),
+        render: ({name, label, ...rest} = {}) => <Email key={name ?? props.name} name={name ?? props.name} label={label ?? props.label ?? name} {...props} {...rest} />
+    }),
+    password: (props = {}) => ({
+        __props: props,
+        getDefaults: (name) => ({[name]: props.defaultValue}),
+        render: ({name, label, ...rest} = {}) => <Password key={name ?? props.name} name={name ?? props.name} label={label ?? props.label ?? name} {...props} {...rest} />
+    }),
+    color: (props = {}) => ({
+        __props: props,
+        getDefaults: (name) => ({[name]: props.defaultValue}),
+        render: ({name, label, ...rest} = {}) => <Color key={name ?? props.name} name={name ?? props.name} label={label ?? props.label ?? name} {...props} {...rest} />
+    }),
+    date: (props = {}) => ({
+        __props: props,
+        getDefaults: (name) => ({[name]: props.defaultValue}),
+        render: ({name, label, ...rest} = {}) => <Date key={name ?? props.name} name={name ?? props.name} label={label ?? props.label ?? name} {...props} {...rest} />
+    }),
+    time: (props = {}) => ({
+        __props: props,
+        getDefaults: (name) => ({[name]: props.defaultValue}),
+        render: ({name, label, ...rest} = {}) => <Time key={name ?? props.name} name={name ?? props.name} label={label ?? props.label ?? name} {...props} {...rest} />
+    }),
+    datetime: (props = {}) => ({
+        __props: props,
+        getDefaults: (name) => ({ [name]: props.defaultValue }),
+        render: ({name, label, ...rest} = {}) => <DateTime key={name ?? props.name} name={name ?? props.name} label={label ?? props.label ?? name} {...props} {...rest} />
+    }),
+    week: (props = {}) => ({
+        __props: props,
+        getDefaults: (name) => ({ [name]: props.defaultValue }),
+        render: ({name, label, ...rest} = {}) => <Week key={name ?? props.name} name={name ?? props.name} label={label ?? props.label ?? name} {...props} {...rest} />
+    }),
+    month: (props = {}) => ({
+        __props: props,
+        getDefaults: (name) => ({ [name]: props.defaultValue }),
+        render: ({name, label, ...rest} = {}) => <Month key={name ?? props.name} name={name ?? props.name} label={label ?? props.label ?? name} {...props} {...rest} />
+    }),
+    textarea: (props = {}) => ({
+        __props: props,
+        getDefaults: (name) => ({[name]: props.defaultValue}),
+        render: ({name, label, ...rest} = {}) => <TextArea key={name ?? props.name} name={name ?? props.name} label={label ?? props.label ?? name} {...props} {...rest} />
+    }),
+    checkbox: (props = {}) => ({
+        __props: props,
+        getDefaults: (name) => ({[name]: props.defaultValue}),
+        render: ({name, label, ...rest} = {}) => <Checkbox key={name ?? props.name} name={name ?? props.name} label={label ?? props.label ?? name} {...props} {...rest} />
+    }),
+    switch: (props = {}) => ({
+        __props: props,
+        getDefaults: (name) => ({[name]: props.defaultValue}),
+        render: ({name, label, ...rest} = {}) => <Switch key={name ?? props.name} name={name ?? props.name} label={label ?? props.label ?? name} {...props} {...rest} />
+    }),
+    select: (props = {}) => ({
+        __props: props,
+        getDefaults: (name) => ({[name]: props.defaultValue}),
+        render: ({name, label, ...rest} = {}) => <Select key={name ?? props.name} name={name ?? props.name} label={label ?? props.label ?? name} {...props} {...rest} />
+    }),
+    autocomplete: (props = {}) => ({
+        __props: props,
+        getDefaults: (name) => ({[name]: props.defaultValue}),
+        render: ({name, label, ...rest} = {}) => <Autocomplete key={name ?? props.name} name={name ?? props.name} label={label ?? props.label ?? name} {...props} {...rest} />
+    }),
+    checklist: (props = {}) => ({
+        __props: props,
+        getDefaults: (name) => ({[name]: props.defaultValue}),
+        render: ({name, label, ...rest} = {}) => <Checklist key={name ?? props.name} name={name ?? props.name} label={label ?? props.label ?? name} {...props} {...rest} />
+    }),
+    uploadImage: (props = {}) => ({
+        __props: props,
+        getDefaults: (name) => ({[name]: props.defaultValue}),
+        render: ({name, label, ...rest} = {}) => <UploadImage key={name ?? props.name} name={name ?? props.name} label={label ?? props.label ?? name} {...props} {...rest} />
+    }),
+    uploadDocument: (props = {}) => ({
+        __props: props,
+        getDefaults: (name) => ({[name]: props.defaultValue}),
+        render: ({name, label, ...rest} = {}) => <UploadDocument key={name ?? props.name} name={name ?? props.name} label={label ?? props.label ?? name} {...props} {...rest} />
+    }),
+    prompt: (props = {}) => ({
+        __props: props,
+        getDefaults: (name) => ({[name]: props.defaultValue}),
+        render: ({name, label, ...rest} = {}) => <Prompt key={name ?? props.name} name={name ?? props.name} label={label ?? props.label ?? name} {...props} {...rest} />
+    }),
     image: (props = {}) => {
         const { src, alt, width,  height} = props;
         return {
             __props: props,
-            getDefaults: (key) => ({
-                [`${key}:src`]: src,
-                [`${key}:alt`]: alt,
-                [`${key}:width`]: width,
-                [`${key}:height`]: height
+            getDefaults: (name) => ({
+                [`${name}:src`]: src,
+                [`${name}:alt`]: alt,
+                [`${name}:width`]: width,
+                [`${name}:height`]: height
             }),
-            render: (key) => <>
-                <String name={`${key}:src`} label="Image source" />
-                <String name={`${key}:alt`} label="Alt text" />
+            render: ({name} = {}) => <>
+                <String name={`${name}:src`} label="Image source" />
+                <String name={`${name}:alt`} label="Alt text" />
                 <Row>
-                    <Col><Number name={`${key}:width`} label="Width" value={width} /></Col>
-                    <Col><Number name={`${key}:height`} label="Height" value={height} /></Col>
+                    <Col><Number name={`${name}:width`} label="Width" defaultValue={width} /></Col>
+                    <Col><Number name={`${name}:height`} label="Height" defaultValue={height} /></Col>
                 </Row>
             </>
         }
     },
-    menu: (props = {}) => {
-        const {context} = props;
-        return {
-            __props: props,
-            getDefaults: (key) => ({[key]: context}),
-            render: (key) => <Select name={key} label={key} value={context} options={getContextMenu()}/>
-        }
-    }
+    menu: (props = {}) => ({
+        __props: props,
+        getDefaults: (name) => ({[name]: props.defaultValue}),
+        render: ({name, label, ...rest} = {}) => <Select key={name} name={name} label={label ?? name} {...props} {...rest} />
+    })
 };
 
 export default componentFormFields;
