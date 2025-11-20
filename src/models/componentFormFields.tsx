@@ -17,7 +17,7 @@ import {
     Month
 } from "../components/ui/fields/Input";
 import {Autocomplete, Checklist, Select, SelectProps} from "../components/ui/fields/Select";
-import {Col, Row} from "../components";
+import {ImageUrl, ImageUrlProps} from "../components/ui/fields/ImageUrl";
 import {UploadDocument, UploadDocumentProps, UploadImage, UploadImageProps} from "../components/ui/fields/Upload";
 import { Prompt, PromptProps } from "../components/ui/fields/Prompt";
 
@@ -43,12 +43,7 @@ export interface ComponentFormFieldsMap {
     uploadImage: FieldFactory<Partial<UploadImageProps>>;
     uploadDocument: FieldFactory<Partial<UploadDocumentProps>>;
     prompt: FieldFactory<Partial<PromptProps>>;
-    image: FieldFactory<{
-        src?: string;
-        alt?: string;
-        width?: number;
-        height?: number;
-    }>;
+    imageUrl: FieldFactory<Partial<ImageUrlProps>>;
     menu: FieldFactory<{ defaultValue?: string }>;
 }
 
@@ -148,24 +143,11 @@ const componentFormFields: ComponentFormFieldsMap = {
         getDefaults: (name) => ({[name]: props.defaultValue}),
         render: ({name, label, ...rest} = {}) => <Prompt key={name ?? props.name} name={name ?? props.name} label={label ?? props.label ?? name} {...props} {...rest} />
     }),
-    image: (props = {}) => {
-        const { src, alt, width,  height} = props;
+    imageUrl: (props = {}) => {
         return {
             __props: props,
-            getDefaults: (name) => ({
-                [`${name}:src`]: src,
-                [`${name}:alt`]: alt,
-                [`${name}:width`]: width,
-                [`${name}:height`]: height
-            }),
-            render: ({name} = {}) => <>
-                <String name={`${name}:src`} label="Image source" />
-                <String name={`${name}:alt`} label="Alt text" />
-                <Row>
-                    <Col><Number name={`${name}:width`} label="Width" defaultValue={width} /></Col>
-                    <Col><Number name={`${name}:height`} label="Height" defaultValue={height} /></Col>
-                </Row>
-            </>
+            getDefaults: (name) => ({[name]: props.defaultValue}),
+            render: ({name, label, ...rest} = {}) => <ImageUrl name={name} label={label ?? name} {...props} {...rest} />
         }
     },
     menu: (props = {}) => ({

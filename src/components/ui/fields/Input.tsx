@@ -157,6 +157,10 @@ export const Range = (props: InputProps) => (
     <Input {...props} type="range" />
 );
 
+export const Url = (props: InputProps) => (
+    <Input {...props} type="url" />
+);
+
 export const Checkbox = ({
     name,
     //value = false,
