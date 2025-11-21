@@ -359,8 +359,7 @@ interface AIOptions {
 }
 
 export interface AIFetchConfig extends AIOptions {
-    type?: keyof typeof PROVIDERS;
-    value: string;
+    provider?: keyof typeof PROVIDERS;
 }
 
 
@@ -490,22 +489,22 @@ export class AI extends Prompt {
     options: AIOptions;
     data?: PromptVariables;
 
-    static fetch(config: AIFetchConfig, data?: PromptVariables) {
-        const { type, value: prompt, ...options } = config;
+    static fetch(prompt: string, config: AIFetchConfig, data?: PromptVariables) {
+        const { provider, ...options } = config;
 
-        return (new AI(type))
+        return (new AI(provider))
             .setOptions(options)
             .setData(data)
             .fetchAPI(prompt);
     }
 
-    static getModels(type?: keyof typeof PROVIDERS) {
-        return PROVIDERS[type ?? PROVIDER_DEFAULT].models;
+    static getModels(provider?: keyof typeof PROVIDERS) {
+        return PROVIDERS[provider ?? PROVIDER_DEFAULT].models;
     }
 
-    constructor(type: keyof typeof PROVIDERS = PROVIDER_DEFAULT) {
+    constructor(provider: keyof typeof PROVIDERS = PROVIDER_DEFAULT) {
         super();
-        this.config     = PROVIDERS[type];
+        this.config     = PROVIDERS[provider];
         this.options    = {};
     }
 

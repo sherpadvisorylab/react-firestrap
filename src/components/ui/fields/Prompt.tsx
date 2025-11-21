@@ -6,9 +6,15 @@ import { PROMPT_CLEANUP, PROMPT_NO_REFERENCE, PromptVariables } from '../../../c
 import { FormFieldProps, useFormContext } from '../../widgets/Form';
 import { RecordProps } from '../../../integrations/google/firedatabase';
 
+type PromptOptions = AIFetchConfig & {
+    value: string;
+};
+
+type OnRunPrompt = (prompt: string, config: AIFetchConfig, data?: PromptVariables) => Promise<string>;
 
 export interface PromptProps extends FormFieldProps {
     mode?: "editor" | "runner";
+    onRunPrompt?: OnRunPrompt;
     renderPromptDisabled?: (props: Omit<FormFieldProps, "defaultValue">) => React.ReactNode;
     rows?: number;
     defaultValue?: {
@@ -23,8 +29,22 @@ export interface PromptProps extends FormFieldProps {
     };
 }
 
-interface PromptInternalProps extends Omit<PromptProps, "mode"> {
+interface PromptEditorProps extends Omit<PromptProps, "mode" | "onRunPrompt" | "renderPromptDisabled"> {
     value?: RecordProps
+}
+
+interface PromptRunnerProps extends Omit<PromptProps, "mode" | "renderPromptDisabled"> {
+    value?: RecordProps;
+}
+
+interface PromptDisabledProps extends Omit<PromptProps, "mode" | "onRunPrompt"> {
+}
+
+interface RunPromptProps {
+    prompt: string;
+    config: AIFetchConfig;
+    data?: PromptVariables;
+    onRunPrompt?: OnRunPrompt;
 }
 
 const promptLabel = "Prompt: ";
@@ -33,6 +53,7 @@ const promptActionClass = "position-absolute top-0 end-0 d-flex gap-2";
 
 export const Prompt = ({
     mode = "editor",
+    onRunPrompt,
     renderPromptDisabled,
     ...props
 }: PromptProps) => {
@@ -40,7 +61,7 @@ export const Prompt = ({
     return mode === "editor" 
         ? <PromptEditor {...props} value={value} /> 
         : value?.prompt?.enabled 
-            ? <PromptRunner {...props} value={value} /> 
+            ? <PromptRunner {...props} value={value} onRunPrompt={onRunPrompt} /> 
             : <PromptDisabled {...props} renderPromptDisabled={renderPromptDisabled} />
 }
 
@@ -57,7 +78,7 @@ const PromptEditor = ({
     post          = undefined,
     wrapClass     = undefined,
     className     = undefined
-}: PromptInternalProps) => {
+}: PromptEditorProps) => {
     const { handleChange } = useFormContext({ name });
     const theme = useTheme("prompt");
     const caption = label || name;
@@ -107,9 +128,10 @@ const PromptRunner = ({
     pre,
     post,
     wrapClass,
-    className
-}: PromptInternalProps) => {
-    const { handleChange } = useFormContext({name});
+    className,
+    onRunPrompt
+}: PromptRunnerProps) => {
+    const { handleChange, record } = useFormContext({name});
 
     const theme = useTheme("prompt");
     const caption = label || name;
@@ -199,7 +221,7 @@ const PromptRunner = ({
                         handleChange?.({
                             target: {
                                 name: name + ".value",
-                                value: await runPrompt(value?.prompt)
+                                value: await runPrompt(value?.prompt, record, onRunPrompt)
                             }
                         });
                     }} />} 
@@ -222,7 +244,7 @@ const PromptDisabled = ({
     wrapClass,
     className,
     renderPromptDisabled
-}: Omit<PromptProps, "mode">) => {
+}: PromptDisabledProps) => {
     const theme = useTheme("prompt");
 
     return (
@@ -243,11 +265,13 @@ const PromptDisabled = ({
     )
 }
 
-export const runPrompt = async (config: AIFetchConfig, data?: PromptVariables) => {
-    const response = await AI.fetch({
-        ...config, 
-        value: [PROMPT_CLEANUP, config.value, PROMPT_NO_REFERENCE].join("\n")
-    }, data);
+export const runPrompt = async (options: PromptOptions, data?: PromptVariables, onRunPrompt?: OnRunPrompt): Promise<string> => {
+    const { value: prompt, ...config } = options;
+    const response = await AI.fetch(
+        [PROMPT_CLEANUP, onRunPrompt?.(prompt, config, data) ?? prompt, PROMPT_NO_REFERENCE].join("\n"),
+        config,
+        data
+    );
 
     console.log(response);
     return response;

@@ -35,6 +35,7 @@
         value: any;
         handleChange: FormHandleChange;
         formWrapClass?: string;
+        record: RecordProps;
     }
 
     export interface FormFieldProps extends UIProps {
@@ -127,7 +128,8 @@
 
                 ctx.setRecord({...record});
             },
-            formWrapClass: [wrapClass, ctx.wrapClass].filter(Boolean).join(" ")
+            formWrapClass: [wrapClass, ctx.wrapClass].filter(Boolean).join(" "),
+            record: record,
         };  
     };
 
