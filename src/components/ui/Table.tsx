@@ -17,6 +17,7 @@ interface TableProps extends UIProps {
     body?: RecordArray,
     Footer?: string | React.ReactNode,
     onClick?: (index: number) => void;
+    onHeaderClick?: (hdr: TableHeaderProp) => void;
     pagination?: PaginationParams;
     headerClass?: string,
     bodyClass?: string,
@@ -27,19 +28,20 @@ interface TableProps extends UIProps {
 
 function Table({
     header,
-    body = undefined,
-    Footer = undefined,
-    onClick = undefined,
-    pagination = undefined,
-    pre = undefined,
-    post = undefined,
-    wrapClass = undefined,
-    className = undefined,
-    headerClass = undefined,
-    bodyClass = undefined,
-    footerClass = undefined,
-    scrollClass = undefined,
-    selectedClass = undefined
+    body                                    = undefined,
+    Footer                                  = undefined,
+    onClick                                 = undefined,
+    onHeaderClick                           = undefined,
+    pagination                              = undefined,
+    pre                                     = undefined,
+    post                                    = undefined,
+    wrapClass                               = undefined,
+    className                               = undefined,
+    headerClass                             = undefined,
+    bodyClass                               = undefined,
+    footerClass                             = undefined,
+    scrollClass                             = undefined,
+    selectedClass                           = undefined
 }: TableProps) {
     const theme = useTheme("table");
     const activeClass = selectedClass || theme.Table.selectedClass;
@@ -47,7 +49,7 @@ function Table({
     const paginationNavRef = useCallback((node: HTMLDivElement | null) => {
         if (node) setPaginationNavEl(node);
     }, []);
-      
+
     const handleClick = (e: React.MouseEvent<HTMLElement>, index: number) => {
         let currentElement = e.target as HTMLElement;
 
@@ -96,7 +98,7 @@ function Table({
                             <tr>
                                 {headers.map((hdr) => (
                                     hdr.label ? (
-                                        <th key={hdr.key} className={hdr.className}>
+                                        <th key={hdr.key} className={hdr.className} onClick={() => onHeaderClick?.(hdr)}>
                                             <div
                                                 className={
                                                     "th-inner" + (hdr.sort ? "pe-5 sortable both" : "")
@@ -110,8 +112,8 @@ function Table({
                             </tr>
                         </thead>
                         <tbody className={bodyClass || theme.Table.bodyClass}>
-                            <Pagination 
-                                recordSet={body} 
+                            <Pagination
+                                recordSet={body}
                                 page={pagination?.page}
                                 limit={pagination?.limit}
                                 appendTo={paginationNavEl}
@@ -122,7 +124,7 @@ function Table({
                                             key={index}
                                             style={{ cursor: onClick ? "pointer" : "cursor" }}
                                             onClick={(e) => {
-                                                
+
                                                 onClick && handleClick(e, pageOffset + index);
 
                                             }}

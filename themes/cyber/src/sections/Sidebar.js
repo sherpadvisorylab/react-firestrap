@@ -9,7 +9,7 @@ const Sidebar = () => {
 
     return (
         <>
-            <nav id='sidebar' className='app-sidebar app-sidebar-toggled'>
+            <nav id='sidebar' className='app-sidebar app-sidebar-toggled overflow-auto'>
                 <div className="app-sidebar-content">
                     <Menu context='sidebar'/>
                 </div>

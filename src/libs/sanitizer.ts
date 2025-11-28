@@ -16,6 +16,7 @@ type ConverterMask =
 
 export interface SanitizerRule {
   description?: string;
+  exclusion?: string[];
   transformations?: Transformation[];
   mask?: ConverterMask[];
 }
@@ -29,81 +30,81 @@ export interface SanitizerMatch {
 }
 
 export const NORMALIZE_MAP: Record<string, string> = {
-    // Plus/minus
-    "＋": "+",
-    "﹢": "+",
-    "－": "-",
-    "﹣": "-",
-    "–": "-",
-    "—": "-",
-  
-    // Symbols
-    "＠": "@",
-    "＃": "#",
-    "＄": "$",
-    "％": "%",
-    "＆": "&",
-    "＊": "*",
-  
-    // Digits (fullwidth → ASCII)
-    "０": "0", "１": "1", "２": "2", "３": "3", "４": "4",
-    "５": "5", "６": "6", "７": "7", "８": "8", "９": "9",
-  
-    // Letters (fullwidth → ASCII)
-    "Ａ": "A", "Ｂ": "B", "Ｃ": "C", "Ｄ": "D", "Ｅ": "E",
-    "Ｆ": "F", "Ｇ": "G", "Ｈ": "H", "Ｉ": "I", "Ｊ": "J",
-    "Ｋ": "K", "Ｌ": "L", "Ｍ": "M", "Ｎ": "N", "Ｏ": "O",
-    "Ｐ": "P", "Ｑ": "Q", "Ｒ": "R", "Ｓ": "S", "Ｔ": "T",
-    "Ｕ": "U", "Ｖ": "V", "Ｗ": "W", "Ｘ": "X", "Ｙ": "Y", "Ｚ": "Z",
-    "ａ": "a", "ｂ": "b", "ｃ": "c", "ｄ": "d", "ｅ": "e",
-    "ｆ": "f", "ｇ": "g", "ｈ": "h", "ｉ": "i", "ｊ": "j",
-    "ｋ": "k", "ｌ": "l", "ｍ": "m", "ｎ": "n", "ｏ": "o",
-    "ｐ": "p", "ｑ": "q", "ｒ": "r", "ｓ": "s", "ｔ": "t",
-    "ｕ": "u", "ｖ": "v", "ｗ": "w", "ｘ": "x", "ｙ": "y", "ｚ": "z"
-  };
-  
+  // Plus/minus
+  "＋": "+",
+  "﹢": "+",
+  "－": "-",
+  "﹣": "-",
+  "–": "-",
+  "—": "-",
+
+  // Symbols
+  "＠": "@",
+  "＃": "#",
+  "＄": "$",
+  "％": "%",
+  "＆": "&",
+  "＊": "*",
+
+  // Digits (fullwidth → ASCII)
+  "０": "0", "１": "1", "２": "2", "３": "3", "４": "4",
+  "５": "5", "６": "6", "７": "7", "８": "8", "９": "9",
+
+  // Letters (fullwidth → ASCII)
+  "Ａ": "A", "Ｂ": "B", "Ｃ": "C", "Ｄ": "D", "Ｅ": "E",
+  "Ｆ": "F", "Ｇ": "G", "Ｈ": "H", "Ｉ": "I", "Ｊ": "J",
+  "Ｋ": "K", "Ｌ": "L", "Ｍ": "M", "Ｎ": "N", "Ｏ": "O",
+  "Ｐ": "P", "Ｑ": "Q", "Ｒ": "R", "Ｓ": "S", "Ｔ": "T",
+  "Ｕ": "U", "Ｖ": "V", "Ｗ": "W", "Ｘ": "X", "Ｙ": "Y", "Ｚ": "Z",
+  "ａ": "a", "ｂ": "b", "ｃ": "c", "ｄ": "d", "ｅ": "e",
+  "ｆ": "f", "ｇ": "g", "ｈ": "h", "ｉ": "i", "ｊ": "j",
+  "ｋ": "k", "ｌ": "l", "ｍ": "m", "ｎ": "n", "ｏ": "o",
+  "ｐ": "p", "ｑ": "q", "ｒ": "r", "ｓ": "s", "ｔ": "t",
+  "ｕ": "u", "ｖ": "v", "ｗ": "w", "ｘ": "x", "ｙ": "y", "ｚ": "z"
+};
+
 
 const defaultRules: SanitizerConfig = {
-    email: {
-        description: "Email: no spaces -> Lower/Trim",
-        transformations: [{ pattern: "\\s+", replace: "" }],
-        mask: ["toLower", "trim"]
-    },
-    phone: {
-        description: "Phone: Digits only",
-        transformations: [{ pattern: "\\D", replace: "" }],
-        mask: []
-    },
-    price: {
-        description: "Price: Digits/Dot/Comma/Minus -> toCurrency",
-        transformations: [
-        { pattern: "[^0-9.-]", replace: "" },
-        { pattern: ",", replace: "." }
-        ],
-        mask: ["toCurrency"]
-    },
-    name: {
-        description: "Name: All chars -> UcWords/Trim",
-        transformations: [],
-        mask: ["ucwords", "trim"]
-    },
-    date: {
-        description: "Date: All chars -> toDate (YYYY-MM-DD)",
-        transformations: [],
-        mask: [{ func: "toDate", arg: "YYYY-MM-DD" }]
-    },
-    slug: {
-        description: "Slug: All chars -> toSlug",
-        transformations: [],
-        mask: ["toSlug"]
-    }
+  email: {
+    description: "Email: no spaces -> Lower/Trim",
+    transformations: [{ pattern: "\\s+", replace: "" }],
+    mask: ["toLower", "trim"]
+  },
+  phone: {
+    description: "Phone: Digits only",
+    transformations: [{ pattern: "\\D", replace: "" }],
+    mask: []
+  },
+  price: {
+    description: "Price: Digits/Dot/Comma/Minus -> toCurrency",
+    transformations: [
+      { pattern: "[^0-9.-]", replace: "" },
+      { pattern: ",", replace: "." }
+    ],
+    mask: ["toCurrency"]
+  },
+  name: {
+    description: "Name: All chars -> UcWords/Trim",
+    transformations: [],
+    mask: ["ucwords", "trim"]
+  },
+  date: {
+    description: "Date: All chars -> toDate (YYYY-MM-DD)",
+    transformations: [],
+    mask: [{ func: "toDate", arg: "YYYY-MM-DD" }]
+  },
+  slug: {
+    description: "Slug: All chars -> toSlug",
+    transformations: [],
+    mask: ["toSlug"]
+  }
 }
 
 const defaultMatches: SanitizerMatch[] = [
-    { pattern: "email*", use: "email" },
-    { pattern: "*_price", use: "price" },
-    { pattern: "name*", use: "name" },
-    { pattern: "date*", use: "date" }
+  { pattern: "email*", use: "email" },
+  { pattern: "*_price", use: "price" },
+  { pattern: "name*", use: "name" },
+  { pattern: "date*", use: "date" }
 ]
 
 const NORMALIZE_REGEX = new RegExp(Object.keys(NORMALIZE_MAP).join("|"), "g");
@@ -126,6 +127,9 @@ export class Sanitizer {
   constructor(config: SanitizerConfig = {}, matches: SanitizerMatch[] = []) {
     this.config = { ...defaultRules, ...config };
     this.matches = [...defaultMatches, ...matches];
+    console.log('COSTRUT', config)
+    console.log('DEFAULTRULES', defaultRules)
+    console.log('UNION', {...defaultRules, ...config})
   }
 
   /* ----------------------------------------------
@@ -137,13 +141,28 @@ export class Sanitizer {
       //console.warn(`Rule "${String(ruleName)}" not found`);
       return autoCast ? smartTypeCast(value) : value;
     }
+    console.log('CONFFF', this.config)
 
     let result = value;
-
+    console.log('VALUE: ',value)
+    console.log('RULE: ',rule)
+    
     // 🔹 1. visual normalization always first
     result = normalizeVisualChars(result);
-    
-    // 🔹 2. Apply RegExp transformations
+    console.log('FIRST RESULT: ',result)
+
+    // 🔹 2. exclusion check
+    if (rule.exclusion && Array.isArray(rule.exclusion)) {
+      const lowerResult = String(result).toLowerCase();
+      for (const term of rule.exclusion) {
+        if (lowerResult.includes(term.toLocaleLowerCase())) {
+          result = "";
+          break;
+        }
+      }
+    }
+
+    // 🔹 3. Apply RegExp transformations
     for (const { pattern, replace } of rule.transformations || []) {
       try {
         result = String(result).replace(new RegExp(pattern, "g"), replace);
@@ -152,7 +171,7 @@ export class Sanitizer {
       }
     }
 
-    // 🔹 3. Apply converter masks
+    // 🔹 4. Apply converter masks
     for (const mask of rule.mask || []) {
       let func: keyof typeof converter;
       let arg: string | undefined;
@@ -174,9 +193,9 @@ export class Sanitizer {
       }
     }
 
-    // 🔹 4. smart type cast opzionale
+    // 🔹 5. smart type cast opzionale
     return autoCast ? smartTypeCast(result) : result;
-}
+  }
 
   /* ----------------------------------------------
    * 🌐 Apply matches to an entire object
@@ -200,7 +219,7 @@ export class Sanitizer {
   getOptions(): Record<string, string>[] {
     return Object.keys(this.config).sort().map((key) => ({ label: this.config[key].description ?? converter.toCamel(key), value: key }));
   }
-  
+
 
   /* ----------------------------------------------
    * 🧰 Helpers
