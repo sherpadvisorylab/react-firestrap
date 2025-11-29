@@ -65,6 +65,11 @@ const defaultTheme = {
             footerClass: "",
             iconExpand: "fullscreen",
             iconCollapse: "fullscreen-exit"
+        },
+        i18n: {
+            headerAdd: "Aggiungi",
+            headerEdit: "Modifica",
+            buttonAdd: "Aggiungi",
         }
     },
     Table: {
@@ -190,6 +195,13 @@ const defaultTheme = {
             headerClass: "",
             bodyClass: "",
             footerClass: "text-end",
+        },
+        i18n: {
+            headerNewRecord: "Nuovo Record",
+            buttonSave: "Salva",
+            buttonDelete: "Elimina",
+            buttonBack: "Indietro",
+            noticeRequiredFields: "Per favore, compila tutti i campi obbligatori"
         }
     },
     Menu: {

@@ -4,8 +4,7 @@ import componentFormFields from "../models/componentFormFields";
 import componentBlock from "../models/componentBlock";
 import componentSection from "../models/componentSection";
 
-import { FormDatabase } from "./widgets/Form";
-import { FieldOnChange } from "./widgets/Form";
+import Form  from "./widgets/Form";
 
 type Primitive = string | number | boolean | undefined;
 
@@ -13,7 +12,7 @@ interface FieldRenderProps {
     name: string;                       
     defaultValue?: any;
     label?: string;
-    onChange?: FieldOnChange;
+    onChange?: (value: any) => void;
 }
 
 interface FieldAdapter<TProps = any> {
@@ -74,10 +73,11 @@ export abstract class ComponentBlock {
                 return buildFormFields(instance.model);
             }, [instance.model]);
             
+            
             return (
-                <FormDatabase defaultValues={defaults} dataStoragePath={options?.dataStoragePath}>
+                <Form defaultValues={defaults} dataStoragePath={options?.dataStoragePath}>
                     {instance.form(fields)}
-                </FormDatabase>
+                </Form>
             );
         };
     }

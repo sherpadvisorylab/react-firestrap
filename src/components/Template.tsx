@@ -252,6 +252,10 @@ export function FormTemplate2({
         return <p className={"p-4"}><i className={"spinner-border spinner-border-sm"}></i> Caricamento in corso...</p>;
     }
 
+    if (!dataSource) {
+        return <p className={"p-4"}><i className={"spinner-border spinner-border-sm"}></i> Caricamento in corso...</p>;
+    }
+
     return (
         <FormDatabase dataStoragePath={dataSource} defaultValues={form.defaultValues}>
             {form.children}

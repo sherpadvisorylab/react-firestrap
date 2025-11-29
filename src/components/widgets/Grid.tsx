@@ -5,8 +5,8 @@ import Gallery from "../ui/Gallery";
 import Card from "../ui/Card";
 import db from "../../libs/database";
 import Modal from "../ui/Modal";
-import {getRecordValue, safeClone, trimSlash, ucfirst} from "../../libs/utils";
-import {useLocation} from "react-router-dom";
+import {getRecordValue, safeClone, trimSlash} from "../../libs/utils";
+import {useLocation, useNavigate} from "react-router-dom";
 import {converter} from "../../libs/converter";
 import FormEnhancer, {extractComponentProps} from "../FormEnhancer";
 import {RecordArray, RecordProps} from "../../integrations/google/firedatabase";
@@ -15,7 +15,7 @@ import { PaginationParams } from '../ui/Pagination';
 
 type ColumnFormatter = (args: {
     value: any;
-    record: any;
+    record: RecordProps;
     key?: string;
 }) => React.ReactNode;
 
@@ -41,7 +41,7 @@ type GridProps = {
         size?: "sm" | "md" | "lg" | "xl" | "fullscreen";
         position?: "center" | "top" | "left" | "right" | "bottom";
         setHeader?: (record?: RecordProps) => React.ReactNode;
-        onOpen?: ({record}: {record?: RecordProps}) => React.ReactNode;
+        onOpen?: ({record, key, index}: {record?: RecordProps, key?: string, index?: number}) => React.ReactNode;
     };
     pagination?: PaginationParams
     setPrimaryKey?: (record: RecordProps) => string;
@@ -74,7 +74,7 @@ const Grid = (props: GridProps) => {
 const GridDatabase = (props: Omit<GridProps, 'dataArray'>) => {
     const { dataStoragePath, ...rest } = props;
     const location = useLocation();
-
+    console.log("GRID: GridDatabase", props);
     const dbStoragePath = dataStoragePath || trimSlash(location.pathname);
     const [records, setRecords] = useState<RecordArray | undefined>(undefined);
 
@@ -119,6 +119,7 @@ const GridArray = ({
                        wrapClass        = undefined
 }: GridProps) => {
     const theme = useTheme("grid");
+    const navigate = useNavigate();
 
     const [loader, setLoader] = useState(false);
     const [modalData, setModalData] = useState<RecordProps | undefined>(undefined);
@@ -130,6 +131,17 @@ const GridArray = ({
         console.log("GRID: onDisplayBefore", dataArray);
         onDisplayBefore(safeClone(dataArray), setBeforeRecords, setLoader);
     }, [dataArray, onDisplayBefore]);
+
+    useEffect(() => {
+        if (!dataArray) return;
+        if (!location.hash) return;
+
+        const key = location.hash.replace("#", "");    
+        const record = dataArray.find(r => r._key === key);
+        if (record) {
+            setModalData(record);
+        }
+    }, [location.hash, dataArray]);
 
     const canEdit = (children || modal) && (!allowedActions || allowedActions.includes("edit"));
 
@@ -185,19 +197,19 @@ const GridArray = ({
     const body: RecordArray | undefined = useMemo(() => {
         if (!records) return undefined;
 
-        return records.reduce((acc: RecordArray, item: RecordProps, index: number) => {
-            const transformed = onLoadRecord ? onLoadRecord(item, index) : item;
+        return records.reduce((acc: RecordArray, record: RecordProps, index: number) => {
+            const transformed = onLoadRecord ? onLoadRecord(record, index) : record;
             //@todo trovare un modo per non distruggere gli indici
             if (!transformed) return acc;
 
-            const result = (transformed === true ? item : transformed);
+            const result = (transformed === true ? record : transformed);
             //@todo secondo me non serve
             const displayRow = {...result};
             for (const key of Object.keys(columnFormatters)) {
                 displayRow[key] = columnFormatters[key]({
                     value: getRecordValue(result, key),
                     record: result,
-                    key: item?._key
+                    key: record?._key
                 });
             }
 
@@ -211,6 +223,8 @@ const GridArray = ({
     const closeModal = useCallback(() => {
         setModalData(undefined);
         setFormRef(undefined);
+
+        navigate({ hash: "" }, { replace: true });
     }, []);
 
     const handleClick = useCallback((index: number) => {
@@ -224,8 +238,9 @@ const GridArray = ({
 
         onClick?.(record);
 
-        if (canEdit && record?._key) {
-            setModalData(record);
+        if (record?._key) {
+            canEdit && setModalData(record);
+            navigate({ hash: record._key }, { replace: false });
         }
     }, [dataArray, onClick, canEdit, setModalData]);
 
@@ -251,7 +266,7 @@ const GridArray = ({
                 className="btn btn-primary" 
                 onClick={() => setModalData({})}
             >
-                Aggiungi
+                {theme.Grid.i18n.buttonAdd}
             </button>
         );
     }, [children, allowedActions, setModalData]);
@@ -294,15 +309,20 @@ const GridArray = ({
     const modalComponent = useMemo((): React.ReactNode => {
         if (!modalData) return null;
         
-        const component = modal?.onOpen?.({record: modalData}) || children;
+        const {_key, _index, ...record} = modalData;
+        const component = modal?.onOpen?.({record: record, key: _key, index: _index}) || children;
+
         switch (modal?.mode) {
             case "empty":
                 return component && React.isValidElement(component) && React.cloneElement(component as React.ReactElement, {
+                    defaultValues: record,
+                    savePath: ({record}: {record: RecordProps}) => (dataStoragePath 
+                        ? _key 
+                            ? `${dataStoragePath}/${_key}`
+                            : `${dataStoragePath}/${setPrimaryKey?.(record) ?? Date.now()}`
+                        : undefined),
+                    log: log,
                     record: modalData,
-                    dataStoragePath: modalData?._key ? `${dataStoragePath}/${modalData?._key}` : `${dataStoragePath}/${new Date().getTime()}`,
-                    savePath: (record: RecordProps) => record?._key 
-                        ? `${dataStoragePath}/${record?._key}` 
-                        : `${dataStoragePath}/${setPrimaryKey?.(record ?? {}) ?? new Date().getTime()}`,
                     ...component?.props,
                     ref: setFormRefCallback
                 });
@@ -310,13 +330,13 @@ const GridArray = ({
             default:
                 return <Form
                     aspect="empty"
-                    defaultValues={modalData ?? {}}
+                    defaultValues={record}
+                    savePath={({record}: {record: RecordProps}) => (dataStoragePath 
+                        ? _key 
+                            ? `${dataStoragePath}/${_key}`
+                            : `${dataStoragePath}/${setPrimaryKey?.(record) ?? Date.now()}`
+                        : undefined)}
                     log={log}
-                    dataStoragePath={modalData?._key ? `${dataStoragePath}/${modalData?._key}` : `${dataStoragePath}/${Date.now()}`}
-                    savePath={(record: RecordProps) => record?._key 
-                        ? `${dataStoragePath}/${record?._key}` 
-                        : `${dataStoragePath}/${setPrimaryKey?.(record ?? {}) ?? Date.now()}`
-                    }
                     onSave={onSave}
                     onDelete={onDelete}
                     onFinally={async ({record, action}) => {
@@ -333,8 +353,9 @@ const GridArray = ({
         }
     }, [modalData, modal?.mode, modal?.onOpen, children, log, onSave, onDelete, onFinally, setPrimaryKey, setFormRefCallback, dataStoragePath]);
     
-    const currentRecord = formRef?.getRecord();
-    console.log("GRID: formRef", formRef, modalData, currentRecord);
+    const {record: currentRecord, isNewRecord} = formRef?.getRecord() ?? {};
+    
+    console.log("GRID: formRef", formRef, modalData, currentRecord, isNewRecord);
 
     return (<>
         <Card
@@ -360,10 +381,10 @@ const GridArray = ({
             <Modal
                 size={modal?.size || theme.Grid.Modal.size}
                 position={modal?.position || theme.Grid.Modal.position}
-                header={formRef?.getHeader() || modal?.setHeader?.(currentRecord) || (currentRecord?._key ? "Modifica" : "Aggiungi")}
+                header={formRef?.getHeader() || modal?.setHeader?.(currentRecord) || (isNewRecord ? theme.Grid.i18n.headerAdd : theme.Grid.i18n.headerEdit)}
                 onClose={closeModal}
                 onSave={formRef?.handleSave}
-                onDelete={currentRecord?._key && (!allowedActions || allowedActions.includes("delete")) 
+                onDelete={!isNewRecord && (!allowedActions || allowedActions.includes("delete")) 
                     ? formRef?.handleDelete 
                     : undefined
                 }

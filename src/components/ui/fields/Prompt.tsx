@@ -6,6 +6,10 @@ import { PROMPT_CLEANUP, PROMPT_NO_REFERENCE, PromptVariables } from '../../../c
 import { FormFieldProps, useFormContext } from '../../widgets/Form';
 import { RecordProps } from '../../../integrations/google/firedatabase';
 
+export enum PromptMode {
+    EDITOR = "editor",
+    LIVE = "live"
+}
 type PromptOptions = AIFetchConfig & {
     value: string;
 };
@@ -13,7 +17,7 @@ type PromptOptions = AIFetchConfig & {
 type OnRunPrompt = (prompt: string, config: AIFetchConfig, data?: PromptVariables) => Promise<string>;
 
 export interface PromptProps extends FormFieldProps {
-    mode?: "editor" | "runner";
+    mode?: PromptMode;
     onRunPrompt?: OnRunPrompt;
     renderPromptDisabled?: (props: Omit<FormFieldProps, "defaultValue">) => React.ReactNode;
     rows?: number;
@@ -33,7 +37,7 @@ interface PromptEditorProps extends Omit<PromptProps, "mode" | "onRunPrompt" | "
     value?: RecordProps
 }
 
-interface PromptRunnerProps extends Omit<PromptProps, "mode" | "renderPromptDisabled"> {
+interface PromptLiveProps extends Omit<PromptProps, "mode" | "renderPromptDisabled"> {
     value?: RecordProps;
 }
 
@@ -52,16 +56,16 @@ const promptClass = "position-relative border-start border-4 ps-2 border-seconda
 const promptActionClass = "position-absolute top-0 end-0 d-flex gap-2";
 
 export const Prompt = ({
-    mode = "editor",
+    mode = PromptMode.EDITOR,
     onRunPrompt,
     renderPromptDisabled,
     ...props
 }: PromptProps) => {
     const { value } = useFormContext({name: props.name});
-    return mode === "editor" 
+    return mode === PromptMode.EDITOR 
         ? <PromptEditor {...props} value={value} /> 
         : value?.prompt?.enabled 
-            ? <PromptRunner {...props} value={value} onRunPrompt={onRunPrompt} /> 
+            ? <PromptLive {...props} value={value} onRunPrompt={onRunPrompt} /> 
             : <PromptDisabled {...props} renderPromptDisabled={renderPromptDisabled} />
 }
 
@@ -117,7 +121,7 @@ console.log("PromptEditorAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", name, value, defaultV
     )
 }
 
-const PromptRunner = ({
+const PromptLive = ({
     name,
     label,
     value,
@@ -130,7 +134,7 @@ const PromptRunner = ({
     wrapClass,
     className,
     onRunPrompt
-}: PromptRunnerProps) => {
+}: PromptLiveProps) => {
     const { handleChange, record } = useFormContext({name});
 
     const theme = useTheme("prompt");

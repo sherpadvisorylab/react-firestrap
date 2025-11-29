@@ -237,14 +237,19 @@
         });
     }
 
+    export type SavePathProps = {
+        record: RecordProps;
+        storagePath?: string;
+    }
 
     interface BaseFormProps {
         aspect?: "card" | "empty";
         header?: React.ReactNode;
         footer?: React.ReactNode;
-        dataStoragePath?: string ;
+        dataStoragePath?: string;
         handlers?: FormHandlers;
-        savePath?: (record: RecordProps) => string;
+        setPrimaryKey?: (record: RecordProps) => string;
+        savePath?: (props: SavePathProps) => string | undefined;
         onLoad?: (record: RecordProps) => void;
         onSave?: ({record, prevRecord, action, storagePath}: {record?: RecordProps, prevRecord?: RecordProps, storagePath?: string, action: 'create' | 'update'}) => Promise<string | undefined>;
         onDelete?: ({record}: {record?: RecordProps}) => Promise<string | undefined>;
@@ -262,6 +267,9 @@
         defaultValues?: RecordProps;
     }
 
+    interface FormDatabaseProps extends FormDefaultProps {
+        dataStoragePath: string;
+    }
     interface FormModelProps extends BaseFormProps {
         model: ModelProps;
         children?: ((fields: FormTree) => React.ReactNode);
@@ -275,42 +283,57 @@
     export interface FormRef {
         handleSave: (e: React.MouseEvent<HTMLButtonElement>) => Promise<boolean>;
         handleDelete: (e: React.MouseEvent<HTMLButtonElement>) => Promise<boolean>;
-        getHeader: () => React.ReactNode | undefined;
-        getRecord: () => RecordProps | undefined;
-        getFooter: () => React.ReactNode | undefined;
+        getHeader: () => React.ReactNode;
+        getRecord: () => {record: RecordProps, isNewRecord: boolean};
+        getFooter: () => React.ReactNode;
     }
     type FormHandlers = Partial<FormRef>;
 
-    function Form(props: FormProps, ref?: React.Ref<FormRef>) {
-        const { dataStoragePath, handlers, defaultValues, children, ...rest } = props;
 
-        return defaultValues || (handlers && !dataStoragePath)
-            ? <FormData children={children} defaultValues={defaultValues} handlers={handlers} dataStoragePath={dataStoragePath} {...rest} ref={ref} />
-            : <FormDatabase children={children} defaultValues={defaultValues} handlers={handlers} dataStoragePath={dataStoragePath} {...rest} ref={ref} />;
+
+    function Form(props: FormProps, ref?: React.Ref<FormRef>) {
+        const location = useLocation();
+        const { dataStoragePath, setPrimaryKey, handlers, defaultValues, children, ...rest } = props;
+
+        const genStoragePath = (record: RecordProps) => {
+            return `${dataStoragePath ?? trimSlash(location.pathname)}/${setPrimaryKey?.(record) ?? Date.now()}`;
+        };
+        const getStoragePath = (dataStoragePath: string | undefined) => (
+            dataStoragePath ?? (location.hash 
+                ? `${trimSlash(location.pathname)}/${location.hash.slice(1)}` 
+                : undefined)
+        );
+
+        const dbStoragePath = getStoragePath(dataStoragePath);
+        const savePath = ({record, storagePath}: SavePathProps) => storagePath ?? genStoragePath(record);
+
+        return defaultValues || !dbStoragePath || (handlers && !dataStoragePath)
+            ? <FormData children={children} defaultValues={defaultValues} handlers={handlers} savePath={savePath} dataStoragePath={dbStoragePath} {...rest} ref={ref} />
+            : <FormDatabase children={children} defaultValues={defaultValues} handlers={handlers} savePath={savePath} dataStoragePath={dbStoragePath} {...rest} ref={ref} />;
     }
 
-    export const FormDatabase = forwardRef<FormRef, FormDefaultProps>((props, ref) => {
+    export const FormDatabase = forwardRef<FormRef, FormDatabaseProps>((props, ref) => {
         const { dataStoragePath, defaultValues, ...rest } = props;
-        const location = useLocation();
-
-        const dbStoragePath = dataStoragePath ?? trimSlash(location.pathname);
+        
         const [record, setRecord] = useState<RecordProps | undefined>(undefined);
-
+        
         useEffect(() => {
-            db.read(dbStoragePath).then(data => {
-                setRecord({ ...defaultValues, ...data });
+            db.read(dataStoragePath).then(data => {
+                setRecord({ ...defaultValues, ...data});
             }).catch(error => {
                 console.error(error);
                 setRecord({});
             });
-        }, [dbStoragePath]);
+        }, [dataStoragePath]);
+        
 
-        console.log("FormDatabase", dbStoragePath, defaultValues, record);
         if (!record) {
             return <p className={"p-4"}><i className={"spinner-border spinner-border-sm"}></i> Caricamento in corso...</p>;
         }
 
-        return <FormData {...rest} defaultValues={record} dataStoragePath={dbStoragePath} ref={ref} />;
+        console.log("FormDatabase", dataStoragePath, defaultValues, record);
+
+        return <FormData {...rest} defaultValues={record} dataStoragePath={dataStoragePath} ref={ref} />;
     });
 
     type NoticeProps = {
@@ -342,6 +365,7 @@
         const theme = useTheme("form");
 
         const [record, setRecord] = useState<RecordProps | undefined>(defaultValues);
+        const isNewRecord = !dataStoragePath;
 
         useEffect(()=>{
             if (defaultValues) {
@@ -372,10 +396,10 @@
             showNotice && setNotification(undefined);
             const emptyRequiredFields = document.querySelectorAll('[required]:not([value]), [required][value=""]');
             if (emptyRequiredFields.length > 0) {
-                showNotice && setNotification({ message: "Please fill in all required fields", type: "warning" });
+                showNotice && setNotification({ message: theme.Form.i18n.noticeRequiredFields, type: "warning" });
                 //return false;
             }
-            const action = recordRef.current?._key ? "update" : "create";
+            const action = isNewRecord ? "create" : "update";
             const recordStoragePath = onSave 
                 ? await onSave({
                     record: recordRef.current, 
@@ -383,7 +407,9 @@
                     action: action, 
                     storagePath: dataStoragePath
                 }) ?? dataStoragePath
-                : savePath?.(recordRef.current ?? {}) ?? dataStoragePath;
+                : savePath 
+                    ? savePath?.({record: recordRef.current ?? {}, storagePath: dataStoragePath})
+                    : dataStoragePath;
 
             recordStoragePath && await db.set(recordStoragePath, cleanRecord(recordRef.current));
             return await handleFinally(action);
@@ -396,7 +422,7 @@
 
             const recordStoragePath = onDelete 
                 ? await onDelete({record: recordRef.current})
-                : savePath?.(recordRef.current ?? {}) ?? dataStoragePath;
+                : savePath?.({record: recordRef.current ?? {}, storagePath: dataStoragePath}) ?? dataStoragePath;
 
             recordStoragePath && await db.remove(recordStoragePath);
             return await handleFinally("delete");
@@ -415,7 +441,7 @@
             handleSave: handlers?.handleSave ?? handleSave,
             handleDelete: handlers?.handleDelete ?? handleDelete,
             getHeader: handlers?.getHeader ?? (() => header),
-            getRecord: handlers?.getRecord ?? (() => recordRef.current),
+            getRecord: handlers?.getRecord ?? (() => ({record: recordRef.current ?? {}, isNewRecord})),
             getFooter: handlers?.getFooter ?? (() => footer),
         }), [handleSave, handleDelete, handlers]);
 
@@ -435,22 +461,22 @@
                 case "card":
                 default:
                     return <Card
-                        header={header || <Breadcrumbs pre={(record?._key ? "Update " : "Insert ")} path={dataStoragePath ?? "Record"} />}
-                        footer={(footer || dataStoragePath || onSave || onDelete || showBack) && <>
+                        header={header || <Breadcrumbs pre={(isNewRecord ? theme.Form.i18n.headerAdd : theme.Form.i18n.headerEdit)} path={dataStoragePath ?? theme.Form.i18n.headerNewRecord} />}
+                        footer={(footer || !isNewRecord || onSave || onDelete || showBack) && <>
                             {footer}
-                            {(onSave || dataStoragePath) && <LoadingButton
+                            {(onSave || !isNewRecord) && <LoadingButton
                                 className={theme.Form.buttonSaveClass}
-                                label={"Save"}
+                                label={theme.Form.i18n.buttonSave}
                                 onClick={e => handleSave(e)}
                             />}
-                            {(onDelete || dataStoragePath) && record?._key && <LoadingButton
+                            {(onDelete || !isNewRecord) && <LoadingButton
                                 className={theme.Form.buttonDeleteClass}
-                                label={"Delete"}
+                                label={theme.Form.i18n.buttonDelete}
                                 onClick={handleDelete}
                             />}
                             {showBack && <BackLink
                                 className={theme.Form.buttonBackClass}
-                                label={"Back"}
+                                label={theme.Form.i18n.buttonBack}
                             />}
                         </>}
                         headerClass={headerClass || theme.Form.Card.headerClass}
@@ -484,9 +510,20 @@
             if (!model) return [{}, {}];
             return buildFormFields(model);
         }, [model]);
+
+        const location = useLocation();
+        const getStoragePath = (dataStoragePath: string | undefined) => (
+            dataStoragePath ?? (location.hash 
+                ? `${trimSlash(location.pathname)}/${location.hash.slice(1)}` 
+                : undefined)
+        );
+
         console.log("formnodel nodes", children && children(fields));
+        const dataStoragePath = getStoragePath(formProps.dataStoragePath);
+        if (!dataStoragePath) return null;
+
         return (
-            <FormDatabase defaultValues={defaults} {...formProps}>
+            <FormDatabase dataStoragePath={dataStoragePath} defaultValues={defaults} {...formProps}>
                 {children && children(fields)}
             </FormDatabase>
 
