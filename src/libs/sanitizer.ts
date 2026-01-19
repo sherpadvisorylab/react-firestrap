@@ -4,7 +4,9 @@ import { smartTypeCast } from "./utils";
 /* ----------------------------------------------
  * 🔹 Types
  * ---------------------------------------------- */
-
+interface ExclusionItem {
+  phrase: string;
+}
 interface Transformation {
   pattern: string;
   replace: string;
@@ -16,7 +18,7 @@ type ConverterMask =
 
 export interface SanitizerRule {
   description?: string;
-  exclusion?: string[];
+  exclusions?: ExclusionItem[];
   transformations?: Transformation[];
   mask?: ConverterMask[];
 }
@@ -129,7 +131,7 @@ export class Sanitizer {
     this.matches = [...defaultMatches, ...matches];
     console.log('COSTRUT', config)
     console.log('DEFAULTRULES', defaultRules)
-    console.log('UNION', {...defaultRules, ...config})
+    console.log('UNION', { ...defaultRules, ...config })
   }
 
   /* ----------------------------------------------
@@ -144,18 +146,24 @@ export class Sanitizer {
     console.log('CONFFF', this.config)
 
     let result = value;
-    console.log('VALUE: ',value)
-    console.log('RULE: ',rule)
-    
+    console.log('VALUE: ', value)
+    console.log('RULE: ', rule)
+
     // 🔹 1. visual normalization always first
     result = normalizeVisualChars(result);
-    console.log('FIRST RESULT: ',result)
+    console.log('FIRST RESULT: ', result)
 
-    // 🔹 2. exclusion check
-    if (rule.exclusion && Array.isArray(rule.exclusion)) {
+    // 🔹 2. exclusions check
+    const exclusions = rule.exclusions;
+
+    if (Array.isArray(exclusions) && exclusions.length) {
       const lowerResult = String(result).toLowerCase();
-      for (const term of rule.exclusion) {
-        if (lowerResult.includes(term.toLocaleLowerCase())) {
+
+      for (const item of exclusions) {
+        const term = (item?.phrase ?? "").trim().toLowerCase();
+        if (!term) continue;
+
+        if (lowerResult.includes(term)) {
           result = "";
           break;
         }
@@ -163,13 +171,15 @@ export class Sanitizer {
     }
 
     // 🔹 3. Apply RegExp transformations
-    for (const { pattern, replace } of rule.transformations || []) {
+    for (const { pattern, replace = "" } of rule.transformations || []) {
       try {
-        result = String(result).replace(new RegExp(pattern, "g"), replace);
+        result = String(result).replace(new RegExp(pattern, "g"), String(replace));
       } catch (e) {
         console.warn(`Invalid regex in rule ${String(ruleName)}: ${pattern}`);
       }
     }
+
+
 
     // 🔹 4. Apply converter masks
     for (const mask of rule.mask || []) {
