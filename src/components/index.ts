@@ -33,7 +33,7 @@ export { default as Tab } from './ui/Tab';
 export * from './ui/Tab';
 export { default as Table } from './ui/Table';
 export { default as Icon } from './ui/Icon';
-
+export { LayoutBuilder } from './ui/LayoutBuilder';
 export * from './ui/fields/Input';
 export * from './ui/fields/Select';
 export * from './ui/fields/Upload';
