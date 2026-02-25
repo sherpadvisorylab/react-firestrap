@@ -103,7 +103,7 @@ const AssistantAI = ({
         try {
             const finalPrompt = setPrompt(promptTopic.prompt, configVariables, userInput);
             const response = await fetch(finalPrompt, {
-                model: 'gpt-4',
+                model: 'gpt-5.2',
                 temperature: 0.7
             });
 
