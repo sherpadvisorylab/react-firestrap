@@ -5,8 +5,23 @@ import { AIConfig, Config, onConfigChange } from "../Config";
 import { currentLang } from "../libs/locale";
 import { PromptVariables } from "../conf/Prompt";
 
-const OUTPUT = "valid JSON array of objects. Make sure the array is always formatted as a JSON array, even if it contains only one element";
-const OUTPUT_ARRAY = "valid JSON array simple. Make sure the array is always formatted as a JSON array and dont have object inside";
+const OUTPUT = `Return ONLY a valid JSON array of objects.
+Rules:
+- No trailing commas
+- No markdown
+- No explanations
+- No comments`;
+
+const OUTPUT_ARRAY = `Return ONLY a valid JSON array of primitive values.
+Rules:
+- The array must contain ONLY primitive values (string, number, or boolean)
+- Do NOT include objects or nested arrays
+- No trailing commas
+- No markdown
+- No explanations
+- No comments
+- The response must be directly parseable by JSON.parse()
+`;
 
 const CHATGPT_URL = 'https://api.openai.com/v1/chat/completions';
 const CHATGPT_COMPLETION_URL = 'https://api.openai.com/v1/completions';
