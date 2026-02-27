@@ -55,7 +55,7 @@ type AppProps = {
     tenantsURI?: string;
     proxyURI?: string;
     importPage: (pagesPath: string) => Promise<{ default: React.ComponentType }>;
-    importTheme?: () => Promise<{ default: { theme: object } }>;
+    importTheme?: () => Promise<{ theme: object }>;
     LayoutDefault?: React.ComponentType;
     menuConfig: MenuConfig;
 };
