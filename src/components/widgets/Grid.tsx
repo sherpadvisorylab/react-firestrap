@@ -5,12 +5,12 @@ import Gallery from "../ui/Gallery";
 import Card from "../ui/Card";
 import db from "../../libs/database";
 import Modal from "../ui/Modal";
-import {getRecordValue, safeClone, trimSlash} from "../../libs/utils";
-import {useLocation, useNavigate} from "react-router-dom";
-import {converter} from "../../libs/converter";
-import FormEnhancer, {extractComponentProps} from "../FormEnhancer";
-import {RecordArray, RecordProps} from "../../integrations/google/firedatabase";
-import Form, {FormRef} from "./Form";
+import { getRecordValue, safeClone, trimSlash } from "../../libs/utils";
+import { useLocation, useNavigate } from "react-router-dom";
+import { converter } from "../../libs/converter";
+import FormEnhancer, { extractComponentProps } from "../FormEnhancer";
+import { RecordArray, RecordProps } from "../../integrations/google/firedatabase";
+import Form, { FormRef } from "./Form";
 import { PaginationParams } from '../ui/Pagination';
 
 type ColumnFormatter = (args: {
@@ -42,9 +42,11 @@ type GridProps = {
         size?: "sm" | "md" | "lg" | "xl" | "fullscreen";
         position?: "center" | "top" | "left" | "right" | "bottom";
         setHeader?: (record?: RecordProps) => React.ReactNode;
-        onOpen?: ({record, key, index}: {record?: RecordProps, key?: string, index?: number}) => React.ReactNode;
+        onOpen?: ({ record, key, index }: { record?: RecordProps, key?: string, index?: number }) => React.ReactNode;
     };
     pagination?: PaginationParams
+    scrollToTopOnChange?: boolean;
+    scrollBehavior?: ScrollBehavior;
     setPrimaryKey?: (record: RecordProps) => string;
     onLoadRecord?: (record: RecordProps, index: number) => RecordProps | boolean;
     onDisplayBefore?: (records: RecordArray,
@@ -104,6 +106,8 @@ const GridArray = ({
     allowedSorting = true,
     modal = undefined,
     pagination = undefined,
+    scrollToTopOnChange = undefined,
+    scrollBehavior = undefined,
     setPrimaryKey = undefined,
     onLoadRecord = undefined,
     onDisplayBefore = undefined,
@@ -138,7 +142,7 @@ const GridArray = ({
         if (!dataArray) return;
         if (!location.hash) return;
 
-        const key = location.hash.replace("#", "");    
+        const key = location.hash.replace("#", "");
         const record = dataArray.find(r => r._key === key);
         if (record) {
             setModalData(record);
@@ -196,12 +200,12 @@ const GridArray = ({
     const [sortState, setSortState] = useState<{ key: string; order: 'asc' | 'desc' } | null>(null);
 
     useEffect(() => {
-      if (allowedSorting && !sortState && tableHeaders) {
-        const initialColumn = tableHeaders.find(c => c.sort) || tableHeaders[0];    // primo el con sort
-        if (initialColumn) {
-          setSortState({ key: initialColumn.key, order: 'asc' });
+        if (allowedSorting && !sortState && tableHeaders) {
+            const initialColumn = tableHeaders.find(c => c.sort) || tableHeaders[0];    // primo el con sort
+            if (initialColumn) {
+                setSortState({ key: initialColumn.key, order: 'asc' });
+            }
         }
-      }
     }, [sortState, tableHeaders]);
 
     // 3. Ordinamento prima dei formatters
@@ -220,8 +224,8 @@ const GridArray = ({
         };
         const arr = [...records];
         arr.sort((a, b) => {
-          const cmp = compare(a, b);
-          return sortState.order === 'desc' ? -cmp : cmp;   // inverte se desc
+            const cmp = compare(a, b);
+            return sortState.order === 'desc' ? -cmp : cmp;   // inverte se desc
         });
         return arr;
     }, [records, sortState, tableHeaders]);
@@ -322,6 +326,8 @@ const GridArray = ({
                     body={body}
                     onClick={(onClick || canEdit) ? handleClick : undefined}
                     pagination={pagination}
+                    scrollToTopOnChange={scrollToTopOnChange}
+                    scrollBehavior={scrollBehavior}
                     wrapClass={theme.Grid.Gallery.wrapperClass}
                     scrollClass={theme.Grid.Gallery.scrollClass}
                     headerClass={theme.Grid.Gallery.headerClass}
@@ -340,6 +346,8 @@ const GridArray = ({
                     onClick={(onClick || canEdit) ? handleClick : undefined}
                     onHeaderClick={handleHeaderClick}
                     pagination={pagination}
+                    scrollToTopOnChange={scrollToTopOnChange}
+                    scrollBehavior={scrollBehavior}
                     wrapClass={theme.Grid.Table.wrapperClass}
                     className={theme.Grid.Table.className}
                     headerClass={theme.Grid.Table.headerClass}
@@ -353,16 +361,16 @@ const GridArray = ({
 
     const modalComponent = useMemo((): React.ReactNode => {
         if (!modalData) return null;
-        
-        const {_key, _index, ...record} = modalData;
-        const component = modal?.onOpen?.({record: record, key: _key, index: _index}) || children;
+
+        const { _key, _index, ...record } = modalData;
+        const component = modal?.onOpen?.({ record: record, key: _key, index: _index }) || children;
 
         switch (modal?.mode) {
             case "empty":
                 return component && React.isValidElement(component) && React.cloneElement(component as React.ReactElement, {
                     defaultValues: record,
-                    savePath: ({record}: {record: RecordProps}) => (dataStoragePath 
-                        ? _key 
+                    savePath: ({ record }: { record: RecordProps }) => (dataStoragePath
+                        ? _key
                             ? `${dataStoragePath}/${_key}`
                             : `${dataStoragePath}/${setPrimaryKey?.(record) ?? Date.now()}`
                         : undefined),
@@ -376,8 +384,8 @@ const GridArray = ({
                 return <Form
                     aspect="empty"
                     defaultValues={record}
-                    savePath={({record}: {record: RecordProps}) => (dataStoragePath 
-                        ? _key 
+                    savePath={({ record }: { record: RecordProps }) => (dataStoragePath
+                        ? _key
                             ? `${dataStoragePath}/${_key}`
                             : `${dataStoragePath}/${setPrimaryKey?.(record) ?? Date.now()}`
                         : undefined)}
@@ -397,9 +405,9 @@ const GridArray = ({
 
         }
     }, [modalData, modal?.mode, modal?.onOpen, children, log, onSave, onDelete, onFinally, setPrimaryKey, setFormRefCallback, dataStoragePath]);
-    
-    const {record: currentRecord, isNewRecord} = formRef?.getRecord() ?? {};
-    
+
+    const { record: currentRecord, isNewRecord } = formRef?.getRecord() ?? {};
+
     console.log("GRID: formRef", formRef, modalData, currentRecord, isNewRecord);
 
     return (<>
@@ -429,8 +437,8 @@ const GridArray = ({
                 header={formRef?.getHeader() || modal?.setHeader?.(currentRecord) || (isNewRecord ? theme.Grid.i18n.headerAdd : theme.Grid.i18n.headerEdit)}
                 onClose={closeModal}
                 onSave={formRef?.handleSave}
-                onDelete={!isNewRecord && (!allowedActions || allowedActions.includes("delete")) 
-                    ? formRef?.handleDelete 
+                onDelete={!isNewRecord && (!allowedActions || allowedActions.includes("delete"))
+                    ? formRef?.handleDelete
                     : undefined
                 }
                 wrapClass={theme.Grid.Modal.wrapClass}

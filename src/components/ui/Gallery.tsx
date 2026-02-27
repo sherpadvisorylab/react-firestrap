@@ -1,9 +1,9 @@
-import React, {useMemo} from 'react';
-import {useTheme} from "../../Theme";
+import React, { useMemo } from 'react';
+import { useTheme } from "../../Theme";
 import Carousel from "../blocks/Carousel";
-import {Wrapper} from "../ui/GridSystem";
-import {converter} from "../../libs/converter";
-import {RecordProps} from "../../integrations/google/firedatabase";
+import { Wrapper } from "../ui/GridSystem";
+import { converter } from "../../libs/converter";
+import { RecordProps } from "../../integrations/google/firedatabase";
 import Pagination, { PaginationParams } from './Pagination';
 import { UIProps } from '../';
 
@@ -33,6 +33,8 @@ interface GalleryProps extends UIProps {
     itemMiddleRight?: string | React.ReactNode;
     onClick?: (index: number) => void;
     pagination?: PaginationParams;
+    scrollToTopOnChange?: boolean;
+    scrollBehavior?: ScrollBehavior;
     gutterSize?: 0 | 1 | 2 | 3 | 4 | 5;
     rowCols?: 1 | 2 | 3 | 4 | 6;
     groupBy?: string | string[];
@@ -44,34 +46,36 @@ interface GalleryProps extends UIProps {
 }
 
 const Gallery = ({
-                   body             = undefined,
-                   Header           = undefined,
-                   Footer           = undefined,
-                   itemTopLeft      = undefined,
-                   itemTopRight     = undefined,
-                   itemBottomLeft   = undefined,
-                   itemBottomRight  = undefined,
-                   itemMiddleLeft   = undefined,
-                   itemMiddleRight  = undefined,
-                   onClick          = undefined,
-                   pagination       = undefined,
-                   gutterSize       = undefined,
-                   rowCols          = undefined,
-                   groupBy          = undefined,
-                   pre              = undefined,
-                   post             = undefined,
-                   wrapClass        = undefined,
-                   className        = undefined,
-                   headerClass      = undefined,
-                   scrollClass      = undefined,
-                   bodyClass        = undefined,
-                   footerClass      = undefined,
-                   selectedClass    = undefined
+    body = undefined,
+    Header = undefined,
+    Footer = undefined,
+    itemTopLeft = undefined,
+    itemTopRight = undefined,
+    itemBottomLeft = undefined,
+    itemBottomRight = undefined,
+    itemMiddleLeft = undefined,
+    itemMiddleRight = undefined,
+    onClick = undefined,
+    pagination = undefined,
+    scrollToTopOnChange = undefined,
+    scrollBehavior = undefined,
+    gutterSize = undefined,
+    rowCols = undefined,
+    groupBy = undefined,
+    pre = undefined,
+    post = undefined,
+    wrapClass = undefined,
+    className = undefined,
+    headerClass = undefined,
+    scrollClass = undefined,
+    bodyClass = undefined,
+    footerClass = undefined,
+    selectedClass = undefined
 }: GalleryProps) => {
-    const theme    = useTheme("gallery");
-    const activeClass   = selectedClass || theme.Gallery.selectedClass;
-    const paddingSize   = gutterSize || theme.Gallery.gutterSize;
-    const numCols       = rowCols || theme.Gallery.rowCols;
+    const theme = useTheme("gallery");
+    const activeClass = selectedClass || theme.Gallery.selectedClass;
+    const paddingSize = gutterSize || theme.Gallery.gutterSize;
+    const numCols = rowCols || theme.Gallery.rowCols;
 
     const handleClick = (e: React.MouseEvent<HTMLElement>, index: number) => {
         if (activeClass) {
@@ -179,13 +183,15 @@ const Gallery = ({
             <Wrapper className={className || theme.Gallery.className}>
                 {Header && <div className={headerClass || theme.Gallery.headerClass}>{Header}</div>}
                 <Wrapper className={scrollClass || theme.Gallery.scrollClass}>
-                    <div className={"d-flex flex-wrap text-center align-items-center g-2 row-cols-" + numCols + " " + (bodyClass || theme.Gallery.bodyClass)}>  
-                        <Pagination 
-                            recordSet={renderedBody} 
-                            page={pagination?.page} 
+                    <div className={"d-flex flex-wrap text-center align-items-center g-2 row-cols-" + numCols + " " + (bodyClass || theme.Gallery.bodyClass)}>
+                        <Pagination
+                            recordSet={renderedBody}
+                            page={pagination?.page}
+                            scrollToTopOnChange={scrollToTopOnChange}
+                            scrollBehavior={scrollBehavior}
                             limit={pagination?.limit}
                         >
-                            {(pageRecords)=>pageRecords.map((Component, index) => (
+                            {(pageRecords) => pageRecords.map((Component, index) => (
                                 <div key={index} className={"item position-relative p-" + paddingSize}>
                                     {Component}
                                     {itemTopLeft && <div className={"position-absolute start-0 top-0 p-" + paddingSize}>
