@@ -157,7 +157,6 @@ function App({
                     <ThemeProvider importTheme={importTheme}>
                         <Routes>
                             <Route path={AUTH_REDIRECT_URI} element={<Authorize />}></Route>
-                            <Route path='*' element={<NotFound />}></Route>
                             <>
                                 {renderRoutes({
                                     default: [{ path: "/" }], ...{
@@ -170,6 +169,7 @@ function App({
                                     }
                                 })}
                             </>
+                            <Route path='*' element={<NotFound />}></Route>
                         </Routes>
                     </ThemeProvider>
                 </GlobalProvider>

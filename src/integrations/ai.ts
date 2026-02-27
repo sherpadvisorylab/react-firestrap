@@ -27,7 +27,7 @@ const CHATGPT_URL = 'https://api.openai.com/v1/chat/completions';
 const CHATGPT_COMPLETION_URL = 'https://api.openai.com/v1/completions';
 
 const CHATGPT_TEMPERATURE = 0.5;
-const CHATGPT_MODEL = 'gpt-3.5-turbo';
+const CHATGPT_MODEL = 'gpt-5';
 const CHATGPT_FRAMEWORK = "AIDA (Attention Interest Desire Action)";
 const CHATGPT_FRAMEWORKS = [
     "AIDA (Attention Interest Desire Action)",
@@ -388,7 +388,7 @@ const PROVIDERS = {
     [PROVIDER_OPENAI]: {
         name: PROVIDER_OPENAI,
         url: 'https://api.openai.com/v1/chat/completions',
-        model: 'gpt-3.5-turbo',
+        model: 'gpt-5.2',
         models: ['gpt-4.1', 'gpt-4.1-mini', 'gpt-4.1-nano', 'gpt-5', 'gpt-5-mini', 'gpt-5-nano'],
         framework: 'AIDA (Attention Interest Desire Action)',
         frameworks: [
