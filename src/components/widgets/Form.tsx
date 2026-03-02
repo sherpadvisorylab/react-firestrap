@@ -67,7 +67,12 @@
 
         const formChange = (event: ChangeHandler) => {
             const path = event.target.name.split(".");
-            const value = ["number", "range"].includes(inputType) ? Number(event.target.value) : event.target.value;
+
+            const rawValue = (event as any)?.target?.value;
+            const value =
+                ["number", "range"].includes(inputType) || typeof rawValue === "number"
+                    ? (rawValue === "" || rawValue == null ? rawValue : Number(rawValue))
+                    : rawValue;
             
             let target = record;
             for (let i = 0; i < path.length - 1; i++) {

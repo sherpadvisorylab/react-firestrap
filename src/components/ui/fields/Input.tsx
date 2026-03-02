@@ -188,6 +188,7 @@ export const Checkbox = ({
         name,
         onChange,
         wrapClass,
+        inputType: typeof valueChecked === "number" ? "number" : "text",
         defaultValue:
             defaultValue !== undefined
                 ? (toValueString(defaultValue as any) === toValueString(valueChecked) ? toValueString(valueChecked) : "")
@@ -197,9 +198,27 @@ export const Checkbox = ({
     const id = useId();
 
     const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        event.target.value = event.target.checked ? toValueString(valueChecked) : "";
-        handleChange?.(event);
-        console.log("Checkbox", name, value, "valueChecked:", valueChecked, "typeof", typeof value, typeof valueChecked);
+        const nextRawValue = event.target.checked ? valueChecked : "";
+
+        handleChange?.({
+            target: {
+                name,
+                value: nextRawValue,
+            },
+        });
+
+        console.log(
+            "Checkbox",
+            name,
+            value,
+            "valueChecked:",
+            valueChecked,
+            "typeof",
+            typeof value,
+            typeof valueChecked,
+            "savedType",
+            typeof nextRawValue
+        );
     };
 
     if (!wrapClass && label) wrapClass = "checkbox";
