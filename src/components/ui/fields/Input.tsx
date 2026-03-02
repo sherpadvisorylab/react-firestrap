@@ -1,10 +1,10 @@
-import React, { useId, useState} from 'react';
-import {isEmpty, isInteractiveElement} from "../../../libs/utils";
-import {Wrapper} from "../GridSystem";
+import React, { useId, useState } from 'react';
+import { isEmpty, isInteractiveElement } from "../../../libs/utils";
+import { Wrapper } from "../GridSystem";
 import { ActionButton, Icon, UIProps } from '../../..';
-import {FormFieldProps, InputType, useFormContext, useHandleDrop } from '../../widgets/Form';
+import { FormFieldProps, InputType, useFormContext, useHandleDrop } from '../../widgets/Form';
 
-interface BaseInputProps extends FormFieldProps{
+interface BaseInputProps extends FormFieldProps {
     placeholder?: string;
     type?: InputType;
     updatable?: boolean;
@@ -24,12 +24,12 @@ interface LabelProps {
 
 export type InputProps = Omit<BaseInputProps, 'type'>;
 
-export interface CheckboxProps extends FormFieldProps { 
+export interface CheckboxProps extends FormFieldProps {
     title?: string;
-    valueChecked?: string;
+    valueChecked?: string | number;
 }
 
-export interface TextAreaProps extends FormFieldProps    {
+export interface TextAreaProps extends FormFieldProps {
     placeholder?: string;
     updatable?: boolean;
     disabled?: boolean;
@@ -74,7 +74,7 @@ export const Input = ({
     wrapClass = undefined,
     className = undefined
 }: BaseInputProps) => {
-    const { value, handleChange, formWrapClass } = useFormContext({name, onChange, wrapClass, inputType: type, defaultValue});
+    const { value, handleChange, formWrapClass } = useFormContext({ name, onChange, wrapClass, inputType: type, defaultValue });
     const id = useId();
     const handleDrop = useHandleDrop({ name, value, handleChange });
 
@@ -121,11 +121,11 @@ export const Email = (props: InputProps) => (
 export const Password = (props: InputProps) => {
     const [visible, setVisible] = useState(false);
 
-    return <Input {...props} type={visible ? "text": "password"} post={
-        <ActionButton 
-            icon={visible ? "eye" : "eye-slash"} 
+    return <Input {...props} type={visible ? "text" : "password"} post={
+        <ActionButton
+            icon={visible ? "eye" : "eye-slash"}
             onClick={() => setVisible(!visible)}
-        />} 
+        />}
     />
 };
 
@@ -175,28 +175,37 @@ export const Checkbox = ({
     wrapClass = undefined,
     className = undefined
 }: CheckboxProps) => {
-//todo:se aggiungo il defaultvalue, succede che impazzisce. vedi pageeditor denominazione-regione
-//trattements esce object[object]
-// gli orari nelle card non escono
-//in page editor quando si usano le select per scegliere i tag html si salvano in un punto sbagliato
-//il render frontendnelle pagine non funziona quando voglio nascondere un elemento vedi social link
-//il render frontend l'ultimo elemento dentro al comune se non ha quartiere esce l'ultimo centro estetico
-    const { value, handleChange, formWrapClass } = useFormContext({name, onChange, wrapClass, 
-        defaultValue: defaultValue !== undefined 
-        ? defaultValue === valueChecked ? valueChecked : ''
-        : undefined
+    //todo:se aggiungo il defaultvalue, succede che impazzisce. vedi pageeditor denominazione-regione
+    //trattements esce object[object]
+    // gli orari nelle card non escono
+    //in page editor quando si usano le select per scegliere i tag html si salvano in un punto sbagliato
+    //il render frontendnelle pagine non funziona quando voglio nascondere un elemento vedi social link
+    //il render frontend l'ultimo elemento dentro al comune se non ha quartiere esce l'ultimo centro estetico
+
+    const toValueString = (v: any): string => (v == null ? "" : `${v}`);
+
+    const { value, handleChange, formWrapClass } = useFormContext({
+        name,
+        onChange,
+        wrapClass,
+        defaultValue:
+            defaultValue !== undefined
+                ? (toValueString(defaultValue as any) === toValueString(valueChecked) ? toValueString(valueChecked) : "")
+                : undefined
     });
 
     const id = useId();
-    const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        event.target.value = event.target.checked ? valueChecked : ''
 
+    const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        event.target.value = event.target.checked ? toValueString(valueChecked) : "";
         handleChange?.(event);
+        console.log("Checkbox", name, value, "valueChecked:", valueChecked, "typeof", typeof value, typeof valueChecked);
     };
-    if (!wrapClass && label) {
-        wrapClass = "checkbox"
-    }
+
+    if (!wrapClass && label) wrapClass = "checkbox";
+
     //console.log("Checkbox", name, value, defaultValue);
+
     return (
         <Wrapper className={formWrapClass}>
             {pre}
@@ -206,7 +215,7 @@ export const Checkbox = ({
                 name={name}
                 title={title}
                 className={`form-check-input${className ? " " + className : ""}`}
-                checked={value === valueChecked}
+                checked={toValueString(value) === toValueString(valueChecked)}
                 onChange={handleCheckboxChange}
             />
             {label && <label className="form-check-label ps-1" htmlFor={id}>
@@ -226,9 +235,9 @@ export const Switch = (props: CheckboxProps) => (
 
 export const Label = ({
     label,
-    required    = false,
-    htmlFor     = undefined,
-    className   = undefined
+    required = false,
+    htmlFor = undefined,
+    className = undefined
 }: LabelProps) => {
     return (
         <label htmlFor={htmlFor} className={`form-label${className ? " " + className : ""}`}>
@@ -240,8 +249,8 @@ export const Label = ({
 export const TextArea = ({
     name,
     //value = undefined,
-    onChange    = undefined,
-    defaultValue = undefined,   
+    onChange = undefined,
+    defaultValue = undefined,
     placeholder = undefined,
     label = undefined,
     required = false,
@@ -255,7 +264,7 @@ export const TextArea = ({
     className = undefined,
     wrapClass = undefined
 }: TextAreaProps) => {
-    const { value, handleChange, formWrapClass } = useFormContext({name, onChange, wrapClass, defaultValue});
+    const { value, handleChange, formWrapClass } = useFormContext({ name, onChange, wrapClass, defaultValue });
 
     const id = useId();
     const handleDrop = useHandleDrop({ name, value, handleChange });
@@ -288,30 +297,30 @@ export const TextArea = ({
 
 export const ListGroup = ({
     children,
-    onClick         = undefined,
-    label           = undefined,
-    actives         = undefined,
-    draggable       = undefined,
-    onDrop          = undefined,
-    disables        = undefined,
-    loaders         = undefined,
-    pre             = undefined,
-    post            = undefined,
-    wrapClass       = undefined,
-    className       = undefined,
-    itemClass       = undefined
+    onClick = undefined,
+    label = undefined,
+    actives = undefined,
+    draggable = undefined,
+    onDrop = undefined,
+    disables = undefined,
+    loaders = undefined,
+    pre = undefined,
+    post = undefined,
+    wrapClass = undefined,
+    className = undefined,
+    itemClass = undefined
 }: ListGroupProps) => {
     const fullClassName = `list-group${className ? ' ' + className : ''}`;
 
     const extractText = (node: React.ReactNode): string => {
         const walk = (n: React.ReactNode): string => {
-          if (n == null || typeof n === "boolean") return "";
-          if (typeof n === "string" || typeof n === "number") return `${n}`;
-          if (Array.isArray(n)) return n.map(walk).join(" ");
-          if (React.isValidElement(n)) return walk(n.props.children);
-          return "";
+            if (n == null || typeof n === "boolean") return "";
+            if (typeof n === "string" || typeof n === "number") return `${n}`;
+            if (Array.isArray(n)) return n.map(walk).join(" ");
+            if (React.isValidElement(n)) return walk(n.props.children);
+            return "";
         };
-      
+
         return walk(node).replace(/\s+/g, " ").trim();
     };
 
@@ -355,7 +364,7 @@ export const ListGroup = ({
                         onDragStart={draggable ? (e) => handleDragStart(e, extractText(child)) : undefined}
                         style={{ cursor: draggable ? 'grab' : 'default' }}
                     >
-                        {draggable && <Icon icon='grip-vertical'/>}
+                        {draggable && <Icon icon='grip-vertical' />}
                         {child}
                     </span>
             })}
