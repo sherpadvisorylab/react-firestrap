@@ -19,6 +19,8 @@ interface TableProps extends UIProps {
     onClick?: (index: number) => void;
     onHeaderClick?: (hdr: TableHeaderProp) => void;
     pagination?: PaginationParams;
+    scrollToTopOnChange?: boolean;
+    scrollBehavior?: ScrollBehavior;
     headerClass?: string,
     bodyClass?: string,
     footerClass?: string,
@@ -28,20 +30,22 @@ interface TableProps extends UIProps {
 
 function Table({
     header,
-    body                                    = undefined,
-    Footer                                  = undefined,
-    onClick                                 = undefined,
-    onHeaderClick                           = undefined,
-    pagination                              = undefined,
-    pre                                     = undefined,
-    post                                    = undefined,
-    wrapClass                               = undefined,
-    className                               = undefined,
-    headerClass                             = undefined,
-    bodyClass                               = undefined,
-    footerClass                             = undefined,
-    scrollClass                             = undefined,
-    selectedClass                           = undefined
+    body = undefined,
+    Footer = undefined,
+    onClick = undefined,
+    onHeaderClick = undefined,
+    pagination = undefined,
+    scrollToTopOnChange = undefined,
+    scrollBehavior = undefined,
+    pre = undefined,
+    post = undefined,
+    wrapClass = undefined,
+    className = undefined,
+    headerClass = undefined,
+    bodyClass = undefined,
+    footerClass = undefined,
+    scrollClass = undefined,
+    selectedClass = undefined
 }: TableProps) {
     const theme = useTheme("table");
     const activeClass = selectedClass || theme.Table.selectedClass;
@@ -115,6 +119,8 @@ function Table({
                             <Pagination
                                 recordSet={body}
                                 page={pagination?.page}
+                                scrollToTopOnChange={scrollToTopOnChange}
+                                scrollBehavior={scrollBehavior}
                                 limit={pagination?.limit}
                                 appendTo={paginationNavEl}
                             >
