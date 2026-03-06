@@ -32,6 +32,10 @@ export const SidebarToggler = ({ device, toggle, dismiss }) => {
         const appElement = document.getElementById('app');
         const sidebar = document.getElementById('sidebar');
 
+        if (!appElement || !sidebar) {
+            return;
+        }
+        
         if (isDesktop) {
             if (isCollapsed) {
                 appElement.classList.remove('app-sidebar-collapsed');

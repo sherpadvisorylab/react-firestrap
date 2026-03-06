@@ -5,6 +5,7 @@ import {DropdownHeader, DropdownItem} from "./components/blocks/Dropdown";
 export type FirebaseConfig = {
     apiKey: string;
     authDomain: string;
+    databaseURL: string;
     projectId: string;
     storageBucket: string;
     messagingSenderId: string;
@@ -14,6 +15,7 @@ export type FirebaseConfig = {
 
 export type GoogleOAuth2 = {
     clientId: string;
+    scope?: string;
 };
 
 export type GoogleServiceAccount = {

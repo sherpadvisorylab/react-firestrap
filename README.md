@@ -206,15 +206,15 @@ REACT_APP_GEMINI_API_KEY=...                        # Optional
     "eject": "react-scripts eject"
   },
   "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-papaparse": "^4",
-    "react-firestrap": "^1.2.9",
-    "react-router-dom": "^6.22.0",
-    "react-scripts": "^5"
+    "react": "",
+    "react-dom": "",
+    "react-papaparse": "",
+    "react-firestrap": "",
+    "react-router-dom": "",
+    "react-scripts": ""
   },
   "devDependencies": {
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.0"
+    "@babel/plugin-proposal-private-property-in-object": ""
   },
   "eslintConfig": {
     "extends": "react-app"

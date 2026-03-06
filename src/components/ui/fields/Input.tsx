@@ -123,6 +123,7 @@ export const Password = (props: InputProps) => {
 
     return <Input {...props} type={visible ? "text": "password"} post={
         <ActionButton 
+            className="p-0 border-0"
             icon={visible ? "eye" : "eye-slash"} 
             onClick={() => setVisible(!visible)}
         />} 

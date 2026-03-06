@@ -11,7 +11,7 @@
     import { RecordProps } from "../../integrations/google/firedatabase";
     import {FormTree, ModelProps, buildFormFields} from "../Component";
     import Breadcrumbs from "../blocks/Breadcrumbs";
-    import { UIProps } from 'index';
+    import { UIProps } from '../';
 
     export type ChangeHandler = React.ChangeEvent<any> | { target: { name: string; value?: any } };
 
@@ -263,7 +263,7 @@
         footerClass?: string;
     }
     interface FormDefaultProps extends BaseFormProps {
-        children: React.ReactNode | ((args: { record: RecordProps | undefined}) => React.ReactNode);
+        children: React.ReactNode | ((fields: FormTree) => React.ReactNode) | ((args: { record?: RecordProps}) => React.ReactNode);
         defaultValues?: RecordProps;
     }
 
@@ -276,7 +276,7 @@
     }
 
     interface FormProps extends BaseFormProps {
-        children?: React.ReactNode | ((fields: FormTree) => React.ReactNode);
+        children?: React.ReactNode | ((fields: FormTree) => React.ReactNode) | ((args: { record?: RecordProps }) => React.ReactNode);
         defaultValues?: RecordProps;
     }
 

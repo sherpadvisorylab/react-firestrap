@@ -1,6 +1,6 @@
 {
   "name": "react-firestrap",
-  "version": "1.4.4",
+  "version": "1.5.8",
   "description": "React FireStrap is a powerful framework that accelerates the creation of interactive user interfaces. Built with React and Bootstrap, it features native authentication support and smooth integration with services like Firebase, Dropbox, and messaging systems. Developers are free to implement any Bootstrap theme, allowing for endless customization possibilities. With React FireStrap, you can effortlessly design dynamic layouts and customize templates with modular components, making it the ultimate toolkit for efficiently building responsive and engaging applications.",
   "main": "dist/index.js",
   "types": "dist/types/index.d.ts",
@@ -15,7 +15,7 @@
   },
   "bin": {
     "react-firestrap": "./bin/cli.js"
-  },
+  }, 
   "files": [
     "dist",
     "dist/**/*.map",
@@ -73,7 +73,7 @@
     "@types/prismjs": "^1.26.5",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
-    "@types/react-router-dom": "^5.3.3",
+    "@types/react-router-dom": "^6.22.0",
     "babel-loader": "^9.2.1",
     "react-router-dom": "^6.22.0",
     "ts-loader": "^9.5.1",

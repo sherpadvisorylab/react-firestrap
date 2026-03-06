@@ -12,6 +12,8 @@ const ENGINE_GOOGLE_IMAGES          = "google_images";
 const ENGINE_GOOGLE_AUTOCOMPLETE    = "google_autocomplete";
 const ENGINE_GOOGLE_TRENDS          = "google_trends";
 const ENGINE_GOOGLE_MAPS            = "google_maps";
+const ENGINE_GOOGLE_MAPS_PHOTOS     = "google_maps_photos";
+const ENGINE_GOOGLE_MAPS_REVIEWS    = "google_maps_reviews";
 
 const SEARCH_QUERY = {
     q: null,                        //required
@@ -96,6 +98,13 @@ const ADVANCED = {
                                     // It can be set to 1 to exclude these results, or 0 to include them (default).
     filter: 1,                      // Parameter defines if the filters for 'Similar Results' and 'Omitted Results' are on or off.
                                     // It can be set to 1 (default) to enable these filters, or 0 to disable these filters.
+}
+
+const MAPS_DETAILS = {
+    data_id: null,                  // Parameter defines the Google Maps data ID. Find the data ID of a place using our Google Maps API.
+    hl: codeLang,                   // Parameter defines the language to use for the Google Maps Photos search. 
+                                    // It's a two-letter language code, for example, en for English (default), es for Spanish, or fr for French). 
+                                    // Head to the Google languages page for a full list of supported Google languages.
 }
 
 const SEARCH_BY_ENGINE = {
@@ -211,7 +220,17 @@ const SEARCH_BY_ENGINE = {
         ...LOCALIZATION,
         ...ADVANCED,
         ...SEARCH_QUERY,
-        engine: ENGINE_GOOGLE_MAPS,   //required
+        engine: ENGINE_GOOGLE_MAPS,     //required
+    },
+    [ENGINE_GOOGLE_MAPS_PHOTOS]: {
+        ...SERPAPI_PARAMS,
+        ...MAPS_DETAILS,
+        engine: ENGINE_GOOGLE_MAPS_PHOTOS,
+    },
+    [ENGINE_GOOGLE_MAPS_REVIEWS]: {
+        ...SERPAPI_PARAMS,
+        ...MAPS_DETAILS,
+        engine: ENGINE_GOOGLE_MAPS_REVIEWS,
     },
 };
 
@@ -221,10 +240,20 @@ onConfigChange((newConfig: Config) => {
     config = newConfig.scrape;
 });
 
+function removeNullProperties(obj: Record<string, any>): Record<string, any> {
+    const newObj: Record<string, any> = {};
+    for (const key in obj) {
+        if (obj[key] !== null) {
+            newObj[key] = obj[key];
+        }
+    }
+    return newObj;
+}
+
 let API_KEY_INDEX = 0;
 function getSerpApikey(next = false) {
-    const apis = config?.serpApiKey?.split(",");
-    if (!apis) return null;
+    const apis = config?.serpApiKey?.split(",").map(k => k.trim()).filter(Boolean) || [];
+    if (apis.length === 0) return null;
 
     if (next) {
         API_KEY_INDEX++;
@@ -234,16 +263,6 @@ function getSerpApikey(next = false) {
         ? apis[API_KEY_INDEX]
         : null
     );
-}
-
-function removeNullProperties(obj: Record<string, any>): Record<string, any> {
-    const newObj: Record<string, any> = {};
-    for (const key in obj) {
-        if (obj[key] !== null) {
-            newObj[key] = obj[key];
-        }
-    }
-    return newObj;
 }
 
 const fetchSerpApi = async (search: string, engine: string) => {
@@ -264,9 +283,15 @@ const fetchSerpApi = async (search: string, engine: string) => {
     while (apiKey) {
         try {
             return await fetchJson(getRequest(apiKey));
-        } catch (error) {
-            console.error(`SerpApi: invalid api key: ${apiKey}`, error);
-            apiKey = getSerpApikey(true);
+        } catch (response: any) {
+            if (response.error === "quota_exceeded") {
+                console.warn(`SerpApi: invalid api key: ${apiKey}`, response);
+                apiKey = getSerpApikey(true);
+                continue;
+            }
+
+            console.error(`SerpApi: ${apiKey}`, response);
+            throw response;
         }
     }
 
@@ -306,6 +331,12 @@ const fetchScrape = (caller: any = null, storePaths: string[] = []) => {
         },
         googleMaps: async (search: string) => {
             return await callSerpApi(search, ENGINE_GOOGLE_MAPS, {caller, storePaths});
+        },
+        googleMapsPhotos: async (search: string) => {
+            return await callSerpApi(search, ENGINE_GOOGLE_MAPS_PHOTOS, {caller, storePaths});
+        },
+        googleMapsReviews: async (search: string) => {
+            return await callSerpApi(search, ENGINE_GOOGLE_MAPS_REVIEWS, {caller, storePaths});
         },
     }
 }

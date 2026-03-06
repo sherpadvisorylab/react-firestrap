@@ -56,7 +56,7 @@ type GridProps = {
     onDelete?: ({ record }: { record?: RecordProps }) => Promise<string | undefined>;
     onFinally?: ({ record, action }: { record?: RecordProps, action: 'create' | 'update' | 'delete' }) => Promise<boolean>;
     onClick?: (record: RecordProps) => void;
-    children?: React.ReactNode;
+    children?: React.ReactNode | ((args: { record?: RecordProps }) => React.ReactNode);
     scroll?: boolean;
     type?: "table" | "gallery";
     showLoader?: boolean;
@@ -250,8 +250,6 @@ const GridArray = ({
         }, []);
     }, [sortedRecords, onLoadRecord, columnFormatters]);
 
-    console.log("GRIDodaiuto", dataArray, dataStoragePath, body, records, tableHeaders);
-
     const closeModal = useCallback(() => {
         setModalData(undefined);
         setFormRef(undefined);
@@ -367,8 +365,8 @@ const GridArray = ({
                             : `${dataStoragePath}/${setPrimaryKey?.(record) ?? Date.now()}`
                         : undefined),
                     log: log,
-                    record: modalData,
-                    ...component?.props,
+                    record: modalData, //todo: solo per dare ai componenti custom un parametro in ingresso di nome record. ma dovrebbero prendere defaultValues 
+                    //...(typeof component !== 'function' && (component?.props ?? {})),
                     ref: setFormRefCallback
                 });
             case "form":

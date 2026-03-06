@@ -41,7 +41,7 @@ declare global {
 
 
 interface GoogleAuthProps {
-    scope: string;
+    scope?: string;
     iconLogout: string;
     className?: string;
     avatarClass?: string;
@@ -149,7 +149,7 @@ const GoogleAuth = ({
 
         const gclient = window.google.accounts.oauth2.initTokenClient({
             client_id: config.clientId,
-            scope: scope,
+            scope: scope ?? config.scope ?? '',
             callback: (tokenResponse: TokenResponse) => {
                 console.log(tokenResponse);
 

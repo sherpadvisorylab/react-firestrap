@@ -198,6 +198,35 @@ REACT_APP_SERPAPI_API_KEY=
   `);
 }
 
+function normalizeFirebaseProjectId(projectName) {
+    if (projectName === undefined || projectName === null) {
+        return "";
+    }
+
+    let value = String(projectName).trim();
+
+    if (!value) return "";
+
+    // 1. Se inizia con una maiuscola, abbassala senza trattino
+    value = value.replace(/^[A-Z]/, (m) => m.toLowerCase());
+
+    // 2. Maiuscole interne → -minuscola (propBot → prop-bot)
+    value = value.replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`);
+
+    // 3. Spazi → -
+    value = value.replace(/\s+/g, "-");
+
+    // 4. Tutto ciò che non è valido per Firebase → -
+    value = value.replace(/[^a-z0-9-]/g, "-");
+
+    // 5. Cleanup finale
+    value = value
+        .replace(/-+/g, "-")      // no multipli
+        .replace(/^-+|-+$/g, ""); // no - ai bordi
+
+    return value;
+}  
+
 function createFirebaseConfig(params) {
     const firebaserc = {
         projects: {
@@ -213,7 +242,7 @@ function createFirebaseConfig(params) {
         database: { rules: "database.rules.json" },
         ...(includeHosting && {
             hosting: {
-                site: hostingSite,
+                site: normalizeFirebaseProjectId(hostingSite),
                 public: "build",
                 ignore: ["firebase.json", "**/.*", "**/node_modules/**"],
                 predeploy: ["npm run build"],
@@ -236,7 +265,7 @@ function createFirebaseConfig(params) {
                 ".read": `auth != null && root.child('users').child(auth.email.replace('.', '-').replace('@', '-')).exists()`,
                 ".write": `auth != null && root.child('users').child(auth.email.replace('.', '-').replace('@', '-')).exists() &&
         root.child('users').child(auth.email.replace('.', '-').replace('@', '-')).child('permission').val() === 'admin'`,
-                ".indexOn": ["role"]
+                ".indexOn": ["permission"]
             }
         }
     };

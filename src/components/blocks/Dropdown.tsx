@@ -120,7 +120,7 @@ export const Dropdown = ({
 export const DropdownButton = ({
                                    children,
                                    badge        = undefined,
-                                   display      = "static",
+                                   display      = "dynamic",
                                    className    = undefined,
                                    badgeClass   = undefined
 }: DropdownButtonProps) => {

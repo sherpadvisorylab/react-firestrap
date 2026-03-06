@@ -18,12 +18,13 @@ type FirebaseValue<T> =
     | string[]              // when shallow = true
     | undefined;            // no value
 
-type Operator = "eq" | "lt" | "lte" | "gt" | "gte";
+type Operator = "eq" | "lt" | "lte" | "gt" | "gte" | "nin" | "in";
+type OperatorValue = string | number | boolean | null | string[] | number[];
 type Condition = {
-    [op in Operator]?: string | number | boolean | null;
+    [op in Operator]?: OperatorValue;
 };
 type WhereClause = {
-    [field: string]: Condition | string | number | boolean | null;
+    [field: string]: Condition | OperatorValue;
 };
 
 type FieldMap = Record<string, any>;
@@ -74,9 +75,13 @@ const query = (
     let ref: firebase.database.Query = dbRef.orderByChild(field);
     if (raw === null) return ref;
 
-    const condition = typeof raw === "object" ? raw : { eq: raw };
+    const condition = typeof raw === "object" ? raw : { eq: raw ?? null };
 
     const [[op, val]] = Object.entries(condition);
+    if (Array.isArray(val)) {
+        //todo: da gestire i where complessi col filter
+        return ref;
+    }
     switch (op) {
         case "eq":
             return ref.equalTo(val);
@@ -228,7 +233,7 @@ const db = {
 
                 const onValueChange = (snapshot: firebase.database.DataSnapshot) => {
                     const val: RecordObject = snapshot.val();
-
+                    console.log("firedatabase: loaded data");
                     if (!val) {
                         setRecords([]);
                         return;
@@ -242,6 +247,7 @@ const db = {
                                 ...value
                             }) as T
                         );
+                        console.log("firedatabase: set records simple");
                         setRecords(onLoad ? onLoad(records) : records);
                         return;
                     }
@@ -270,6 +276,7 @@ const db = {
                             ...mapped
                         } as T);
                     }
+                    console.log("firedatabase: set records mapped");
                     setRecords(onLoad ? onLoad(records) : records);
                 };
 
