@@ -57,8 +57,6 @@ const Gallery = ({
     itemMiddleRight = undefined,
     onClick = undefined,
     pagination = undefined,
-    scrollToTopOnChange = undefined,
-    scrollBehavior = undefined,
     gutterSize = undefined,
     rowCols = undefined,
     groupBy = undefined,
@@ -186,10 +184,7 @@ const Gallery = ({
                     <div className={"d-flex flex-wrap text-center align-items-center g-2 row-cols-" + numCols + " " + (bodyClass || theme.Gallery.bodyClass)}>
                         <Pagination
                             recordSet={renderedBody}
-                            page={pagination?.page}
-                            scrollToTopOnChange={scrollToTopOnChange}
-                            scrollBehavior={scrollBehavior}
-                            limit={pagination?.limit}
+                            {...(pagination || {})}
                         >
                             {(pageRecords) => pageRecords.map((Component, index) => (
                                 <div key={index} className={"item position-relative p-" + paddingSize}>

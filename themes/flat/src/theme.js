@@ -76,6 +76,16 @@ export const theme = {
         gutterSize: "4",
         rowCols: "2"
     },
+    Pagination: {
+        wrapClass: "",
+        className: "",
+        stickyClass: "position-fixed bottom-0 end-0 px-3 pt-3",
+        scrollToTop: false,
+        scrollBehavior: "auto",
+        maxItems: 5,
+        sticky: true,
+        align: "end",
+    },
     Carousel: {
         showIndicators: true,
         showControls: true,

@@ -92,6 +92,16 @@ const defaultTheme = {
         gutterSize: "4",
         rowCols: "2"
     },
+    Pagination: {
+        wrapClass: "",
+        className: "",
+        stickyClass: "fixed-bottom mx-5",
+        scrollToTop: false,
+        scrollBehavior: "auto",
+        maxItems: 5,
+        sticky: true,
+        align: "end",
+    },
     Carousel: {
         showIndicators: true,
         showControls: true,

@@ -45,8 +45,6 @@ type GridProps = {
         onOpen?: ({ record, key, index }: { record?: RecordProps, key?: string, index?: number }) => React.ReactNode;
     };
     pagination?: PaginationParams
-    scrollToTopOnChange?: boolean;
-    scrollBehavior?: ScrollBehavior;
     setPrimaryKey?: (record: RecordProps) => string;
     onLoadRecord?: (record: RecordProps, index: number) => RecordProps | boolean;
     onDisplayBefore?: (records: RecordArray,
@@ -59,7 +57,6 @@ type GridProps = {
     onFinally?: ({ record, action }: { record?: RecordProps, action: 'create' | 'update' | 'delete' }) => Promise<boolean>;
     onClick?: (record: RecordProps) => void;
     children?: React.ReactNode | ((args: { record?: RecordProps }) => React.ReactNode);
-    scroll?: boolean;
     type?: "table" | "gallery";
     showLoader?: boolean;
     groupBy?: string | string[];
@@ -106,8 +103,6 @@ const GridArray = ({
     allowedSorting = true,
     modal = undefined,
     pagination = undefined,
-    scrollToTopOnChange = undefined,
-    scrollBehavior = undefined,
     setPrimaryKey = undefined,
     onLoadRecord = undefined,
     onDisplayBefore = undefined,
@@ -116,7 +111,6 @@ const GridArray = ({
     onFinally = undefined,
     onClick = undefined,
     children = undefined,
-    scroll = false,
     type = "table",
     showLoader = false,
     groupBy = undefined,
@@ -125,6 +119,7 @@ const GridArray = ({
     wrapClass = undefined
 }: GridProps) => {
     const theme = useTheme("grid");
+    const location = useLocation();
     const navigate = useNavigate();
 
     const [loader, setLoader] = useState(false);
@@ -258,8 +253,8 @@ const GridArray = ({
         setModalData(undefined);
         setFormRef(undefined);
 
-        navigate({ hash: "" }, { replace: true });
-    }, []);
+        navigate({ pathname: location.pathname, search: location.search, hash: "" }, { replace: true });
+    }, [navigate, location.pathname, location.search]);
 
     const handleClick = useCallback((index: number) => {
         const data = dataArray?.[index];
@@ -324,8 +319,6 @@ const GridArray = ({
                     body={body}
                     onClick={(onClick || canEdit) ? handleClick : undefined}
                     pagination={pagination}
-                    scrollToTopOnChange={scrollToTopOnChange}
-                    scrollBehavior={scrollBehavior}
                     wrapClass={theme.Grid.Gallery.wrapperClass}
                     scrollClass={theme.Grid.Gallery.scrollClass}
                     headerClass={theme.Grid.Gallery.headerClass}
@@ -344,8 +337,6 @@ const GridArray = ({
                     onClick={(onClick || canEdit) ? handleClick : undefined}
                     onHeaderClick={handleHeaderClick}
                     pagination={pagination}
-                    scrollToTopOnChange={scrollToTopOnChange}
-                    scrollBehavior={scrollBehavior}
                     wrapClass={theme.Grid.Table.wrapperClass}
                     className={theme.Grid.Table.className}
                     headerClass={theme.Grid.Table.headerClass}

@@ -19,8 +19,6 @@ interface TableProps extends UIProps {
     onClick?: (index: number) => void;
     onHeaderClick?: (hdr: TableHeaderProp) => void;
     pagination?: PaginationParams;
-    scrollToTopOnChange?: boolean;
-    scrollBehavior?: ScrollBehavior;
     headerClass?: string,
     bodyClass?: string,
     footerClass?: string,
@@ -35,8 +33,6 @@ function Table({
     onClick = undefined,
     onHeaderClick = undefined,
     pagination = undefined,
-    scrollToTopOnChange = undefined,
-    scrollBehavior = undefined,
     pre = undefined,
     post = undefined,
     wrapClass = undefined,
@@ -118,11 +114,8 @@ function Table({
                         <tbody className={bodyClass || theme.Table.bodyClass}>
                             <Pagination
                                 recordSet={body}
-                                page={pagination?.page}
-                                scrollToTopOnChange={scrollToTopOnChange}
-                                scrollBehavior={scrollBehavior}
-                                limit={pagination?.limit}
                                 appendTo={paginationNavEl}
+                                {...(pagination || {})}
                             >
                                 {(pageRecords, pageOffset) =>
                                     pageRecords.map((record, index) => (

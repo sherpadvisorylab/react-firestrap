@@ -1,20 +1,22 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { UIProps, Wrapper } from "../index";
 import { createPortal } from 'react-dom';
+import { useTheme } from '../../Theme';
 
 export type PaginationParams = {
     page?: number;
     limit?: number;
     navLimit?: number;
+    scrollToTopOnChange?: boolean;
+    scrollBehavior?: ScrollBehavior;
+    align?: "start" | "center" | "end";
+    sticky?: boolean;
 };
 
 interface PaginationProps<T> extends UIProps, PaginationParams {
     recordSet: T[];
     children: (pageRecords: T[], pageOffset: number) => React.ReactNode;
     appendTo?: HTMLElement | null;
-
-    scrollToTopOnChange?: boolean;
-    scrollBehavior?: ScrollBehavior;
 }
 
 const Pagination = <T,>({
@@ -28,21 +30,21 @@ const Pagination = <T,>({
     post = undefined,
     className = undefined,
     wrapClass = undefined,
-
-    scrollToTopOnChange = true,
-    scrollBehavior = "smooth"
+    scrollToTopOnChange = undefined,
+    scrollBehavior = undefined,
+    align = undefined,
+    sticky = undefined
 }: PaginationProps<T>) => {
-
-    const NAV_LIMIT_DEFAULT = 5;
+    const theme = useTheme("pagination");
 
     const [currentPage, setCurrentPage] = useState(page || 1);
 
     // ✅ sync se page cambia dall'esterno
-    useEffect(() => {
+   /* useEffect(() => {
         if (page && page !== currentPage) {
             setCurrentPage(page);
         }
-    }, [page]);
+    }, [page]);*/
 
     const pageLimit = limit || recordSet.length;
     const totalPages = Math.ceil(recordSet.length / pageLimit);
@@ -62,16 +64,16 @@ const Pagination = <T,>({
     };
 
     useEffect(() => {
-        if (!scrollToTopOnChange) return;
+        if (!(scrollToTopOnChange || theme.Pagination.scrollToTop)) return;
 
         window.scrollTo({
             top: 0,
-            behavior: scrollBehavior
+            behavior: scrollBehavior || theme.Pagination.scrollBehavior
         });
     }, [currentPage, scrollToTopOnChange, scrollBehavior]);
 
     const range = useMemo(() => {
-        const max = Math.min(navLimit || NAV_LIMIT_DEFAULT, totalPages);
+        const max = Math.min(navLimit || theme.Pagination.maxItems, totalPages);
 
         let s = Math.max(1, currentPage - Math.floor(max / 2));
         let e = s + max - 1;
@@ -88,12 +90,14 @@ const Pagination = <T,>({
     const disabledNext = currentPage === totalPages ? 'disabled' : '';
 
     const nav = (
-        <Wrapper className={wrapClass}>
+        <Wrapper className={(wrapClass || theme.Pagination.wrapClass) + (sticky || theme.Pagination.sticky ? ` ${theme.Pagination.stickyClass}` : '')}
+            style={sticky || theme.Pagination.sticky ? {backdropFilter: "blur(10px)", backgroundColor: "rgba(255, 255, 255, 0.1)"} : {}}
+        >
             {pre}
 
             {recordSet.length > pageLimit && (
-                <nav aria-label="Page navigation" className={className}>
-                    <ul className="pagination justify-content-center">
+                <nav aria-label="Page navigation" className={className || theme.Pagination.className}>
+                    <ul className={`pagination justify-content-${align || theme.Pagination.align} mx-auto`}>
 
                         <li className={`page-item ${disabledPrev}`}>
                             <button onClick={() => go(1)} className="page-link">
