@@ -8,6 +8,7 @@ import {Config, onConfigChange} from "../../Config";
 import init from "./firebase";
 import { getSafeAuth } from "./firebase";
 import { cleanRecord } from "../../libs/utils";
+import { SetMessagePayload } from "../../components/ui/Buttons";
 
 type FirebasePrimitive = string | number | boolean | null;
 type FirebaseAny = FirebasePrimitive | object | any[];
@@ -38,6 +39,8 @@ export interface DatabaseOptions<T extends RecordProps = RecordProps> {
     fieldMap?: Record<string, string>;
     onLoad?: (data: T[]) => T[];
 }
+
+type SetDatabaseMessage = SetMessagePayload & { chunkDone?: number; totalChunks?: number };
 
 let databaseInstance: firebase.database.Database;
 onConfigChange((newConfig: Config) => {
@@ -175,7 +178,7 @@ const db = {
         data: any,
         chunkSize: number = 1000,
         purge: boolean = false,
-        setMessage?: (p: { message: string; chunkDone?: number; totalChunks?: number }) => void,
+        setMessage?: (p: SetDatabaseMessage) => void,
         exception: boolean = false
       ): Promise<void> => {
         const dbRef = getDatabase().ref(path);

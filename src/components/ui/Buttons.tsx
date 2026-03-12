@@ -20,8 +20,10 @@ export interface IButton extends UIProps {
     style?: React.CSSProperties;
 }
 
+export type SetMessagePayload = { message: string; chunkDone?: number; totalChunks?: number };
+
 export interface LoadingButtonProps extends Omit<IButton, "onClick"> {
-    onClick?: (e: any, setMessage?: (msg: string) => any) => Promise<any>;
+    onClick?: (e: any, setMessage?: (payload: SetMessagePayload) => any) => Promise<any>;
 }
   
 export const LoadingButton = ({
@@ -42,7 +44,11 @@ export const LoadingButton = ({
 }: LoadingButtonProps = {}) => {
     const [loader, setLoader] = useState(showLoader);
     const [disable, setDisable] = useState(disabled);
-    const [message, setMessage] = useState("");
+    const [message, setMessageState] = useState("");
+
+    const setMessage = (payload: SetMessagePayload) => {
+        setMessageState(payload.message ?? '');
+    };
 
     const theme = useTheme("button");
 
